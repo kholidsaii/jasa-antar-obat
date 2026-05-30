@@ -182,10 +182,11 @@ const hitungRuteOSRM = async (latAwal, lngAwal, latTujuan, lngTujuan) => {
 
 const hitungHarga = (jarakAsli) => {
   const jarakKm = parseFloat(jarakAsli);
+  let totalHargaOngkir = 0;
   
   if (jarakKm <= 5.0) {
     // 0 - 5 KM = Harga Flat Rp 20.000
-    return 20000;
+    totalHargaOngkir = 20000;
   } else {
     // Jika lebih dari 5 KM, bulatkan ke atas
     const jarakDibulatkan = Math.ceil(jarakKm);
@@ -194,8 +195,12 @@ const hitungHarga = (jarakAsli) => {
     const extraKm = jarakDibulatkan - 5;
     
     // Rp 20.000 + (Rp 5.000 per KM lebih)
-    return 20000 + (extraKm * 5000);
+    totalHargaOngkir = 20000 + (extraKm * 5000);
   }
+
+  // Tambahkan biaya admin tetap Rp 1.500 ke total akhir
+  const biayaAdmin = 1500;
+  return totalHargaOngkir + biayaAdmin;
 }
 
 const formatRupiah = (angka) => {
