@@ -10,7 +10,7 @@
       
       <div class="relative p-6 sm:p-10 z-20 text-white max-w-2xl space-y-3">
         <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase">
-          Rumah Sakit PPN
+          Rumah Sakit
         </span>
         <h1 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
           Sistem Layanan Jastar Obat
