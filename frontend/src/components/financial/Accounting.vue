@@ -28,7 +28,7 @@
 
     <div v-else class="p-8 overflow-y-auto print-area">
       <div class="text-center mb-10 pb-6 border-b-2 border-gray-800 border-double">
-        <h1 class="text-2xl font-black text-gray-900 tracking-wider">JASTAR OBAT RS PPN</h1>
+        <h1 class="text-2xl font-black text-gray-900 tracking-wider">JASTAR OBAT</h1>
         <h2 class="text-lg font-bold text-gray-700 mt-1">LAPORAN LABA RUGI KOMPREHENSIF</h2>
         <p class="text-sm text-gray-500 mt-1">Periode: Keseluruhan (Buku Besar Real-time)</p>
       </div>
