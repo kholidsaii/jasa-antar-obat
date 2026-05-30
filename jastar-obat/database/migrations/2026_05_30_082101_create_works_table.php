@@ -13,6 +13,16 @@ return new class extends Migration
     {
         Schema::create('works', function (Blueprint $table) {
             $table->id();
+            
+            // Relasi ke tabel packages (Paket)
+            $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
+            
+            // Relasi ke tabel users (Kurir) -> INI YANG DICARI OLEH LARAVEL TADI!
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            
+            // Relasi ke tabel vehicles (Kendaraan)
+            $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
+            
             $table->timestamps();
         });
     }

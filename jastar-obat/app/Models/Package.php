@@ -13,7 +13,8 @@ class Package extends Model
         'customer_id', 
         'deskripsi_pesanan', 
         'status_pengiriman', 
-        'status_pembayaran'
+        'status_pembayaran',
+        'metode_pembayaran'
     ];
 
     // Relasi: Paket ini milik siapa?

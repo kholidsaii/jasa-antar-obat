@@ -9,10 +9,12 @@ class Transaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'tipe', // Uang Masuk, Uang Keluar
-        'metode_pembayaran', 
-        'nominal', 
-        'deskripsi'
-    ];
+    // Izinkan semua kolom diisi secara otomatis
+    protected $guarded = [];
+
+    // Opsional: Relasi balik ke tabel Works jika dibutuhkan
+    public function work()
+    {
+        return $this->belongsTo(Work::class);
+    }
 }

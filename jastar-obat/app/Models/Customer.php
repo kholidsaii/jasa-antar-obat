@@ -10,11 +10,7 @@ class Customer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nama', 
-        'no_telp', 
-        'jenis_kelamin', 
-        'umur', 
-        'alamat'
+        'nama', 'no_telp', 'jenis_kelamin', 'umur', 'alamat', 'detail_alamat', 'lat', 'lng'
     ];
 
     // Relasi: Satu customer bisa punya banyak paket

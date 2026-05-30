@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->string('nama');
+            $table->string('no_telp', 20);
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan']);
+            $table->integer('umur')->nullable();
+            $table->text('alamat'); // Untuk Peta (Jl. Bendungan 2, Jakarta)
+            $table->text('detail_alamat')->nullable(); // Untuk Kurir (RT 02, Pagar Hitam)
+            $table->string('lat')->nullable(); 
+            $table->string('lng')->nullable(); 
             $table->timestamps();
         });
     }

@@ -27,34 +27,29 @@
       </div>
     </div>
 
-    <div v-if="notification.show" :class="['px-6 py-3 text-sm font-medium text-white transition-all absolute top-0 left-1/2 transform -translate-x-1/2 mt-4 rounded-lg shadow-lg z-50', notification.type === 'success' ? 'bg-green-600' : 'bg-red-600']">
-      <div class="flex items-center">
-        <svg v-if="notification.type === 'success'" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        {{ notification.message }}
-      </div>
-    </div>
-
     <div class="flex flex-col lg:flex-row h-[600px] divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
       
       <div class="w-full lg:w-3/5 h-64 lg:h-full bg-gray-50 relative flex flex-col">
-        <iframe 
-          class="w-full h-full border-0" 
-          frameborder="0" 
-          scrolling="no" 
-          marginheight="0" 
-          marginwidth="0" 
-          src="https://www.openstreetmap.org/export/embed.html?bbox=106.82%2C-6.49%2C106.88%2C-6.45&layer=mapnik" 
-          style="border: 1px solid black">
-        </iframe>
+        <div id="map" class="w-full h-full z-0"></div>
         
-        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-900/60 to-transparent">
-          <div class="bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-white/20 inline-flex items-center">
-            <span class="flex h-3 w-3 relative mr-3">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-            </span>
-            <span class="text-sm font-bold text-gray-800">Tracking Area Aktif</span>
+        <div v-if="selectedRoute" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200 w-11/12 max-w-sm z-[400]">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-gray-500 uppercase">Detail Perjalanan</span>
+            <span class="text-xs font-bold text-[#3b5998] bg-blue-50 px-2 py-1 rounded">RSPPN -> Pasien</span>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-3">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Estimasi Waktu</p>
+              <p class="font-bold text-gray-900">{{ selectedRoute.estimasiWaktu || '-' }} Menit</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Estimasi Harga</p>
+              <p class="font-bold text-green-600">{{ selectedRoute.harga ? formatRupiah(selectedRoute.harga) : '-' }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Jarak Tempuh</p>
+              <p class="font-bold text-gray-900">{{ selectedRoute.jarakKm || '-' }} km</p>
+            </div>
           </div>
         </div>
       </div>
@@ -65,30 +60,15 @@
           <span class="text-xs font-medium bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full">Diproses / Diperjalanan</span>
         </div>
         
-        <div v-if="isLoading" class="flex-1 p-4 overflow-y-auto space-y-4">
-          <div v-for="i in 4" :key="i" class="border border-gray-100 p-4 rounded-xl animate-pulse">
-            <div class="flex justify-between mb-2">
-              <div class="h-4 bg-gray-200 rounded w-1/3"></div>
-              <div class="h-4 bg-gray-200 rounded w-1/4"></div>
-            </div>
-            <div class="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-            <div class="h-16 bg-gray-100 rounded w-full"></div>
-          </div>
-        </div>
-
-        <div v-else-if="filteredActiveRoutes.length === 0" class="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-          </div>
-          <h4 class="text-base font-bold text-gray-700 mb-1">Tidak Ada Rute Aktif</h4>
-          <p class="text-sm text-gray-500">Semua paket sudah terkirim atau tidak ada data yang cocok dengan pencarian Anda.</p>
-        </div>
-
-        <div v-else class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
           <div 
             v-for="pkg in filteredActiveRoutes" 
             :key="pkg.id" 
-            class="border border-gray-100 hover:border-blue-200 bg-white p-4 rounded-xl shadow-sm hover:shadow transition-all group relative"
+            @click="tampilkanRute(pkg)"
+            :class="[
+              selectedRoute?.id === pkg.id ? 'border-blue-500 ring-1 ring-blue-500 bg-blue-50/30' : 'border-gray-100 hover:border-blue-200',
+              'border bg-white p-4 rounded-xl shadow-sm hover:shadow transition-all group relative cursor-pointer'
+            ]"
           >
             <div class="absolute top-4 right-4">
                <span :class="getStatusBadgeClass(pkg.status_pengiriman)" class="px-2 py-1 text-[10px] font-bold uppercase rounded-md border">
@@ -99,10 +79,6 @@
             <div class="pr-20 mb-3">
               <h4 class="font-bold text-gray-900 text-sm">#PKT-{{ String(pkg.id).padStart(4, '0') }}</h4>
               <p class="text-sm font-semibold text-[#3b5998] mt-1">{{ pkg.customer?.nama || 'Unknown' }}</p>
-              <div class="flex items-center text-xs text-gray-500 mt-1">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                {{ pkg.customer?.no_telp || '-' }}
-              </div>
             </div>
 
             <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-start mt-2">
@@ -111,23 +87,10 @@
                 <p class="text-sm text-gray-700 leading-relaxed">{{ pkg.customer?.alamat || 'Alamat tidak tersedia' }}</p>
               </div>
             </div>
-
-            <div class="mt-4 flex gap-2">
-              <button 
-                @click="copyAddress(pkg.customer?.alamat)" 
-                class="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center justify-center"
-              >
-                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                Copy Alamat
-              </button>
-              <a 
-                :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(pkg.customer?.alamat)" 
-                target="_blank"
-                class="flex-1 bg-blue-50 border border-blue-100 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center justify-center"
-              >
-                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                Buka di Maps
-              </a>
+            
+            <div v-if="pkg.jarakKm" class="mt-3 flex justify-between text-xs text-gray-600 border-t pt-2">
+               <span><i class="fas fa-motorcycle mr-1 text-gray-400"></i> {{ pkg.estimasiWaktu }} min ({{ pkg.jarakKm }} km)</span>
+               <span class="font-bold text-green-600">{{ formatRupiah(pkg.harga) }}</span>
             </div>
           </div>
         </div>
@@ -137,29 +100,46 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 
-// --- CONFIGURATION ---
 const API_URL = 'http://localhost:8000/api/v1/packages'
 
-// --- STATE ---
 const packages = ref([])
 const isLoading = ref(true)
 const searchQuery = ref('')
-const notification = ref({ show: false, message: '', type: 'success' })
+const selectedRoute = ref(null)
 
-// --- COMPUTED PROPERTIES ---
+let map = null
+let routingLayer = null 
+let markers = []
 
-// 1. Filter hanya rute yang "Aktif" (Belum terkirim)
-const activeRoutes = computed(() => {
-  return packages.value.filter(pkg => pkg.status_pengiriman !== 'Terkirim')
+// --- PUSAT KOORDINAT RSPPN (UPDATE BARU) ---
+// Jl. RC. Veteran Raya No.18, RT.9/RW.3, Bintaro, Pesanggrahan, Jakarta Selatan
+const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
+
+// Fix icon Leaflet di Vue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const hospitalIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
 })
 
-// 2. Terapkan fitur pencarian (Berdasarkan alamat atau nama)
+const activeRoutes = computed(() => packages.value.filter(pkg => pkg.status_pengiriman !== 'Terkirim'))
+
 const filteredActiveRoutes = computed(() => {
   if (!searchQuery.value) return activeRoutes.value
-  
   const query = searchQuery.value.toLowerCase()
   return activeRoutes.value.filter(pkg => {
     const alamat = pkg.customer?.alamat?.toLowerCase() || ''
@@ -168,42 +148,123 @@ const filteredActiveRoutes = computed(() => {
   })
 })
 
-// --- METHODS ---
-
-// Ambil Data Paket dari Backend
 const fetchPackages = async () => {
   isLoading.value = true
   try {
     const response = await axios.get(API_URL)
-    packages.value = response.data.data 
+    packages.value = response.data.data
   } catch (error) {
     console.error('Error fetching packages for routes:', error)
-    showNotification('Gagal memuat data rute', 'error')
   } finally {
     isLoading.value = false
   }
 }
 
-// Fungsi Copy Alamat ke Clipboard
-const copyAddress = async (alamat) => {
-  if (!alamat) return showNotification('Alamat kosong', 'error')
-  
+// Panggil OSRM API (Gratis)
+const hitungRuteOSRM = async (latAwal, lngAwal, latTujuan, lngTujuan) => {
   try {
-    await navigator.clipboard.writeText(alamat)
-    showNotification('Alamat berhasil disalin ke clipboard!', 'success')
-  } catch (err) {
-    // Fallback untuk browser lama
-    const textArea = document.createElement("textarea")
-    textArea.value = alamat
-    document.body.appendChild(textArea)
-    textArea.select()
-    document.execCommand("Copy")
-    textArea.remove()
-    showNotification('Alamat disalin (Fallback mode)', 'success')
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngAwal},${latAwal};${lngTujuan},${latTujuan}?overview=full&geometries=geojson`;
+    const response = await axios.get(osrmUrl);
+    
+    if (response.data.code === 'Ok') {
+      const rute = response.data.routes[0];
+      return {
+        geometry: rute.geometry,
+        jarakKm: (rute.distance / 1000).toFixed(1),
+        estimasiMenit: Math.round(rute.duration / 60)
+      }
+    }
+  } catch (error) {
+    console.error("Gagal mengambil rute OSRM:", error);
+  }
+  return null;
+}
+
+const hitungHarga = (jarakAsli) => {
+  const jarakKm = parseFloat(jarakAsli);
+  
+  if (jarakKm <= 5.0) {
+    // 0 - 5 KM = Harga Flat Rp 20.000
+    return 20000;
+  } else {
+    // Jika lebih dari 5 KM, bulatkan ke atas
+    const jarakDibulatkan = Math.ceil(jarakKm);
+    
+    // Cari sisa KM yang harus dihitung
+    const extraKm = jarakDibulatkan - 5;
+    
+    // Rp 20.000 + (Rp 5.000 per KM lebih)
+    return 20000 + (extraKm * 5000);
   }
 }
 
-// Helper: Warna Badge
+const formatRupiah = (angka) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka)
+}
+
+const tampilkanRute = async (pkg) => {
+  selectedRoute.value = pkg
+
+  if (!pkg.customer?.lat || !pkg.customer?.lng) {
+    alert("Koordinat pelanggan belum tersedia di database. Mohon update data alamat customer ini agar sistem bisa melacak rutenya.");
+    return;
+  }
+
+  if (routingLayer) map.removeLayer(routingLayer)
+  markers.forEach(m => map.removeLayer(m))
+  markers = []
+
+  // Titik Awal: RSPPN Bintaro
+  const rsMarker = L.marker(RUMAH_SAKIT_COORD, { icon: hospitalIcon })
+    .bindPopup('<b>RSPPN Panglima Besar Soedirman</b><br>Titik Awal Pengiriman')
+    .addTo(map)
+  markers.push(rsMarker)
+
+  // Titik Tujuan: Customer
+  const custCoord = [parseFloat(pkg.customer.lat), parseFloat(pkg.customer.lng)]
+  const custMarker = L.marker(custCoord)
+    .bindPopup(`
+      <b style="color: #3b5998;">${pkg.customer.nama}</b><br>
+      ${pkg.customer.alamat} <br>
+      <span style="font-size: 11px; color: gray;">
+        📍 Patokan: ${pkg.customer.detail_alamat || '-'}
+      </span>
+    `)
+    .addTo(map)
+  markers.push(custMarker)
+
+  const osrmData = await hitungRuteOSRM(RUMAH_SAKIT_COORD[0], RUMAH_SAKIT_COORD[1], custCoord[0], custCoord[1]);
+
+  if (osrmData) {
+    routingLayer = L.geoJSON(osrmData.geometry, {
+      style: { color: '#3b5998', weight: 5, opacity: 0.8 }
+    }).addTo(map);
+
+    selectedRoute.value = {
+      ...pkg,
+      jarakKm: osrmData.jarakKm,
+      estimasiWaktu: osrmData.estimasiMenit,
+      harga: hitungHarga(osrmData.jarakKm)
+    };
+
+    map.fitBounds(routingLayer.getBounds(), { padding: [50, 50] });
+    custMarker.openPopup();
+  }
+}
+
+const initMap = () => {
+  // Map diinisialisasi terfokus ke area Bintaro
+  map = L.map('map').setView(RUMAH_SAKIT_COORD, 14)
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map)
+  
+  L.marker(RUMAH_SAKIT_COORD, { icon: hospitalIcon })
+    .bindPopup('<b>RSPPN Panglima Besar Soedirman</b><br>Jl. RC. Veteran Raya No.18')
+    .addTo(map)
+}
+
 const getStatusBadgeClass = (status) => {
   switch(status) {
     case 'Pesanan diverifikasi': return 'bg-gray-100 text-gray-600 border-gray-200'
@@ -214,34 +275,20 @@ const getStatusBadgeClass = (status) => {
   }
 }
 
-// Menampilkan Toast Alert
-const showNotification = (message, type = 'success') => {
-  notification.value = { show: true, message, type }
-  setTimeout(() => {
-    notification.value.show = false
-  }, 3000)
-}
-
-// --- LIFECYCLE ---
 onMounted(() => {
+  initMap()
   fetchPackages()
+})
+
+onBeforeUnmount(() => {
+  if (map) map.remove() 
 })
 </script>
 
 <style scoped>
-/* Kustomisasi Scrollbar agar rapi */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9; 
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
-}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+#map { height: 100%; width: 100%; z-index: 1; }
 </style>

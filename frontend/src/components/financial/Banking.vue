@@ -11,6 +11,25 @@
       </button>
     </div>
 
+    <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-[#3b5998] to-blue-800 text-white">
+      <div class="flex flex-col md:flex-row md:items-center justify-between">
+        <div class="mb-4 md:mb-0">
+          <p class="text-blue-200 font-semibold text-sm uppercase tracking-wider mb-1">Total Keseluruhan Aset (Kas & Bank)</p>
+          <h2 class="text-4xl font-black">{{ formatRupiah(grandTotalSaldo) }}</h2>
+        </div>
+        <div class="flex space-x-6 text-sm">
+          <div>
+            <p class="text-blue-200 mb-1">Total Uang Masuk</p>
+            <p class="font-bold text-white flex items-center"><svg class="w-4 h-4 mr-1 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> {{ formatRupiah(grandTotalMasuk) }}</p>
+          </div>
+          <div>
+            <p class="text-blue-200 mb-1">Total Uang Keluar</p>
+            <p class="font-bold text-white flex items-center"><svg class="w-4 h-4 mr-1 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg> {{ formatRupiah(grandTotalKeluar) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div v-if="isLoading" class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       <div v-for="i in 3" :key="i" class="h-32 bg-gray-100 rounded-xl animate-pulse"></div>
     </div>
@@ -64,18 +83,20 @@ const API_URL = 'http://localhost:8000/api/v1/transactions'
 const transactions = ref([])
 const isLoading = ref(true)
 
-// --- COMPUTED: PENGELOMPOKAN SALDO ---
+// --- COMPUTED: TOTAL KESELURUHAN (GRAND TOTAL) ---
+const grandTotalMasuk = computed(() => transactions.value.filter(t => t.tipe === 'Uang Masuk').reduce((sum, t) => sum + Number(t.nominal), 0))
+const grandTotalKeluar = computed(() => transactions.value.filter(t => t.tipe === 'Uang Keluar').reduce((sum, t) => sum + Number(t.nominal), 0))
+const grandTotalSaldo = computed(() => grandTotalMasuk.value - grandTotalKeluar.value)
+
+// --- COMPUTED: PENGELOMPOKAN SALDO PER BANK ---
 const groupedBalances = computed(() => {
   const result = {}
 
   transactions.value.forEach(trx => {
     const method = trx.metode_pembayaran || 'Lainnya'
-    
-    // Inisialisasi object jika metode belum ada
     if (!result[method]) {
       result[method] = { masuk: 0, keluar: 0, saldo: 0 }
     }
-
     const nom = Number(trx.nominal)
     
     if (trx.tipe === 'Uang Masuk') {
@@ -109,7 +130,5 @@ const formatRupiah = (angka) => {
   }).format(angka || 0)
 }
 
-onMounted(() => {
-  fetchTransactions()
-})
+onMounted(() => { fetchTransactions() })
 </script>

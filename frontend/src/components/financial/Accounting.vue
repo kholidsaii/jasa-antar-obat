@@ -21,31 +21,24 @@
 
     <div v-if="isLoading" class="p-8 space-y-6">
       <div class="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-      <div class="space-y-3">
-        <div v-for="i in 3" :key="i" class="h-10 bg-gray-100 rounded w-full animate-pulse"></div>
-      </div>
+      <div class="space-y-3"><div v-for="i in 3" :key="i" class="h-10 bg-gray-100 rounded w-full animate-pulse"></div></div>
       <div class="h-8 bg-gray-200 rounded w-1/4 animate-pulse mt-8"></div>
-      <div class="space-y-3">
-        <div v-for="i in 3" :key="i" class="h-10 bg-gray-100 rounded w-full animate-pulse"></div>
-      </div>
+      <div class="space-y-3"><div v-for="i in 3" :key="i" class="h-10 bg-gray-100 rounded w-full animate-pulse"></div></div>
     </div>
 
     <div v-else class="p-8 overflow-y-auto print-area">
-      
       <div class="text-center mb-10 pb-6 border-b-2 border-gray-800 border-double">
         <h1 class="text-2xl font-black text-gray-900 tracking-wider">JASTAR OBAT RS PPN</h1>
         <h2 class="text-lg font-bold text-gray-700 mt-1">LAPORAN LABA RUGI KOMPREHENSIF</h2>
-        <p class="text-sm text-gray-500 mt-1">Periode: Semua Waktu (Real-time)</p>
+        <p class="text-sm text-gray-500 mt-1">Periode: Keseluruhan (Buku Besar Real-time)</p>
       </div>
 
       <div class="max-w-4xl mx-auto">
-        
         <div class="mb-8">
           <h3 class="text-lg font-bold text-[#3b5998] mb-3 uppercase tracking-wider flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Pendapatan Operasional
           </h3>
-          
           <table class="w-full text-sm">
             <tbody class="divide-y divide-gray-100">
               <tr v-if="incomeCategories.length === 0">
@@ -71,7 +64,6 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
             Beban Operasional
           </h3>
-          
           <table class="w-full text-sm">
             <tbody class="divide-y divide-gray-100">
               <tr v-if="expenseCategories.length === 0">
@@ -107,7 +99,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -117,60 +108,60 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
-// --- KONFIGURASI API ---
 const API_URL = 'http://localhost:8000/api/v1/transactions' 
 const transactions = ref([])
 const isLoading = ref(true)
 
-// --- COMPUTED PROPERTIES (LOGIKA AKUNTANSI) ---
+// --- FUNGSI AUTO-CATEGORIZER (AKUNTANSI) ---
+// Membaca deskripsi bebas dari admin/sistem dan merubahnya jadi Kategori Baku
+const getKategoriAkuntansi = (deskripsi, tipe) => {
+  const desc = deskripsi.toLowerCase()
+  if (tipe === 'Uang Masuk') {
+    if (desc.includes('ongkir') || desc.includes('ongkos') || desc.includes('pengiriman') || desc.includes('pkt-')) return 'Pendapatan Jasa Distribusi / Ongkir'
+    if (desc.includes('tip') || desc.includes('bonus')) return 'Pendapatan Tip / Bonus'
+    return 'Pendapatan Operasional Lainnya'
+  } else {
+    if (desc.includes('bbm') || desc.includes('bensin') || desc.includes('solar') || desc.includes('pertamax')) return 'Beban Bahan Bakar (BBM)'
+    if (desc.includes('gaji') || desc.includes('upah') || desc.includes('honor') || desc.includes('insentif')) return 'Beban Gaji & Insentif Karyawan'
+    if (desc.includes('servis') || desc.includes('bengkel') || desc.includes('oli') || desc.includes('sparepart')) return 'Beban Pemeliharaan Kendaraan'
+    if (desc.includes('makan') || desc.includes('minum') || desc.includes('konsumsi') || desc.includes('snack')) return 'Beban Konsumsi & Kesejahteraan'
+    if (desc.includes('parkir') || desc.includes('tol') || desc.includes('retribusi')) return 'Beban Parkir & Tol'
+    return 'Beban Operasional Lain-lain'
+  }
+}
 
-// 1. Grouping Pendapatan (Uang Masuk)
+// 1. Grouping Pendapatan (Berdasarkan Kategori Baku)
 const incomeCategories = computed(() => {
   const incomes = transactions.value.filter(t => t.tipe === 'Uang Masuk')
   const groups = {}
   
   incomes.forEach(t => {
-    // Gunakan deskripsi transaksi sebagai nama akun/kategori
-    const akun = t.deskripsi || 'Pendapatan Lain-lain'
+    const akun = getKategoriAkuntansi(t.deskripsi || '', 'Uang Masuk')
     if (!groups[akun]) groups[akun] = 0
     groups[akun] += Number(t.nominal)
   })
 
-  // Convert object ke array dan urutkan dari yang terbesar
-  return Object.keys(groups)
-    .map(key => ({ nama: key, total: groups[key] }))
-    .sort((a, b) => b.total - a.total)
+  return Object.keys(groups).map(key => ({ nama: key, total: groups[key] })).sort((a, b) => b.total - a.total)
 })
 
-// 2. Grouping Beban Pengeluaran (Uang Keluar)
+// 2. Grouping Beban Pengeluaran (Berdasarkan Kategori Baku)
 const expenseCategories = computed(() => {
   const expenses = transactions.value.filter(t => t.tipe === 'Uang Keluar')
   const groups = {}
   
   expenses.forEach(t => {
-    const akun = t.deskripsi || 'Beban Lain-lain'
+    const akun = getKategoriAkuntansi(t.deskripsi || '', 'Uang Keluar')
     if (!groups[akun]) groups[akun] = 0
     groups[akun] += Number(t.nominal)
   })
 
-  return Object.keys(groups)
-    .map(key => ({ nama: key, total: groups[key] }))
-    .sort((a, b) => b.total - a.total)
+  return Object.keys(groups).map(key => ({ nama: key, total: groups[key] })).sort((a, b) => b.total - a.total)
 })
 
 // 3. Kalkulasi Total
-const totalIncome = computed(() => {
-  return incomeCategories.value.reduce((sum, item) => sum + item.total, 0)
-})
-
-const totalExpense = computed(() => {
-  return expenseCategories.value.reduce((sum, item) => sum + item.total, 0)
-})
-
-const netProfit = computed(() => {
-  return totalIncome.value - totalExpense.value
-})
-
+const totalIncome = computed(() => incomeCategories.value.reduce((sum, item) => sum + item.total, 0))
+const totalExpense = computed(() => expenseCategories.value.reduce((sum, item) => sum + item.total, 0))
+const netProfit = computed(() => totalIncome.value - totalExpense.value)
 
 // --- METHODS ---
 const fetchTransactions = async () => {
@@ -180,48 +171,24 @@ const fetchTransactions = async () => {
     transactions.value = response.data.data
   } catch (error) {
     console.error('Error fetching accounting data:', error)
-    alert('Gagal mengambil data dari server.')
   } finally {
     isLoading.value = false
   }
 }
 
-// Simulasi Cetak Dokumen
-const printLaporan = () => {
-  window.print()
-}
+const printLaporan = () => { window.print() }
 
-// Formatter Rupiah Standar
 const formatRupiah = (angka) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(angka || 0)
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 }
 
-// --- LIFECYCLE ---
-onMounted(() => {
-  fetchTransactions()
-})
+onMounted(() => { fetchTransactions() })
 </script>
 
 <style scoped>
-/* Pengaturan CSS saat tombol "Cetak PDF" ditekan (Print Mode) */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .print-area, .print-area * {
-    visibility: visible;
-  }
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    background: white;
-  }
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; }
 }
 </style>

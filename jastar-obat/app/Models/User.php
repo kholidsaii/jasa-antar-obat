@@ -46,4 +46,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Tambahkan relasi ini untuk menghitung beban kerja
+    public function works()
+    {
+        return $this->hasMany(Work::class, 'user_id');
+    }
+
+    public function vehicle()
+    {
+        return $this->hasOne(Vehicle::class);
+    }
 }

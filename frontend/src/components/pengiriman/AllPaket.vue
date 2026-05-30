@@ -34,7 +34,8 @@
             <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Customer / Pasien</th>
             <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi Pesanan</th>
             <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pengiriman</th>
-            <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Pembayaran</th>
+            <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
+            <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Metode Pembayaran</th>
             <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
           </tr>
         </thead>
@@ -86,6 +87,9 @@
                 {{ pkg.status_pembayaran }}
               </span>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-700">
+              {{ pkg.metode_pembayaran || 'Tunai / Cash' }}
+            </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-blue-900 mr-3 transition-colors" title="Update Status">
                 <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -109,86 +113,85 @@
       </button>
     </div>
 
-    <div v-if="isEditModalOpen" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" @click="closeEditModal" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <div v-if="isEditModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeEditModal"></div>
+      
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[90vh]">
+        <div class="px-6 py-5 border-b border-gray-100">
+          <h3 class="text-lg font-bold text-gray-900 mb-1">Update Status Paket</h3>
+          <p class="text-sm text-gray-500">#PKT-{{ String(editForm.id).padStart(4, '0') }} - {{ editForm.customer?.nama }}</p>
+        </div>
         
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <h3 class="text-lg leading-6 font-bold text-gray-900 mb-1" id="modal-title">Update Status Paket</h3>
-            <p class="text-sm text-gray-500 mb-4 border-b pb-3">#PKT-{{ String(editForm.id).padStart(4, '0') }} - {{ editForm.customer?.nama }}</p>
+        <div class="p-6 overflow-y-auto">
+          <form @submit.prevent="updatePackage" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Obat / Pesanan</label>
+              <textarea v-model="editForm.deskripsi_pesanan" rows="2" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] outline-none"></textarea>
+            </div>
             
-            <form @submit.prevent="updatePackage" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Deskripsi Obat / Pesanan</label>
-                <textarea v-model="editForm.deskripsi_pesanan" rows="2" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b5998] focus:border-[#3b5998] sm:text-sm"></textarea>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pengiriman</label>
+                <select v-model="editForm.status_pengiriman" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] outline-none bg-white">
+                  <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
+                  <option value="Pengemasan">Pengemasan</option>
+                  <option value="Menunggu Driver">Menunggu Driver</option>
+                  <option value="Diperjalanan">Diperjalanan</option>
+                  <option value="Terkirim">Terkirim</option>
+                </select>
               </div>
-              
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Status Pengiriman</label>
-                  <select v-model="editForm.status_pengiriman" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b5998] focus:border-[#3b5998] sm:text-sm">
-                    <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
-                    <option value="Pengemasan">Pengemasan</option>
-                    <option value="Menunggu Driver">Menunggu Driver</option>
-                    <option value="Diperjalanan">Diperjalanan</option>
-                    <option value="Terkirim">Terkirim</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Status Pembayaran</label>
-                  <select v-model="editForm.status_pembayaran" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#3b5998] focus:border-[#3b5998] sm:text-sm">
-                    <option value="Belum Lunas">Belum Lunas</option>
-                    <option value="Lunas">Lunas</option>
-                  </select>
-                </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pembayaran</label>
+                <select v-model="editForm.status_pembayaran" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] outline-none bg-white">
+                  <option value="Belum Lunas">Belum Lunas</option>
+                  <option value="Lunas">Lunas</option>
+                </select>
               </div>
-            </form>
-          </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button @click="updatePackage" :disabled="isSaving" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#3b5998] text-base font-medium text-white hover:bg-blue-800 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
-              {{ isSaving ? 'Menyimpan...' : 'Update Status' }}
-            </button>
-            <button @click="closeEditModal" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-              Batal
-            </button>
-          </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
+                <select v-model="editForm.metode_pembayaran" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] outline-none bg-white">
+                  <option value="Tunai / Cash">Tunai / Cash</option>
+                  <option value="Transfer Bank">Transfer Bank</option>
+                  <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
+          <button @click="closeEditModal" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+            Batal
+          </button>
+          <button @click="updatePackage" :disabled="isSaving" type="button" class="px-5 py-2.5 bg-[#3b5998] rounded-lg text-white font-medium hover:bg-blue-800 transition-colors disabled:opacity-50">
+            {{ isSaving ? 'Menyimpan...' : 'Update Status' }}
+          </button>
         </div>
       </div>
     </div>
 
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" @click="isDeleteModalOpen = false"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div class="sm:flex sm:items-start">
-              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Batalkan / Hapus Paket</h3>
-                <div class="mt-2">
-                  <p class="text-sm text-gray-500">
-                    Anda yakin ingin menghapus <strong>#PKT-{{ packageToDelete?.id ? String(packageToDelete.id).padStart(4, '0') : '' }}</strong>? Data yang dihapus tidak akan masuk ke laporan operasional.
-                  </p>
-                </div>
-              </div>
-            </div>
+    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="isDeleteModalOpen = false"></div>
+      
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
           </div>
-          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button @click="deletePackage" :disabled="isSaving" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
-              {{ isSaving ? 'Menghapus...' : 'Ya, Hapus' }}
-            </button>
-            <button @click="isDeleteModalOpen = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-              Tutup
-            </button>
-          </div>
+          <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Batalkan / Hapus Paket</h3>
+          <p class="text-sm text-gray-500 text-center">
+            Anda yakin ingin menghapus <strong>#PKT-{{ packageToDelete?.id ? String(packageToDelete.id).padStart(4, '0') : '' }}</strong>? Data yang dihapus tidak akan masuk ke laporan operasional.
+          </p>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
+          <button @click="isDeleteModalOpen = false" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+            Tutup
+          </button>
+          <button @click="deletePackage" :disabled="isSaving" type="button" class="px-5 py-2.5 bg-red-600 rounded-lg text-white font-medium hover:bg-red-700 transition-colors disabled:opacity-50">
+            {{ isSaving ? 'Menghapus...' : 'Ya, Hapus' }}
+          </button>
         </div>
       </div>
     </div>
@@ -218,6 +221,7 @@ const editForm = ref({
   deskripsi_pesanan: '', 
   status_pengiriman: '', 
   status_pembayaran: '',
+  metode_pembayaran: '',
   customer: null // Info tambahan untuk display di modal
 })
 
@@ -226,7 +230,6 @@ const isDeleteModalOpen = ref(false)
 const packageToDelete = ref(null)
 
 // --- COMPUTED PROPERTIES ---
-// Filter pencarian berdasarkan nama pasien atau deskripsi obat
 const filteredPackages = computed(() => {
   if (!searchQuery.value) return packages.value
   const lowerCaseQuery = searchQuery.value.toLowerCase()
@@ -238,13 +241,10 @@ const filteredPackages = computed(() => {
 })
 
 // --- METHODS: API CALLS ---
-
-// 1. Fetch Data Packages (GET)
 const fetchPackages = async () => {
   isLoading.value = true
   try {
     const response = await axios.get(API_URL)
-    // Karena kita pakai resource controller Laravel: response.data.data
     packages.value = response.data.data 
   } catch (error) {
     console.error('Error fetching packages:', error)
@@ -254,7 +254,6 @@ const fetchPackages = async () => {
   }
 }
 
-// 2. Persiapan Edit
 const openEditModal = (pkg) => {
   editForm.value = { ...pkg }
   isEditModalOpen.value = true
@@ -262,26 +261,24 @@ const openEditModal = (pkg) => {
 
 const closeEditModal = () => {
   isEditModalOpen.value = false
-  editForm.value = { id: null, customer_id: null, deskripsi_pesanan: '', status_pengiriman: '', status_pembayaran: '', customer: null }
+  editForm.value = { id: null, customer_id: null, deskripsi_pesanan: '', status_pengiriman: '', status_pembayaran: '', metode_pembayaran: 'Tunai / Cash', customer: null }
 }
 
-// 3. Eksekusi Update Status (PUT)
 const updatePackage = async () => {
   if (!editForm.value.deskripsi_pesanan) return
   
   isSaving.value = true
   try {
-    // Kita hanya mengirim field yang diperlukan untuk update (mengikuti validasi controller)
     const payload = {
       customer_id: editForm.value.customer_id,
       deskripsi_pesanan: editForm.value.deskripsi_pesanan,
       status_pengiriman: editForm.value.status_pengiriman,
-      status_pembayaran: editForm.value.status_pembayaran
+      status_pembayaran: editForm.value.status_pembayaran,
+      metode_pembayaran: editForm.value.metode_pembayaran
     }
 
     const response = await axios.put(`${API_URL}/${editForm.value.id}`, payload)
     
-    // Update local state dengan data yang di-return API
     const updatedPkg = response.data.data
     const index = packages.value.findIndex(p => p.id === updatedPkg.id)
     if (index !== -1) {
@@ -298,13 +295,11 @@ const updatePackage = async () => {
   }
 }
 
-// 4. Persiapan Delete
 const confirmDelete = (pkg) => {
   packageToDelete.value = pkg
   isDeleteModalOpen.value = true
 }
 
-// 5. Eksekusi Delete (DELETE)
 const deletePackage = async () => {
   if (!packageToDelete.value) return
   
@@ -312,7 +307,6 @@ const deletePackage = async () => {
   try {
     await axios.delete(`${API_URL}/${packageToDelete.value.id}`)
     
-    // Hapus dari local state
     packages.value = packages.value.filter(p => p.id !== packageToDelete.value.id)
     
     isDeleteModalOpen.value = false
@@ -327,8 +321,6 @@ const deletePackage = async () => {
 }
 
 // --- UI HELPERS ---
-
-// Memberikan warna dinamis berdasarkan status pengiriman
 const getStatusPengirimanClass = (status) => {
   switch(status) {
     case 'Pesanan diverifikasi': return 'bg-gray-100 text-gray-600 border-gray-200'
@@ -340,7 +332,6 @@ const getStatusPengirimanClass = (status) => {
   }
 }
 
-// Memberikan warna dinamis berdasarkan status pembayaran
 const getStatusPembayaranClass = (status) => {
   if (status === 'Lunas') {
     return 'bg-green-100 text-green-800 border-green-200'
@@ -348,7 +339,6 @@ const getStatusPembayaranClass = (status) => {
   return 'bg-red-50 text-red-700 border-red-200'
 }
 
-// Notifikasi Toast
 const showNotification = (message, type = 'success') => {
   notification.value = { show: true, message, type }
   setTimeout(() => {
@@ -356,8 +346,6 @@ const showNotification = (message, type = 'success') => {
   }, 3000)
 }
 
-// --- LIFECYCLE ---
-// Saat komponen pertama kali dimuat di layar, langsung tembak API untuk ambil data.
 onMounted(() => {
   fetchPackages()
 })

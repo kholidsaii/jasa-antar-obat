@@ -1,8 +1,11 @@
-Tentu, mari kita sempurnakan file utama `Teamwork.vue`. Saya telah menambahkan kembali fitur **"Add Karyawan (Kurir)"** beserta modalnya, dan menghubungkan kedua form tersebut (Add Work & Add Karyawan) secara langsung ke API backend Laravel Anda.
+Tentu, Mas Khoirusyamil! Mengingat perombakan relasi "1 Kurir = 1 Kendaraan" ini cukup mengubah struktur *form* di bagian frontend, saya telah menyusun ulang file **`Teamwork.vue`** secara utuh.
 
-Selain itu, saya juga menambahkan sistem *loading state* agar tombol *submit* berubah menjadi "Memproses..." saat data sedang dikirim, sehingga UI/UX-nya setara dengan aplikasi profesional berstandar industri.
+Di dalam file ini:
 
-Silakan *copy-paste* dan timpa seluruh isi file `C:/jasa antar obat/frontend/src/views/Teamwork.vue` Anda dengan kode lengkap berikut:
+1. **Form Add Work** sekarang hanya meminta Admin memilih Paket, Kurir, dan Ongkos Kirim (Sistem backend yang akan otomatis mencarikan kendaraannya).
+2. **Form Add Karyawan** sudah dilengkapi dengan input Nama Kendaraan dan Plat Nomor.
+
+Silakan *copy* seluruh blok kode di bawah ini dan *paste* (timpa) ke dalam file `src/views/Teamwork.vue` Anda:
 
 ```vue
 <template>
@@ -89,38 +92,32 @@ Silakan *copy-paste* dan timpa seluruh isi file `C:/jasa antar obat/frontend/src
         <div class="p-6 overflow-y-auto">
           <form @submit.prevent="saveWork" class="space-y-5">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pilih Paket (Dari Farmasi)</label>
-              <select v-model="formWork.package_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
-                <option disabled value="">-- Pilih Paket Siap Kirim --</option>
-                <option v-for="pkt in apiPackages" :key="pkt.id" :value="pkt.id">
-                  #PKT-{{ String(pkt.id).padStart(4, '0') }} - {{ pkt.customer?.nama }} ({{ pkt.deskripsi_pesanan }})
-                </option>
-              </select>
-              <p v-if="apiPackages.length === 0" class="text-xs text-red-500 mt-1">Belum ada paket yang siap dikirim.</p>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Paket (Bisa Pilih Banyak)</label>
+              
+              <div v-if="apiPackages.length === 0" class="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100">
+                Belum ada paket yang siap dikirim.
+              </div>
+              <div v-else class="max-h-48 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50 custom-scrollbar">
+                
+                <label v-for="pkt in apiPackages" :key="pkt.id" class="flex items-start space-x-3 cursor-pointer p-2.5 hover:bg-white rounded border border-transparent hover:border-gray-200 transition-all shadow-sm">
+                  <input type="checkbox" v-model="formWork.package_ids" :value="pkt.id" class="mt-0.5 w-4 h-4 text-[#3b5998] border-gray-300 rounded focus:ring-[#3b5998]">
+                  <div class="flex-1">
+                    <p class="text-sm font-bold text-gray-800">#PKT-{{ String(pkt.id).padStart(4, '0') }} - {{ pkt.customer?.nama || 'Unknown' }}</p>
+                    <p class="text-xs text-gray-500 line-clamp-1">{{ pkt.deskripsi_pesanan }}</p>
+                  </div>
+                </label>
+                
+              </div>
+              <p class="text-xs text-gray-500 mt-1.5 font-medium">Paket terpilih: {{ formWork.package_ids.length }}</p>
             </div>
             
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pilih Karyawan (Kurir)</label>
-              <select v-model="formWork.user_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
-                <option disabled value="">-- Pilih Kurir --</option>
+              <select v-model="formWork.user_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
+                <option disabled value="">-- Pilih Kurir Pengantar --</option>
                 <option v-for="usr in apiUsers" :key="usr.id" :value="usr.id">{{ usr.name }}</option>
               </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pilih Kendaraan Armada</label>
-              <select v-model="formWork.vehicle_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
-                <option disabled value="">-- Pilih Kendaraan --</option>
-                <option v-for="kend in apiVehicles" :key="kend.id" :value="kend.id">{{ kend.nama_kendaraan }} [{{ kend.plat_nomor }}]</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Ongkos Kirim (Rp)</label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 font-bold">Rp</div>
-                <input v-model="formWork.harga_ongkos" type="number" min="0" required class="w-full pl-10 border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
-              </div>
+              <p class="text-xs text-gray-500 mt-1">Kendaraan otomatis mengikuti armada milik kurir terpilih.</p>
             </div>
           </form>
         </div>
@@ -140,26 +137,41 @@ Silakan *copy-paste* dan timpa seluruh isi file `C:/jasa antar obat/frontend/src
       
       <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col overflow-hidden animate-modal-in">
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 class="text-lg font-extrabold text-gray-900">Registrasi Kurir Baru</h3>
+          <h3 class="text-lg font-extrabold text-gray-900">Registrasi Kurir & Kendaraan</h3>
           <button @click="closeModalKaryawan" class="text-gray-400 hover:text-gray-600 focus:outline-none">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
         
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto max-h-[70vh]">
           <form @submit.prevent="saveKaryawan" class="space-y-5">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
-              <input v-model="formKaryawan.name" type="text" required placeholder="Contoh: Budi Santoso" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
+              <input v-model="formKaryawan.name" type="text" required placeholder="Contoh: Budi Santoso" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Email</label>
-              <input v-model="formKaryawan.email" type="email" required placeholder="budi@jastar.com" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
+              <input v-model="formKaryawan.email" type="email" required placeholder="budi@jastar.com" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Password (Untuk Login Kurir)</label>
-              <input v-model="formKaryawan.password" type="password" required placeholder="Minimal 6 karakter" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
+              <input v-model="formKaryawan.password" type="password" required placeholder="Minimal 6 karakter" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
             </div>
+
+            <div class="pt-4 border-t border-gray-100 mt-2">
+              <h4 class="text-xs font-bold text-gray-400 uppercase mb-3">Informasi Kendaraan Kurir</h4>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1.5">Merek & Nama Kendaraan</label>
+                  <input v-model="formKaryawan.nama_kendaraan" type="text" required placeholder="Contoh: Honda Vario 125" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-1.5">Plat Nomor</label>
+                  <input v-model="formKaryawan.plat_nomor" type="text" required placeholder="Contoh: B 1234 ABC" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all uppercase">
+                </div>
+              </div>
+            </div>
+
           </form>
         </div>
 
@@ -211,25 +223,55 @@ const isSavingKaryawan = ref(false)
 // Dropdown Resources API
 const apiPackages = ref([])
 const apiUsers = ref([])
-const apiVehicles = ref([])
 
-// Models Form
-const formWork = ref({ package_id: '', user_id: '', vehicle_id: '', harga_ongkos: '' })
-const formKaryawan = ref({ name: '', email: '', password: '' }) // Menyesuaikan default user di Laravel
+// Models Form (Vehicle dihilangkan dari formWork)
+const formWork = ref({ package_ids: [], user_id: '' })
+const formKaryawan = ref({ name: '', email: '', password: '', nama_kendaraan: '', plat_nomor: '' })
+
+
+// --- AUTO CALCULATE ONGKIR (OSRM) ---
+const isCalculatingOngkir = ref(false)
+const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] // Titik RSPPN Bintaro
+
+const calculateOngkirOtomatis = async () => {
+  const pkg = apiPackages.value.find(p => p.id === formWork.value.package_id)
+  
+  if (!pkg || !pkg.customer?.lat || !pkg.customer?.lng) {
+    alert("Koordinat alamat pasien ini belum dilacak di Peta. Anda bisa mengetik Ongkos Kirim secara manual.")
+    return
+  }
+
+  isCalculatingOngkir.value = true
+  try {
+    const latTujuan = parseFloat(pkg.customer.lat)
+    const lngTujuan = parseFloat(pkg.customer.lng)
+    
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${lngTujuan},${latTujuan}?overview=false`
+    
+    const response = await axios.get(osrmUrl)
+    if (response.data.code === 'Ok') {
+      const jarakKm = response.data.routes[0].distance / 1000
+      const tarifDasar = 10000
+      const tarifPerKm = 2500
+      formWork.value.harga_ongkos = Math.round(tarifDasar + (jarakKm * tarifPerKm))
+    }
+  } catch (error) {
+    console.error("OSRM Error:", error)
+  } finally {
+    isCalculatingOngkir.value = false
+  }
+}
 
 // --- METHODS: ADD WORK ---
 const openModalWork = async () => {
   isModalWorkOpen.value = true
   try {
-    const [resPkg, resUsr, resVeh] = await Promise.all([
+    const [resPkg, resUsr] = await Promise.all([
       axios.get('http://localhost:8000/api/v1/packages'),
-      axios.get('http://localhost:8000/api/v1/users'),
-      axios.get('http://localhost:8000/api/v1/vehicles')
+      axios.get('http://localhost:8000/api/v1/users')
     ])
-    // Filter paket yang belum selesai agar tidak ditugaskan ganda
     apiPackages.value = resPkg.data.data?.filter(p => p.status_pengiriman !== 'Terkirim') || []
     apiUsers.value = resUsr.data.data || []
-    apiVehicles.value = resVeh.data.data || []
   } catch (error) {
     console.error("Gagal memuat resource dropdown:", error)
     alert("Gagal memuat data dari server.")
@@ -238,12 +280,12 @@ const openModalWork = async () => {
 
 const closeModalWork = () => {
   isModalWorkOpen.value = false
-  formWork.value = { package_id: '', user_id: '', vehicle_id: '', harga_ongkos: '' }
+  formWork.value = { package_ids: [], user_id: '' } // Reset state
 }
 
 const saveWork = async () => {
-  if (!formWork.value.package_id || !formWork.value.user_id || !formWork.value.vehicle_id) {
-    return alert('Harap isi semua pilihan paket, kurir, dan kendaraan.')
+  if (formWork.value.package_ids.length === 0 || !formWork.value.user_id) {
+    return alert('Harap pilih minimal 1 paket dan tentukan kurirnya.')
   }
   
   isSavingWork.value = true
@@ -251,13 +293,12 @@ const saveWork = async () => {
     await axios.post('http://localhost:8000/api/v1/works', formWork.value)
     closeModalWork()
     
-    // Auto-refresh dengan me-reset tab state
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'pekerjaan', 10)
     
   } catch (error) {
     console.error("Error Saving Work:", error)
-    alert('Terjadi kesalahan saat menyimpan tugas kerja.')
+    alert(error.response?.data?.message || 'Terjadi kesalahan saat menyimpan tugas kerja.')
   } finally {
     isSavingWork.value = false
   }
@@ -270,17 +311,16 @@ const openModalKaryawan = () => {
 
 const closeModalKaryawan = () => {
   isModalKaryawanOpen.value = false
-  formKaryawan.value = { name: '', email: '', password: '' }
+  formKaryawan.value = { name: '', email: '', password: '', nama_kendaraan: '', plat_nomor: '' }
 }
 
 const saveKaryawan = async () => {
-  if (!formKaryawan.value.name || !formKaryawan.value.email || !formKaryawan.value.password) {
-    return alert('Harap isi Nama, Email, dan Password.')
+  if (!formKaryawan.value.name || !formKaryawan.value.email || !formKaryawan.value.password || !formKaryawan.value.nama_kendaraan || !formKaryawan.value.plat_nomor) {
+    return alert('Harap isi semua data diri kurir dan informasi kendaraannya.')
   }
   
   isSavingKaryawan.value = true
   try {
-    // Memanggil API Users bawaan/custom Laravel untuk meregistrasi kurir baru
     await axios.post('http://localhost:8000/api/v1/users', formKaryawan.value)
     closeModalKaryawan()
     
@@ -289,7 +329,7 @@ const saveKaryawan = async () => {
     
   } catch (error) {
     console.error("Error Saving Karyawan:", error)
-    alert('Terjadi kesalahan saat menyimpan data karyawan. Pastikan email belum terpakai.')
+    alert('Terjadi kesalahan saat menyimpan data karyawan. Pastikan email atau plat nomor belum terpakai.')
   } finally {
     isSavingKaryawan.value = false
   }
@@ -297,7 +337,6 @@ const saveKaryawan = async () => {
 </script>
 
 <style scoped>
-/* Transisi Vue standar untuk pergerakan Tab agar lebih mulus */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -308,7 +347,6 @@ const saveKaryawan = async () => {
   transform: translateY(5px);
 }
 
-/* Animasi Muncul Pop-up */
 @keyframes modalIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
@@ -317,7 +355,6 @@ const saveKaryawan = async () => {
   animation: modalIn 0.2s ease-out forwards;
 }
 
-/* Kustomisasi Scrollbar untuk menu navigasi tab */
 .custom-scrollbar::-webkit-scrollbar {
   height: 4px;
 }
@@ -329,5 +366,3 @@ const saveKaryawan = async () => {
   border-radius: 4px;
 }
 </style>
-
-```

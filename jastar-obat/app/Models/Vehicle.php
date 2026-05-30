@@ -10,13 +10,14 @@ class Vehicle extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nama_kendaraan', 
-        'plat_nomor', 
-        'status' // misal: tersedia, dipakai, maintenance
+        'user_id', // WAJIB DITAMBAHKAN
+        'nama_kendaraan',
+        'plat_nomor',
+        'status',
     ];
 
-    public function works()
+    public function user()
     {
-        return $this->hasMany(Work::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
