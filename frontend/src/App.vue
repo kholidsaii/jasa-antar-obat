@@ -20,8 +20,8 @@
       </div>
 
       <div class="p-4 border-t border-gray-100 flex items-center">
-        <img src="https://ui-avatars.com/api/?name=Kholid+Solutions&background=random" alt="Avatar" class="w-8 h-8 rounded-full mr-3">
-        <span class="text-sm font-medium text-gray-700">Kholid Solutions</span>
+        <img src="https://ui-avatars.com/api/?name=Users+Solutions&background=random" alt="Avatar" class="w-8 h-8 rounded-full mr-3">
+        <span class="text-sm font-medium text-gray-700">Users</span>
       </div>
     </aside>
 
