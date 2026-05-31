@@ -49,7 +49,6 @@
     </div>
 
     <div v-if="!isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
       <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 col-span-1">
         <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Rasio Arus Kas</h3>
         
@@ -107,7 +106,6 @@
           </div>
         </div>
       </div>
-      
     </div>
   </div>
 </template>
@@ -120,26 +118,19 @@ const API_URL = 'http://localhost:8000/api/v1/transactions'
 const transactions = ref([])
 const isLoading = ref(true)
 
-// --- COMPUTED PROPERTIES ---
 const totalPemasukan = computed(() => {
-  return transactions.value
-    .filter(t => t.tipe === 'Uang Masuk')
-    .reduce((sum, t) => sum + Number(t.nominal), 0)
+  return transactions.value.filter(t => t.tipe === 'Uang Masuk').reduce((sum, t) => sum + Number(t.nominal), 0)
 })
 
 const totalPengeluaran = computed(() => {
-  return transactions.value
-    .filter(t => t.tipe === 'Uang Keluar')
-    .reduce((sum, t) => sum + Number(t.nominal), 0)
+  return transactions.value.filter(t => t.tipe === 'Uang Keluar').reduce((sum, t) => sum + Number(t.nominal), 0)
 })
 
-const saldoBersih = computed(() => {
-  return totalPemasukan.value - totalPengeluaran.value
-})
+const saldoBersih = computed(() => totalPemasukan.value - totalPengeluaran.value)
 
 const persentaseMasuk = computed(() => {
   const total = totalPemasukan.value + totalPengeluaran.value
-  if (total === 0) return 50 // Default tengah-tengah jika kosong
+  if (total === 0) return 50
   return Math.round((totalPemasukan.value / total) * 100)
 })
 
@@ -148,35 +139,22 @@ const persentaseMargin = computed(() => {
   return Math.round((saldoBersih.value / totalPemasukan.value) * 100)
 })
 
-const recentTransactions = computed(() => {
-  return transactions.value.slice(0, 5) // Ambil 5 data teratas (karena API pakai latest())
-})
+const recentTransactions = computed(() => transactions.value.slice(0, 5))
 
-// --- METHODS ---
 const fetchTransactions = async () => {
   isLoading.value = true
   try {
     const response = await axios.get(API_URL)
     transactions.value = response.data.data
   } catch (error) {
-    console.error('Error fetching dashboard transactions:', error)
+    console.error('Error:', error)
   } finally {
     isLoading.value = false
   }
 }
 
-const formatRupiah = (angka) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
-  }).format(angka || 0)
-}
+const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
+const formatDate = (dateString) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString))
 
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
-  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString))
-}
-
-onMounted(() => {
-  fetchTransactions()
-})
+onMounted(() => fetchTransactions())
 </script>

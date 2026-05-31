@@ -10,7 +10,7 @@
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
-        <input v-model="searchQuery" type="text" placeholder="Cari nama atau telepon..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-[#3b5998] sm:text-sm">
+        <input v-model="searchQuery" type="text" placeholder="Cari nama atau telepon..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-[#3b5998] sm:text-sm outline-none">
       </div>
     </div>
 
@@ -37,12 +37,12 @@
           </tr>
         </tbody>
         <tbody v-else class="bg-white divide-y divide-gray-100">
-          <tr v-for="(customer, index) in filteredCustomers" :key="customer.id" class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ index + 1 }}</td>
+          <tr v-for="(customer, index) in paginatedCustomers" :key="customer.id" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ startIndex + index + 1 }}</td>
             <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-semibold text-gray-900">{{ customer.nama }}</div></td>
             <td class="px-6 py-4 whitespace-nowrap"><span class="px-2.5 py-1 inline-flex text-xs font-medium rounded-full bg-blue-100 text-blue-800">{{ customer.no_telp }}</span></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ customer.jenis_kelamin === 'Laki-laki' ? 'L' : 'P' }} <span v-if="customer.umur">({{ customer.umur }} thn)</span></td>
-            <td class="px-6 py-4 text-sm max-w-xs">
+            <td class="px-6 py-4 text-sm max-w-xs whitespace-normal">
                <p class="text-gray-900 font-medium truncate" :title="customer.alamat">{{ customer.alamat }}</p>
                <p v-if="customer.detail_alamat" class="text-gray-500 text-xs mt-1 italic break-words line-clamp-2" :title="customer.detail_alamat">📍 {{ customer.detail_alamat }}</p>
             </td>
@@ -57,6 +57,17 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="filteredCustomers.length > 0" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <span class="text-sm text-gray-500 font-medium">
+        Menampilkan {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredCustomers.length) }} dari {{ filteredCustomers.length }} data
+      </span>
+      <div class="flex space-x-2">
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm">Sebelumnya</button>
+        <div class="flex items-center px-2 text-sm font-bold text-gray-700">{{ currentPage }} / {{ totalPages }}</div>
+        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm">Selanjutnya</button>
+      </div>
     </div>
 
     <div v-if="isEditModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
@@ -122,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 const API_URL = 'http://localhost:8000/api/v1/customers' 
@@ -132,12 +143,9 @@ const isSaving = ref(false)
 const searchQuery = ref('')
 const notification = ref({ show: false, message: '', type: 'success' })
 
-// State Modals
-const isEditModalOpen = ref(false)
-const editForm = ref({ id: null, nama: '', no_telp: '', jenis_kelamin: '', umur: null, alamat: '', detail_alamat: '', lat: null, lng: null })
-
-const isDeleteModalOpen = ref(false)
-const customerToDelete = ref(null)
+// --- State Pagination ---
+const currentPage = ref(1)
+const itemsPerPage = 5 
 
 const filteredCustomers = computed(() => {
   if (!searchQuery.value) return customers.value
@@ -145,16 +153,31 @@ const filteredCustomers = computed(() => {
   return customers.value.filter(customer => customer.nama.toLowerCase().includes(query) || customer.no_telp.includes(query))
 })
 
+watch(searchQuery, () => { currentPage.value = 1 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredCustomers.value.length / itemsPerPage)))
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
+const endIndex = computed(() => startIndex.value + itemsPerPage)
+const paginatedCustomers = computed(() => filteredCustomers.value.slice(startIndex.value, endIndex.value))
+
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+// ------------------------
+
+const isEditModalOpen = ref(false)
+const editForm = ref({ id: null, nama: '', no_telp: '', jenis_kelamin: '', umur: null, alamat: '', detail_alamat: '', lat: null, lng: null })
+
+const isDeleteModalOpen = ref(false)
+const customerToDelete = ref(null)
+
+
 const getCoordinatesFromAddress = async (alamatUtama) => {
   try {
     const query = encodeURIComponent(`${alamatUtama}, Jakarta, Indonesia`);
     const response = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
     if (response.data && response.data.length > 0) return { lat: response.data[0].lat, lng: response.data[0].lon }
     return null;
-  } catch (error) {
-    console.error("Geocoding API error:", error);
-    return null;
-  }
+  } catch (error) { return null; }
 }
 
 const showNotification = (message, type = 'success') => {
@@ -166,9 +189,7 @@ const fetchCustomers = async () => {
   try {
     const response = await axios.get(API_URL)
     customers.value = response.data.data 
-  } catch (error) {
-    showNotification('Gagal mengambil data server', 'error')
-  }
+  } catch (error) { showNotification('Gagal mengambil data server', 'error') }
 }
 
 const openEditModal = (customer) => {
@@ -179,7 +200,6 @@ const closeEditModal = () => { isEditModalOpen.value = false }
 
 const updateCustomer = async () => {
   if (!editForm.value.nama || !editForm.value.alamat) return alert("Nama dan Alamat Utama wajib diisi!");
-  
   isSaving.value = true
   try {
     const coords = await getCoordinatesFromAddress(editForm.value.alamat);
@@ -192,9 +212,7 @@ const updateCustomer = async () => {
     
     closeEditModal()
     if(coords) showNotification('Data berhasil diupdate!', 'success')
-  } catch (error) {
-    showNotification('Gagal mengupdate data', 'error')
-  } finally { isSaving.value = false }
+  } catch (error) { showNotification('Gagal mengupdate data', 'error') } finally { isSaving.value = false }
 }
 
 const confirmDelete = (customer) => {
@@ -207,11 +225,10 @@ const deleteCustomer = async () => {
   try {
     await axios.delete(`${API_URL}/${customerToDelete.value.id}`)
     customers.value = customers.value.filter(c => c.id !== customerToDelete.value.id)
+    if (paginatedCustomers.value.length === 0 && currentPage.value > 1) currentPage.value--
     isDeleteModalOpen.value = false
     showNotification('Data dihapus!', 'success')
-  } catch (error) {
-    showNotification('Gagal dihapus', 'error')
-  } finally { isSaving.value = false }
+  } catch (error) { showNotification('Gagal dihapus', 'error') } finally { isSaving.value = false }
 }
 
 onMounted(() => fetchCustomers())

@@ -18,6 +18,9 @@
         <p class="text-sm sm:text-base text-blue-100 font-medium max-w-md leading-relaxed">
           Pantau pengemasan farmasi, koordinasi kurir teamwork, dan akuntansi finansial dalam satu gerbang terintegrasi.
         </p>
+        <p v-if="currentUser.name" class="mt-4 inline-block bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 font-semibold">
+          Selamat bekerja, {{ currentUser.name }}! ({{ userRole.toUpperCase() }})
+        </p>
       </div>
     </div>
 
@@ -82,7 +85,7 @@
         </h3>
         
         <div class="space-y-2">
-          <router-link to="/pengiriman" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all group">
+          <router-link v-if="['superadmin', 'admin', 'farmasi'].includes(userRole)" to="/pengiriman" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all group">
             <div class="w-8 h-8 rounded-lg bg-blue-50 text-[#3b5998] flex items-center justify-center font-bold mr-3 text-sm group-hover:bg-[#3b5998] group-hover:text-white transition-colors">P</div>
             <div>
               <p class="text-sm font-bold text-gray-800">Modul Pengiriman</p>
@@ -90,7 +93,7 @@
             </div>
           </router-link>
 
-          <router-link to="/teamwork" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/40 transition-all group">
+          <router-link v-if="['superadmin', 'admin'].includes(userRole)" to="/teamwork" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/40 transition-all group">
             <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold mr-3 text-sm group-hover:bg-purple-600 group-hover:text-white transition-colors">T</div>
             <div>
               <p class="text-sm font-bold text-gray-800">Modul Teamwork</p>
@@ -98,13 +101,31 @@
             </div>
           </router-link>
 
-          <router-link to="/financial" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-green-200 hover:bg-green-50/40 transition-all group">
+          <router-link v-if="userRole === 'superadmin'" to="/financial" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-green-200 hover:bg-green-50/40 transition-all group">
             <div class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center font-bold mr-3 text-sm group-hover:bg-green-600 group-hover:text-white transition-colors">F</div>
             <div>
               <p class="text-sm font-bold text-gray-800">Modul Financial</p>
               <p class="text-xs text-gray-400">Pencatatan Buku Kas & Bank</p>
             </div>
           </router-link>
+
+          <router-link v-if="['superadmin', 'admin'].includes(userRole)" to="/laporan" class="flex items-center p-3 rounded-xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/40 transition-all group">
+            <div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold mr-3 text-sm group-hover:bg-orange-600 group-hover:text-white transition-colors">L</div>
+            <div>
+              <p class="text-sm font-bold text-gray-800">Modul Laporan</p>
+              <p class="text-xs text-gray-400">Evaluasi Kinerja & Laba</p>
+            </div>
+          </router-link>
+
+          <button @click="handleLogout" class="w-full flex items-center p-3 rounded-xl border border-red-100 hover:bg-red-50 text-red-600 transition-all text-left mt-4 group">
+            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold mr-3 text-sm group-hover:bg-red-600 group-hover:text-white transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-red-700">Logout</p>
+              <p class="text-xs text-red-400">Keluar dari aplikasi</p>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -150,8 +171,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// --- USER STATES ---
+const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
+const userRole = computed(() => currentUser.value.role || 'guest')
 
 // --- GLOBAL APP STATES ---
 const isLoading = ref(true)
@@ -162,38 +190,56 @@ const saldoBersih = ref(0)
 const recentWorks = ref([])
 
 // --- API AGGREGATION HANDLER ---
+// --- API AGGREGATION HANDLER ---
 const fetchGlobalDashboard = async () => {
   isLoading.value = true
+  
+  // Ambil role secara langsung untuk pengecekan
+  const role = userRole.value;
+
   try {
-    const [resPackages, resWorks, resUsers, resTransactions] = await Promise.all([
-      axios.get('http://localhost:8000/api/v1/packages'),
-      axios.get('http://localhost:8000/api/v1/works'),
-      axios.get('http://localhost:8000/api/v1/users'),
-      axios.get('http://localhost:8000/api/v1/transactions')
-    ])
+    // 1. Data Paket (Bisa diakses Superadmin, Admin, Farmasi)
+    if (['superadmin', 'admin', 'farmasi'].includes(role)) {
+      const resPackages = await axios.get('/packages')
+      const antreanStatuses = ['Pesanan diverifikasi', 'Pengemasan', 'Menunggu Driver']
+      totalAntrean.value = resPackages.data.data?.filter(p => antreanStatuses.includes(p.status_pengiriman)).length || 0
+      totalDiantar.value = resPackages.data.data?.filter(p => p.status_pengiriman === 'Diperjalanan').length || 0
+    }
 
-    // 1. Hitung antrean farmasi (Diverifikasi, Pengemasan, Menunggu Driver)
-    const antreanStatuses = ['Pesanan diverifikasi', 'Pengemasan', 'Menunggu Driver']
-    totalAntrean.value = resPackages.data.data?.filter(p => antreanStatuses.includes(p.status_pengiriman)).length || 0
+    // 2. Data Teamwork & User (Hanya Superadmin & Admin)
+    if (['superadmin', 'admin'].includes(role)) {
+      const resUsers = await axios.get('/users')
+      const resWorks = await axios.get('/works')
+      
+      totalKurir.value = resUsers.data.data?.length || 0
+      recentWorks.value = resWorks.data.data?.slice(0, 5) || []
+    }
 
-    // 2. Hitung paket yang sedang diperjalanan
-    totalDiantar.value = resPackages.data.data?.filter(p => p.status_pengiriman === 'Diperjalanan').length || 0
-
-    // 3. Hitung jumlah total karyawan/kurir terdaftar
-    totalKurir.value = resUsers.data.data?.length || 0
-
-    // 4. Hitung Saldo Finansial bersih
-    const pemasukan = resTransactions.data.data?.filter(t => t.tipe === 'Uang Masuk').reduce((acc, c) => acc + Number(c.nominal), 0) || 0
-    const pengeluaran = resTransactions.data.data?.filter(t => t.tipe === 'Uang Keluar').reduce((acc, c) => acc + Number(c.nominal), 0) || 0
-    saldoBersih.value = pemasukan - pengeluaran
-
-    // 5. Simpan 5 penugasan kurir terbaru
-    recentWorks.value = resWorks.data.data?.slice(0, 5) || []
+    // 3. Data Transaksi/Keuangan (Hanya Superadmin)
+    if (role === 'superadmin') {
+      const resTransactions = await axios.get('/transactions')
+      const pemasukan = resTransactions.data.data?.filter(t => t.tipe === 'Uang Masuk').reduce((acc, c) => acc + Number(c.nominal), 0) || 0
+      const pengeluaran = resTransactions.data.data?.filter(t => t.tipe === 'Uang Keluar').reduce((acc, c) => acc + Number(c.nominal), 0) || 0
+      saldoBersih.value = pemasukan - pengeluaran
+    }
 
   } catch (error) {
     console.error("Gagal melakukan sinkronisasi dashboard:", error)
   } finally {
     isLoading.value = false
+  }
+}
+
+// --- LOGOUT HANDLER ---
+const handleLogout = async () => {
+  try {
+    await axios.post('/logout')
+  } catch (e) {
+    console.log("Error during API logout:", e)
+  } finally {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    router.push('/login')
   }
 }
 
@@ -213,7 +259,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom mini scrollbar style */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }

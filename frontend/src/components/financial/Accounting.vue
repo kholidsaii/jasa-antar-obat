@@ -1,106 +1,71 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full relative">
     
-    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
+    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
       <div>
         <h2 class="text-xl font-bold text-gray-800">Laporan Akuntansi (Laba / Rugi)</h2>
-        <p class="text-sm text-gray-500 mt-1">Rekapitulasi pendapatan dan beban operasional (Profit & Loss Statement).</p>
+        <p class="text-sm text-gray-500 mt-1">Rekapitulasi pendapatan dan beban operasional perusahaan.</p>
       </div>
-      
       <div class="flex space-x-3">
-        <button @click="fetchTransactions" :disabled="isLoading" class="bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50 shadow-sm">
-          <svg :class="{'animate-spin': isLoading}" class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-          Refresh
-        </button>
-        <button @click="printLaporan" class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-          Cetak PDF
+        <button @click="fetchTransactions" :disabled="isLoading" class="bg-white hover:bg-gray-100 border px-4 py-2 rounded-lg text-sm font-medium">Refresh</button>
+        <button @click="printLaporan" class="bg-[#3b5998] hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+          <i class="fas fa-print mr-2"></i> Cetak PDF
         </button>
       </div>
     </div>
 
-    <div v-if="isLoading" class="p-8 space-y-6">
-      <div class="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-      <div class="space-y-3"><div v-for="i in 3" :key="i" class="h-10 bg-gray-100 rounded w-full animate-pulse"></div></div>
-      <div class="h-8 bg-gray-200 rounded w-1/4 animate-pulse mt-8"></div>
-      <div class="space-y-3"><div v-for="i in 3" :key="i" class="h-10 bg-gray-100 rounded w-full animate-pulse"></div></div>
+    <div v-if="isLoading" class="p-10 flex justify-center">
+       <svg class="animate-spin h-8 w-8 text-[#3b5998]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
     </div>
 
-    <div v-else class="p-8 overflow-y-auto print-area">
-      <div class="text-center mb-10 pb-6 border-b-2 border-gray-800 border-double">
-        <h1 class="text-2xl font-black text-gray-900 tracking-wider">JASTAR OBAT</h1>
-        <h2 class="text-lg font-bold text-gray-700 mt-1">LAPORAN LABA RUGI KOMPREHENSIF</h2>
-        <p class="text-sm text-gray-500 mt-1">Periode: Keseluruhan (Buku Besar Real-time)</p>
+    <div v-else class="p-8 print:p-2 max-w-4xl mx-auto w-full">
+      <div class="text-center border-b-2 border-gray-800 pb-6 mb-8">
+        <h1 class="text-2xl font-black text-gray-900 tracking-wider">PROFIT & LOSS STATEMENT</h1>
+        <p class="text-gray-600 font-medium">Jasta Obat - Pengiriman Obat</p>
+        <p class="text-sm text-gray-400 mt-1">Periode: Semua Waktu (Hingga Hari Ini)</p>
       </div>
 
-      <div class="max-w-4xl mx-auto">
-        <div class="mb-8">
-          <h3 class="text-lg font-bold text-[#3b5998] mb-3 uppercase tracking-wider flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            Pendapatan Operasional
-          </h3>
-          <table class="w-full text-sm">
-            <tbody class="divide-y divide-gray-100">
-              <tr v-if="incomeCategories.length === 0">
-                <td class="py-3 text-gray-500 italic px-4">Belum ada catatan pendapatan.</td>
-                <td class="py-3 text-right text-gray-500 italic">Rp 0</td>
-              </tr>
-              <tr v-for="(item, index) in incomeCategories" :key="index" class="hover:bg-gray-50 transition-colors">
-                <td class="py-3 px-4 text-gray-700">{{ item.nama }}</td>
-                <td class="py-3 text-right font-medium text-gray-900">{{ formatRupiah(item.total) }}</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="border-t border-b border-gray-300 bg-green-50/50">
-                <td class="py-3 px-4 font-bold text-gray-900">TOTAL PENDAPATAN</td>
-                <td class="py-3 text-right font-bold text-green-700 text-base">{{ formatRupiah(totalIncome) }}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="mb-8">
-          <h3 class="text-lg font-bold text-red-600 mb-3 uppercase tracking-wider flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-            Beban Operasional
-          </h3>
-          <table class="w-full text-sm">
-            <tbody class="divide-y divide-gray-100">
-              <tr v-if="expenseCategories.length === 0">
-                <td class="py-3 text-gray-500 italic px-4">Belum ada catatan beban pengeluaran.</td>
-                <td class="py-3 text-right text-gray-500 italic">Rp 0</td>
-              </tr>
-              <tr v-for="(item, index) in expenseCategories" :key="index" class="hover:bg-gray-50 transition-colors">
-                <td class="py-3 px-4 text-gray-700">{{ item.nama }}</td>
-                <td class="py-3 text-right font-medium text-gray-900">({{ formatRupiah(item.total) }})</td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="border-t border-b border-gray-300 bg-red-50/50">
-                <td class="py-3 px-4 font-bold text-gray-900">TOTAL BEBAN OPERASIONAL</td>
-                <td class="py-3 text-right font-bold text-red-600 text-base">({{ formatRupiah(totalExpense) }})</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="mt-10 rounded-xl border-2 overflow-hidden shadow-sm" :class="netProfit >= 0 ? 'border-green-500' : 'border-red-500'">
-          <div class="flex justify-between items-center p-6" :class="netProfit >= 0 ? 'bg-green-50' : 'bg-red-50'">
-            <div>
-              <h2 class="text-xl font-black text-gray-900 uppercase">
-                {{ netProfit >= 0 ? 'Laba Bersih Operasional' : 'Rugi Bersih Operasional' }}
-              </h2>
-              <p class="text-sm mt-1" :class="netProfit >= 0 ? 'text-green-700' : 'text-red-700'">
-                Pendapatan dikurangi total beban pengeluaran.
-              </p>
-            </div>
-            <div class="text-3xl font-black" :class="netProfit >= 0 ? 'text-green-600' : 'text-red-600'">
-              {{ formatRupiah(netProfit) }}
-            </div>
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">A. Pendapatan (Income)</h3>
+        <div class="space-y-3">
+          <div v-for="item in incomeCategories" :key="item.nama" class="flex justify-between text-sm items-center hover:bg-gray-50 p-2 rounded transition">
+            <span class="text-gray-700"><i class="fas fa-arrow-right text-green-500 mr-2 text-xs"></i> {{ item.nama }}</span>
+            <span class="font-medium text-gray-900">{{ formatRupiah(item.total) }}</span>
           </div>
+          <div v-if="incomeCategories.length === 0" class="text-gray-400 text-sm p-2 italic">Belum ada catatan pendapatan.</div>
+        </div>
+        <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-300 bg-green-50/50 p-3 rounded-lg">
+          <span class="font-bold text-gray-800">Total Pendapatan</span>
+          <span class="font-bold text-green-700 text-lg">{{ formatRupiah(totalIncome) }}</span>
         </div>
       </div>
+
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">B. Beban Operasional (Expenses)</h3>
+        <div class="space-y-3">
+          <div v-for="item in expenseCategories" :key="item.nama" class="flex justify-between text-sm items-center hover:bg-gray-50 p-2 rounded transition">
+            <span class="text-gray-700"><i class="fas fa-arrow-left text-red-500 mr-2 text-xs"></i> {{ item.nama }}</span>
+            <span class="font-medium text-gray-900">{{ formatRupiah(item.total) }}</span>
+          </div>
+          <div v-if="expenseCategories.length === 0" class="text-gray-400 text-sm p-2 italic">Belum ada catatan beban pengeluaran.</div>
+        </div>
+        <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-300 bg-red-50/50 p-3 rounded-lg">
+          <span class="font-bold text-gray-800">Total Beban Operasional</span>
+          <span class="font-bold text-red-600 text-lg">{{ formatRupiah(totalExpense) }}</span>
+        </div>
+      </div>
+
+      <div :class="['p-5 border-2 rounded-xl flex justify-between items-center', netProfit >= 0 ? 'border-blue-400 bg-blue-50' : 'border-red-400 bg-red-50']">
+        <div>
+          <span class="font-black text-gray-900 block text-lg">C. Laba Bersih (Net Profit)</span>
+          <span class="text-xs text-gray-500 font-medium">Total Pendapatan dikurangi Total Beban</span>
+        </div>
+        <span :class="['font-black text-3xl tracking-tight', netProfit >= 0 ? 'text-[#3b5998]' : 'text-red-600']">
+          {{ formatRupiah(netProfit) }}
+        </span>
+      </div>
     </div>
+
   </div>
 </template>
 
@@ -108,87 +73,71 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8000/api/v1/transactions' 
+const API_URL = 'http://localhost:8000/api/v1/transactions'
 const transactions = ref([])
 const isLoading = ref(true)
 
-// --- FUNGSI AUTO-CATEGORIZER (AKUNTANSI) ---
-// Membaca deskripsi bebas dari admin/sistem dan merubahnya jadi Kategori Baku
+// Kategori Akuntansi Cerdas (Sistem Pembacaan Keyword dari Deskripsi)
 const getKategoriAkuntansi = (deskripsi, tipe) => {
-  const desc = deskripsi.toLowerCase()
+  const text = deskripsi.toLowerCase()
   if (tipe === 'Uang Masuk') {
-    if (desc.includes('ongkir') || desc.includes('ongkos') || desc.includes('pengiriman') || desc.includes('pkt-')) return 'Pendapatan Jasa Distribusi / Ongkir'
-    if (desc.includes('tip') || desc.includes('bonus')) return 'Pendapatan Tip / Bonus'
-    return 'Pendapatan Operasional Lainnya'
+    if (text.includes('paket')) return 'Pendapatan Layanan Pengiriman (PKT)'
+    if (text.includes('donasi') || text.includes('subsidi')) return 'Pendapatan Lain-lain'
+    return 'Pendapatan Umum'
   } else {
-    if (desc.includes('bbm') || desc.includes('bensin') || desc.includes('solar') || desc.includes('pertamax')) return 'Beban Bahan Bakar (BBM)'
-    if (desc.includes('gaji') || desc.includes('upah') || desc.includes('honor') || desc.includes('insentif')) return 'Beban Gaji & Insentif Karyawan'
-    if (desc.includes('servis') || desc.includes('bengkel') || desc.includes('oli') || desc.includes('sparepart')) return 'Beban Pemeliharaan Kendaraan'
-    if (desc.includes('makan') || desc.includes('minum') || desc.includes('konsumsi') || desc.includes('snack')) return 'Beban Konsumsi & Kesejahteraan'
-    if (desc.includes('parkir') || desc.includes('tol') || desc.includes('retribusi')) return 'Beban Parkir & Tol'
-    return 'Beban Operasional Lain-lain'
+    if (text.includes('bensin') || text.includes('bbm') || text.includes('parkir')) return 'Beban Transportasi / Bensin'
+    if (text.includes('makan') || text.includes('minum') || text.includes('konsumsi')) return 'Beban Konsumsi Pegawai'
+    if (text.includes('lakban') || text.includes('kertas') || text.includes('plastik') || text.includes('packing')) return 'Beban Perlengkapan (Supplies)'
+    if (text.includes('gaji') || text.includes('upah') || text.includes('thr')) return 'Beban Gaji & Upah Pegawai'
+    if (text.includes('service') || text.includes('bengkel') || text.includes('oli') || text.includes('ban')) return 'Beban Pemeliharaan Kendaraan'
+    return 'Beban Lain-lain'
   }
 }
 
-// 1. Grouping Pendapatan (Berdasarkan Kategori Baku)
 const incomeCategories = computed(() => {
   const incomes = transactions.value.filter(t => t.tipe === 'Uang Masuk')
   const groups = {}
-  
   incomes.forEach(t => {
     const akun = getKategoriAkuntansi(t.deskripsi || '', 'Uang Masuk')
     if (!groups[akun]) groups[akun] = 0
     groups[akun] += Number(t.nominal)
   })
-
   return Object.keys(groups).map(key => ({ nama: key, total: groups[key] })).sort((a, b) => b.total - a.total)
 })
 
-// 2. Grouping Beban Pengeluaran (Berdasarkan Kategori Baku)
 const expenseCategories = computed(() => {
   const expenses = transactions.value.filter(t => t.tipe === 'Uang Keluar')
   const groups = {}
-  
   expenses.forEach(t => {
     const akun = getKategoriAkuntansi(t.deskripsi || '', 'Uang Keluar')
     if (!groups[akun]) groups[akun] = 0
     groups[akun] += Number(t.nominal)
   })
-
   return Object.keys(groups).map(key => ({ nama: key, total: groups[key] })).sort((a, b) => b.total - a.total)
 })
 
-// 3. Kalkulasi Total
 const totalIncome = computed(() => incomeCategories.value.reduce((sum, item) => sum + item.total, 0))
 const totalExpense = computed(() => expenseCategories.value.reduce((sum, item) => sum + item.total, 0))
 const netProfit = computed(() => totalIncome.value - totalExpense.value)
 
-// --- METHODS ---
 const fetchTransactions = async () => {
   isLoading.value = true
   try {
     const response = await axios.get(API_URL)
     transactions.value = response.data.data
-  } catch (error) {
-    console.error('Error fetching accounting data:', error)
-  } finally {
-    isLoading.value = false
-  }
+  } catch (error) { console.error('Error fetching accounting data:', error) } finally { isLoading.value = false }
 }
 
+const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 const printLaporan = () => { window.print() }
 
-const formatRupiah = (angka) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
-}
-
-onMounted(() => { fetchTransactions() })
+onMounted(() => fetchTransactions())
 </script>
 
 <style scoped>
 @media print {
   body * { visibility: hidden; }
-  .print-area, .print-area * { visibility: visible; }
-  .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; }
+  .print\:p-2, .print\:p-2 * { visibility: visible; }
+  .print\:p-2 { position: absolute; left: 0; top: 0; width: 100%; }
 }
 </style>

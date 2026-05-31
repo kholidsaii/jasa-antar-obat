@@ -70,16 +70,15 @@
             </div>
             
             <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-2">
-              <label class="block text-sm font-bold text-blue-900 mb-1">1. Alamat Jalan Utama (Untuk Pelacakan Peta)</label>
+              <label class="block text-sm font-bold text-blue-900 mb-1">1. Alamat Jalan Utama (Untuk Sistem Navigasi)</label>
               <p class="text-xs text-blue-700 mb-2">Masukkan hanya nama jalan, nomor, kelurahan, kecamatan. Jangan masukkan RT/RW di sini.</p>
-              <textarea v-model="formCustomer.alamat" rows="2" required placeholder="Contoh: Jl. Masjid Bendungan 2, Cawang, Jakarta Timur" class="w-full border border-blue-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+              <textarea v-model="formCustomer.alamat" rows="2" required placeholder="Contoh: Jl. RC Veteran Raya, Bintaro, Jakarta Selatan" class="w-full border border-blue-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
             </div>
             
             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <label class="block text-sm font-bold text-gray-700 mb-1">2. Detail Patokan & RT/RW (Khusus Panduan Kurir)</label>
+              <label class="block text-sm font-bold text-gray-700 mb-1">2. Detail Patokan & RT/RW (Panduan Manual Kurir)</label>
               <textarea v-model="formCustomer.detail_alamat" rows="2" placeholder="Contoh: RT 02 / RW 07, Pagar Hitam, Samping Warung" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gray-400 outline-none"></textarea>
             </div>
-
           </form>
         </div>
         <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
@@ -93,34 +92,74 @@
 
     <div v-if="isModalPaketOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
       <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeModalPaket"></div>
-      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[90vh]">
-        <div class="px-6 py-5 border-b border-gray-100">
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[95vh]">
+        
+        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
           <h3 class="text-lg font-bold text-gray-900">Tambah Paket Pengiriman</h3>
+          <p class="text-xs text-gray-500 mt-1">Sistem akan otomatis menghitung tarif berdasarkan alamat pasien.</p>
         </div>
+        
         <div class="p-6 overflow-y-auto">
-          <form @submit.prevent="savePaket" class="space-y-4">
+          <form @submit.prevent="savePaket" class="space-y-5">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Pilih Customer (Pasien)</label>
-              <select v-model="formPaket.customer_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pilih Customer (Pasien)</label>
+              <select v-model="formPaket.customer_id" @change="handleCustomerSelect" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-[#3b5998] outline-none">
                 <option disabled value="">-- Pilih Customer Terdaftar --</option>
                 <option v-for="cust in customersList" :key="cust.id" :value="cust.id">{{ cust.nama }} - {{ cust.no_telp }}</option>
               </select>
             </div>
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Obat / Pesanan</label>
-              <textarea v-model="formPaket.deskripsi_pesanan" rows="2" required class="w-full border border-gray-300 rounded-lg p-2.5"></textarea>
+            
+            <div v-show="formPaket.customer_id" class="border border-gray-200 rounded-xl p-4 bg-gray-50/50 relative overflow-hidden">
+              
+              <div v-if="isCalculating" class="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex flex-col items-center justify-center z-10">
+                <svg class="animate-spin h-8 w-8 text-[#3b5998] mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span class="text-sm font-bold text-[#3b5998]">Menghitung Rute & Harga...</span>
+              </div>
+
+              <div class="mb-4 bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                <p class="text-xs text-gray-500 font-bold mb-1"><i class="fas fa-map-marker-alt mr-1 text-red-500"></i> Alamat Tujuan Pengiriman</p>
+                <p class="text-sm text-gray-800 font-medium leading-relaxed">{{ selectedCustomerAddress || '-' }}</p>
+              </div>
+
+              <div class="flex flex-col justify-center">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">Rincian Biaya Pengiriman</h4>
+                <div class="space-y-2 mb-4">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Jarak Tempuh (RS ke Pasien)</span>
+                    <span class="font-medium text-gray-900">{{ formPaket.jarak_km ? formPaket.jarak_km + ' km' : '-' }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Tarif Dasar Jarak</span>
+                    <span class="font-medium text-gray-900">{{ formatRupiah(rincianHarga.baseHarga) }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Biaya Admin Operasional</span>
+                    <span class="font-medium text-gray-900">{{ formatRupiah(rincianHarga.admin) }}</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center border-t border-gray-200 pt-3">
+                  <span class="font-bold text-gray-800">Total Tagihan</span>
+                  <span class="font-black text-xl text-[#3b5998]">{{ formatRupiah(formPaket.total_harga) }}</span>
+                </div>
+              </div>
             </div>
-            <div class="grid grid-cols-2 gap-4 mt-4">
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi Obat / Pesanan</label>
+              <textarea v-model="formPaket.deskripsi_pesanan" rows="2" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] outline-none"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pembayaran</label>
-                <select v-model="formPaket.status_pembayaran" class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status Pembayaran</label>
+                <select v-model="formPaket.status_pembayaran" class="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-[#3b5998] outline-none">
                   <option value="Belum Lunas">Belum Lunas</option>
                   <option value="Lunas">Lunas</option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
-                <select v-model="formPaket.metode_pembayaran" class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Metode Pembayaran</label>
+                <select v-model="formPaket.metode_pembayaran" class="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-[#3b5998] outline-none">
                   <option value="Tunai / Cash">Tunai / Cash</option>
                   <option value="Transfer Bank">Transfer Bank</option>
                   <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
@@ -130,9 +169,9 @@
           </form>
         </div>
         <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="closeModalPaket" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Batal</button>
-          <button @click="savePaket" :disabled="!formPaket.customer_id || isSaving" type="button" class="px-5 py-2.5 bg-[#3b5998] rounded-lg text-white hover:bg-blue-800 disabled:opacity-50">
-            {{ isSaving ? 'Menyimpan...' : 'Simpan Paket' }}
+          <button @click="closeModalPaket" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Batal</button>
+          <button @click="savePaket" :disabled="!formPaket.customer_id || isSaving || !formPaket.total_harga" type="button" class="px-5 py-2.5 bg-[#3b5998] rounded-lg text-white hover:bg-blue-800 disabled:opacity-50 font-medium shadow-sm">
+            {{ isSaving ? 'Memproses...' : 'Buat Tagihan & Paket' }}
           </button>
         </div>
       </div>
@@ -143,6 +182,7 @@
 <script setup>
 import { ref, markRaw, onMounted } from 'vue'
 import axios from 'axios'
+
 import Overview from '../components/pengiriman/Overview.vue'
 import AllPaket from '../components/pengiriman/AllPaket.vue'
 import Customer from '../components/pengiriman/Customer.vue'
@@ -160,27 +200,111 @@ const tabs = [
   { id: 'alamat', name: 'Alamat', icon: MapPinIcon },
 ]
 
+// Koordinat Asal: RS Bintaro
+const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
+
 const activeTab = ref('all-paket')
 const isModalCustomerOpen = ref(false)
 const isModalPaketOpen = ref(false)
+const isCalculating = ref(false)
 const isSaving = ref(false)
 const customersList = ref([]) 
 
-// State Form dengan kolom tambahan detail_alamat
-const formCustomer = ref({
-  nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', umur: null, alamat: '', detail_alamat: ''
-})
-const formPaket = ref({
-  customer_id: '', deskripsi_pesanan: '', status_pengiriman: 'Pesanan diverifikasi', status_pembayaran: 'Belum Lunas', metode_pembayaran: 'Tunai / Cash'
-})
+const selectedCustomerAddress = ref('')
+const formCustomer = ref({ nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', umur: null, alamat: '', detail_alamat: '' })
+const formPaket = ref({ customer_id: '', deskripsi_pesanan: '', status_pengiriman: 'Pesanan diverifikasi', status_pembayaran: 'Belum Lunas', metode_pembayaran: 'Tunai / Cash', jarak_km: null, total_harga: 0 })
+const rincianHarga = ref({ baseHarga: 0, admin: 0 })
+
+const formatRupiah = (angka) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
+}
 
 const fetchCustomersForDropdown = async () => {
   try {
     const response = await axios.get('http://localhost:8000/api/v1/customers')
     customersList.value = response.data.data
-  } catch (error) {
-    console.error("Gagal mengambil data customer:", error)
+  } catch (error) { console.error("Gagal mengambil data customer:", error) }
+}
+
+const openModalPaket = async () => { 
+  await fetchCustomersForDropdown() 
+  isModalPaketOpen.value = true 
+}
+
+const closeModalPaket = () => { 
+  isModalPaketOpen.value = false
+  formPaket.value = { customer_id: '', deskripsi_pesanan: '', status_pengiriman: 'Pesanan diverifikasi', status_pembayaran: 'Belum Lunas', metode_pembayaran: 'Tunai / Cash', jarak_km: null, total_harga: 0 }
+  rincianHarga.value = { baseHarga: 0, admin: 0 }
+  selectedCustomerAddress.value = ''
+}
+
+// ==========================================
+// SOLUSI CORS BLOCK: Gunakan fetch() JS murni
+// ==========================================
+const handleCustomerSelect = async () => {
+  const customer = customersList.value.find(c => c.id == formPaket.value.customer_id)
+  if(!customer) return;
+
+  selectedCustomerAddress.value = customer.alamat + (customer.detail_alamat ? ` (Patokan: ${customer.detail_alamat})` : '');
+  
+  isCalculating.value = true;
+  formPaket.value.jarak_km = null;
+  formPaket.value.total_harga = 0;
+  rincianHarga.value = { baseHarga: 0, admin: 0 };
+
+  let lat = parseFloat(customer.lat);
+  let lng = parseFloat(customer.lng);
+
+  if (!lat || !lng) {
+    try {
+      const query = encodeURIComponent(`${customer.alamat}, Jakarta, Indonesia`);
+      // GANTI AXIOS DENGAN FETCH UNTUK NOMINATIM
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        lat = parseFloat(data[0].lat);
+        lng = parseFloat(data[0].lon);
+      } else {
+        alert("Alamat gagal dilacak oleh sistem GPS. Harap perbarui alamat utama Customer.");
+        isCalculating.value = false;
+        return;
+      }
+    } catch(e) {
+      alert("Sistem navigasi gagal mendeteksi koordinat.");
+      isCalculating.value = false;
+      return;
+    }
   }
+
+  try {
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${lng},${lat}?overview=false`;
+    
+    // GANTI AXIOS DENGAN FETCH UNTUK OSRM (Menghindari CORS dari token Axios)
+    const response = await fetch(osrmUrl);
+    const data = await response.json();
+    
+    if (data.code === 'Ok') {
+      const rute = data.routes[0];
+      const jarakKm = parseFloat((rute.distance / 1000).toFixed(1));
+      
+      let baseHarga = 20000;
+      if (jarakKm > 5.0) {
+        const extraKm = Math.ceil(jarakKm) - 5;
+        baseHarga += (extraKm * 3500);
+      }
+      const admin = 1500;
+      
+      rincianHarga.value = { baseHarga, admin }
+      formPaket.value.jarak_km = jarakKm
+      formPaket.value.total_harga = baseHarga + admin
+    }
+  } catch(e) { 
+    console.error("OSRM Fetch Error:", e);
+    alert("Koneksi ke server kalkulasi rute terputus.");
+  }
+  
+  isCalculating.value = false;
 }
 
 const openModalCustomer = () => { isModalCustomerOpen.value = true }
@@ -188,80 +312,56 @@ const closeModalCustomer = () => {
   isModalCustomerOpen.value = false
   formCustomer.value = { nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', umur: null, alamat: '', detail_alamat: '' }
 }
-const openModalPaket = () => { 
-  fetchCustomersForDropdown() 
-  isModalPaketOpen.value = true 
-}
-const closeModalPaket = () => { 
-  isModalPaketOpen.value = false
-  formPaket.value = { customer_id: '', deskripsi_pesanan: '', status_pengiriman: 'Pesanan diverifikasi', status_pembayaran: 'Belum Lunas', metode_pembayaran: 'Tunai / Cash' }
-}
 
-// Nominatim HANYA menerima formCustomer.value.alamat (Tanpa Detail Patokan)
 const getCoordinatesFromAddress = async (alamatUtama) => {
   try {
     const query = encodeURIComponent(`${alamatUtama}, Jakarta, Indonesia`);
-    const response = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-    if (response.data && response.data.length > 0) {
-      return { lat: response.data[0].lat, lng: response.data[0].lon }
+    // GANTI AXIOS DENGAN FETCH
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      return { lat: data[0].lat, lng: data[0].lon }
     }
     return null;
-  } catch (error) {
-    console.error("Geocoding API error:", error);
-    return null;
-  }
+  } catch (error) { return null; }
 }
 
 const saveCustomer = async () => {
   if(!formCustomer.value.nama || !formCustomer.value.alamat) return alert('Nama & Alamat Utama Wajib Diisi!');
-  
   isSaving.value = true
   try {
-    // Cari koordinat MURNI dari jalan utamanya saja
     const coords = await getCoordinatesFromAddress(formCustomer.value.alamat);
-    
-    // Gabungkan dengan detail alamat ke database
     const payload = {
       ...formCustomer.value,
       lat: coords ? coords.lat : null,
       lng: coords ? coords.lng : null
     }
-    if (!coords) console.warn("Peringatan: Alamat utama tidak ditemukan di peta.");
-
+    // API LOKAL TETAP MENGGUNAKAN AXIOS KARENA BUTUH TOKEN LOGIN
     await axios.post('http://localhost:8000/api/v1/customers', payload)
     
     closeModalCustomer()
     alert('Data Customer Berhasil Disimpan!')
-    
     if (activeTab.value === 'customer') {
       activeTab.value = ''
       setTimeout(() => activeTab.value = 'customer', 10)
     }
-  } catch (error) {
-    console.error(error)
-    alert('Gagal menyimpan data customer!')
-  } finally {
-    isSaving.value = false
-  }
+  } catch (error) { console.error(error) } finally { isSaving.value = false }
 }
 
 const savePaket = async () => {
-  if(!formPaket.value.customer_id || !formPaket.value.deskripsi_pesanan) return alert('Isi Form!');
+  if(!formPaket.value.customer_id || !formPaket.value.deskripsi_pesanan) return alert('Isi Form Lengkap!');
   isSaving.value = true
   try {
+    // API LOKAL TETAP MENGGUNAKAN AXIOS KARENA BUTUH TOKEN LOGIN
     await axios.post('http://localhost:8000/api/v1/packages', formPaket.value)
+    
     closeModalPaket()
-    alert('Data Paket Berhasil Dibuat!')
+    alert('Data Tagihan & Paket Berhasil Dibuat!')
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'all-paket', 10)
-  } catch (error) {
-    console.error(error)
-  } finally {
-    isSaving.value = false
-  }
+  } catch (error) { console.error(error) } finally { isSaving.value = false }
 }
 
-onMounted(() => {
-  fetchCustomersForDropdown()
-})
+onMounted(() => { fetchCustomersForDropdown() })
 </script>

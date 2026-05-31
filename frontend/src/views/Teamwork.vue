@@ -1,68 +1,33 @@
-Tentu, Mas Khoirusyamil! Mengingat perombakan relasi "1 Kurir = 1 Kendaraan" ini cukup mengubah struktur *form* di bagian frontend, saya telah menyusun ulang file **`Teamwork.vue`** secara utuh.
-
-Di dalam file ini:
-
-1. **Form Add Work** sekarang hanya meminta Admin memilih Paket, Kurir, dan Ongkos Kirim (Sistem backend yang akan otomatis mencarikan kendaraannya).
-2. **Form Add Karyawan** sudah dilengkapi dengan input Nama Kendaraan dan Plat Nomor.
-
-Silakan *copy* seluruh blok kode di bawah ini dan *paste* (timpa) ke dalam file `src/views/Teamwork.vue` Anda:
-
-```vue
 <template>
   <div class="max-w-7xl mx-auto pb-10">
-    
     <div class="bg-white rounded-t-xl overflow-hidden shadow-sm border border-gray-100">
-      <div 
-        class="h-48 w-full bg-cover bg-center relative" 
-        style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop');"
-      >
+      <div class="h-48 w-full bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop');">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
       </div>
-
       <div class="px-6 sm:px-8 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between relative">
         <div class="flex items-end -mt-12 sm:-mt-16 mb-4 sm:mb-0">
           <div class="bg-white p-1.5 rounded-2xl shadow-lg border border-gray-100 inline-block">
-            <img 
-              src="https://api.dicebear.com/7.x/bottts/svg?seed=Teamwork&backgroundColor=e2e8f0" 
-              alt="Maskot Teamwork" 
-              class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover bg-gray-50"
-            />
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Teamwork&backgroundColor=e2e8f0" alt="Maskot" class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover bg-gray-50"/>
           </div>
           <div class="ml-5 pb-2">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">TEAMWORK</h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">TEAMWORK</h1>
             <p class="text-gray-500 text-sm sm:text-base font-medium mt-1">Komunikasi, Koordinasi & Eksekusi Kurir</p>
           </div>
         </div>
-
         <div class="flex space-x-3 pb-2">
-          <button @click="openModalWork" class="bg-[#3b5998] hover:bg-blue-800 text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-md hover:shadow-lg flex items-center transform hover:-translate-y-0.5">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Add Work (Tugas)
+          <button @click="openModalWork" class="bg-[#3b5998] hover:bg-blue-800 text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-md flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Add Work
           </button>
-          <button @click="openModalKaryawan" class="bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm hover:shadow-md flex items-center transform hover:-translate-y-0.5">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-            Add Karyawan
+          <button @click="openModalKaryawan" class="bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg> Add Karyawan
           </button>
         </div>
       </div>
-
       <div class="px-6 sm:px-8 border-t border-gray-100 bg-gray-50/50">
         <nav class="flex space-x-8 overflow-x-auto custom-scrollbar">
-          <button 
-            v-for="tab in tabs" 
-            :key="tab.id"
-            @click="activeTab = tab.id"
-            :class="[
-              activeTab === tab.id 
-                ? 'border-[#3b5998] text-[#3b5998]' 
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              'group inline-flex items-center py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap outline-none'
-            ]"
-          >
-            <component 
-              :is="tab.icon" 
-              :class="[activeTab === tab.id ? 'text-[#3b5998]' : 'text-gray-400 group-hover:text-gray-500', '-ml-0.5 mr-2 h-5 w-5 transition-colors']" 
-            />
+          <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+            :class="[activeTab === tab.id ? 'border-[#3b5998] text-[#3b5998]' : 'border-transparent text-gray-500 hover:text-gray-700', 'group inline-flex items-center py-4 border-b-2 font-medium text-sm transition-colors outline-none']">
+            <component :is="tab.icon" :class="[activeTab === tab.id ? 'text-[#3b5998]' : 'text-gray-400 group-hover:text-gray-500', '-ml-0.5 mr-2 h-5 w-5 transition-colors']" />
             {{ tab.name }}
           </button>
         </nav>
@@ -78,113 +43,123 @@ Silakan *copy* seluruh blok kode di bawah ini dan *paste* (timpa) ke dalam file 
       </Transition>
     </div>
 
-    <div v-if="isModalWorkOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeModalWork"></div>
-      
-      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[90vh] animate-modal-in">
+    <div v-if="isModalWorkOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="closeModalWork"></div>
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[90vh]">
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 class="text-lg font-extrabold text-gray-900">Buat Pekerjaan Baru</h3>
-          <button @click="closeModalWork" class="text-gray-400 hover:text-gray-600 focus:outline-none">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
+          <h3 class="text-lg font-extrabold text-gray-900">Buat Pengantaran </h3>
+          <button @click="closeModalWork" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-        
-        <div class="p-6 overflow-y-auto">
-          <form @submit.prevent="saveWork" class="space-y-5">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Paket (Bisa Pilih Banyak)</label>
-              
-              <div v-if="apiPackages.length === 0" class="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100">
-                Belum ada paket yang siap dikirim.
-              </div>
-              <div v-else class="max-h-48 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50 custom-scrollbar">
-                
-                <label v-for="pkt in apiPackages" :key="pkt.id" class="flex items-start space-x-3 cursor-pointer p-2.5 hover:bg-white rounded border border-transparent hover:border-gray-200 transition-all shadow-sm">
-                  <input type="checkbox" v-model="formWork.package_ids" :value="pkt.id" class="mt-0.5 w-4 h-4 text-[#3b5998] border-gray-300 rounded focus:ring-[#3b5998]">
-                  <div class="flex-1">
-                    <p class="text-sm font-bold text-gray-800">#PKT-{{ String(pkt.id).padStart(4, '0') }} - {{ pkt.customer?.nama || 'Unknown' }}</p>
-                    <p class="text-xs text-gray-500 line-clamp-1">{{ pkt.deskripsi_pesanan }}</p>
-                  </div>
-                </label>
-                
-              </div>
-              <p class="text-xs text-gray-500 mt-1.5 font-medium">Paket terpilih: {{ formWork.package_ids.length }}</p>
+        <div class="p-6 overflow-y-auto space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Paket (Hanya yg belum diambil)</label>
+            <div v-if="apiPackages.length === 0" class="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100">Belum ada paket yang siap dikirim.</div>
+            <div v-else class="max-h-40 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50 custom-scrollbar">
+              <label v-for="pkt in apiPackages" :key="pkt.id" class="flex items-start space-x-3 cursor-pointer p-2 hover:bg-white rounded border border-transparent shadow-sm">
+                <input type="checkbox" v-model="formWork.package_ids" :value="pkt.id" class="mt-0.5 w-4 h-4 text-[#3b5998] rounded">
+                <div class="flex-1">
+                  <p class="text-sm font-bold text-gray-800">#PKT-{{ String(pkt.id).padStart(4, '0') }} - {{ pkt.customer?.nama || 'Unknown' }}</p>
+                  <p class="text-xs text-gray-500 line-clamp-1">{{ pkt.deskripsi_pesanan }}</p>
+                </div>
+              </label>
             </div>
-            
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pilih Karyawan (Kurir)</label>
-              <select v-model="formWork.user_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
-                <option disabled value="">-- Pilih Kurir Pengantar --</option>
-                <option v-for="usr in apiUsers" :key="usr.id" :value="usr.id">{{ usr.name }}</option>
-              </select>
-              <p class="text-xs text-gray-500 mt-1">Kendaraan otomatis mengikuti armada milik kurir terpilih.</p>
-            </div>
-          </form>
+            <p class="text-xs text-gray-500 mt-1 font-medium">Paket terpilih: {{ formWork.package_ids.length }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pilih Karyawan (Kurir)</label>
+            <select v-model="formWork.user_id" @change="autoSelectVehicle" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none">
+              <option disabled value="">-- Pilih Kurir Pengantar --</option>
+              <option v-for="usr in apiUsers.filter(u => u.role === 'kurir')" :key="usr.id" :value="usr.id">{{ usr.name }}</option>
+            </select>
+          </div>
+          <div v-if="formWork.user_id">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kendaraan Operasional</label>
+            <select v-model="formWork.vehicle_id" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none">
+              <option disabled value="">-- Pilih Kendaraan Secara Manual --</option>
+              <option v-for="veh in apiVehicles" :key="veh.id" :value="veh.id">{{ veh.nama_kendaraan }} - {{ veh.plat_nomor }} ({{ veh.jenis_kepemilikan }})</option>
+            </select>
+            <p class="text-xs text-gray-400 mt-1">Pilih kendaraan yang akan dipakai kurir ini.</p>
+          </div>
         </div>
-
         <div class="bg-gray-50 px-6 py-4 border-t flex justify-end space-x-3">
-          <button @click="closeModalWork" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors">Batal</button>
-          <button @click="saveWork" :disabled="isSavingWork" class="px-5 py-2.5 bg-[#3b5998] text-white rounded-lg font-medium hover:bg-blue-800 disabled:opacity-50 transition-colors flex items-center">
-            <svg v-if="isSavingWork" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <button @click="closeModalWork" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-medium text-gray-700">Batal</button>
+          <button @click="saveWork" :disabled="isSavingWork || !formWork.vehicle_id" class="px-5 py-2.5 bg-[#3b5998] text-white rounded-lg font-medium hover:bg-blue-800 disabled:opacity-50">
             {{ isSavingWork ? 'Memproses...' : 'Tugaskan Kurir' }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="isModalKaryawanOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeModalKaryawan"></div>
-      
-      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col overflow-hidden animate-modal-in">
+    <div v-if="isModalKaryawanOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="closeModalKaryawan"></div>
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 class="text-lg font-extrabold text-gray-900">Registrasi Kurir & Kendaraan</h3>
-          <button @click="closeModalKaryawan" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+          <h3 class="text-lg font-extrabold text-gray-900">Registrasi Karyawan Baru</h3>
+          <button @click="closeModalKaryawan" class="text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
-        
         <div class="p-6 overflow-y-auto max-h-[70vh]">
-          <form @submit.prevent="saveKaryawan" class="space-y-5">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
-              <input v-model="formKaryawan.name" type="text" required placeholder="Contoh: Budi Santoso" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
+          <form @submit.prevent="saveKaryawan" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
+                <input v-model="formKaryawan.name" type="text" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-[#3b5998]">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nomor Telepon</label>
+                <input v-model="formKaryawan.no_telepon" type="text" placeholder="0812xxxxxx" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-[#3b5998]">
+              </div>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Alamat Email</label>
-              <input v-model="formKaryawan.email" type="email" required placeholder="budi@jastar.com" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
+              <input v-model="formKaryawan.email" type="email" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-[#3b5998]">
             </div>
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Password (Untuk Login Kurir)</label>
-              <input v-model="formKaryawan.password" type="password" required placeholder="Minimal 6 karakter" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Role / Jabatan</label>
+              <select v-model="formKaryawan.role" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white outline-none focus:ring-[#3b5998]">
+                <option value="kurir">Kurir / Driver</option>
+                <option value="farmasi">Farmasi / Apoteker</option>
+                <option value="admin">Admin Operasional</option>
+                <option value="superadmin">Super Administrator</option>
+              </select>
             </div>
-
-            <div class="pt-4 border-t border-gray-100 mt-2">
-              <h4 class="text-xs font-bold text-gray-400 uppercase mb-3">Informasi Kendaraan Kurir</h4>
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-1.5">Merek & Nama Kendaraan</label>
-                  <input v-model="formKaryawan.nama_kendaraan" type="text" required placeholder="Contoh: Honda Vario 125" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Foto Profil (Opsional)</label>
+              <div 
+                @dragover.prevent="isDraggingAdd = true" 
+                @dragleave.prevent="isDraggingAdd = false" 
+                @drop.prevent="handleDropAdd" 
+                @click="$refs.fileInputAdd.click()"
+                :class="[
+                  'border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[120px]', 
+                  isDraggingAdd ? 'border-[#3b5998] bg-blue-50' : 'border-gray-300 bg-white hover:bg-gray-50'
+                ]"
+              >
+                <input type="file" accept="image/*" class="hidden" ref="fileInputAdd" @change="handleFileSelectAdd">
+                
+                <div v-if="previewAddFoto" class="relative">
+                  <img :src="previewAddFoto" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mx-auto">
+                  <span class="text-xs text-[#3b5998] hover:underline mt-2 block font-medium">Klik atau drop untuk ganti</span>
                 </div>
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-1.5">Plat Nomor</label>
-                  <input v-model="formKaryawan.plat_nomor" type="text" required placeholder="Contoh: B 1234 ABC" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] transition-all uppercase">
+                
+                <div v-else>
+                  <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  <p class="text-sm text-gray-500"><span class="font-semibold text-[#3b5998]">Klik untuk upload</span> atau drag and drop</p>
+                  <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
                 </div>
               </div>
             </div>
-
           </form>
         </div>
-
         <div class="bg-gray-50 px-6 py-4 border-t flex justify-end space-x-3">
-          <button @click="closeModalKaryawan" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors">Batal</button>
-          <button @click="saveKaryawan" :disabled="isSavingKaryawan" class="px-5 py-2.5 bg-[#3b5998] text-white rounded-lg font-medium hover:bg-blue-800 disabled:opacity-50 transition-colors flex items-center">
-            <svg v-if="isSavingKaryawan" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <button @click="closeModalKaryawan" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-medium text-gray-700">Batal</button>
+          <button @click="saveKaryawan" :disabled="isSavingKaryawan" class="px-5 py-2.5 bg-[#3b5998] text-white rounded-lg font-medium hover:bg-blue-800 disabled:opacity-50">
             {{ isSavingKaryawan ? 'Menyimpan...' : 'Simpan Karyawan' }}
           </button>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -192,13 +167,11 @@ Silakan *copy* seluruh blok kode di bawah ini dan *paste* (timpa) ke dalam file 
 import { ref, markRaw } from 'vue'
 import axios from 'axios'
 
-// --- IMPORT SUB KOMPONEN ---
 import Overview from '../components/teamwork/Overview.vue'
 import Pekerjaan from '../components/teamwork/Pekerjaan.vue'
 import Karyawan from '../components/teamwork/Karyawan.vue'
 import Kendaraan from '../components/teamwork/Kendaraan.vue'
 
-// --- SETUP IKON SVG ---
 const ChartIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>` })
 const BriefcaseIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.896 1.95-2 1.95H5.75c-1.104 0-2-.856-2-1.95v-4.25M12 18.75v-7.5M12 11.25a3 3 0 100-6 3 3 0 000 6z" /></svg>` })
 const UsersIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>` })
@@ -211,125 +184,126 @@ const tabs = [
   { id: 'kendaraan', name: 'Kendaraan', icon: TruckIcon },
 ]
 
-// --- STATE MANAGEMENT ---
 const activeTab = ref('pekerjaan')
-
-// Modals State
 const isModalWorkOpen = ref(false)
 const isModalKaryawanOpen = ref(false)
 const isSavingWork = ref(false)
 const isSavingKaryawan = ref(false)
 
-// Dropdown Resources API
 const apiPackages = ref([])
 const apiUsers = ref([])
+const apiVehicles = ref([])
 
-// Models Form (Vehicle dihilangkan dari formWork)
-const formWork = ref({ package_ids: [], user_id: '' })
-const formKaryawan = ref({ name: '', email: '', password: '', nama_kendaraan: '', plat_nomor: '' })
+const formWork = ref({ package_ids: [], user_id: '', vehicle_id: '' })
+const formKaryawan = ref({ name: '', email: '', role: 'kurir', no_telepon: '', foto: null })
+// Tambahkan State untuk Drag and Drop Add
+const isDraggingAdd = ref(false)
+const previewAddFoto = ref(null)
+const fileInputAdd = ref(null)
 
-
-// --- AUTO CALCULATE ONGKIR (OSRM) ---
-const isCalculatingOngkir = ref(false)
-const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] // Titik RSPPN Bintaro
-
-const calculateOngkirOtomatis = async () => {
-  const pkg = apiPackages.value.find(p => p.id === formWork.value.package_id)
-  
-  if (!pkg || !pkg.customer?.lat || !pkg.customer?.lng) {
-    alert("Koordinat alamat pasien ini belum dilacak di Peta. Anda bisa mengetik Ongkos Kirim secara manual.")
-    return
+const handleDropAdd = (e) => {
+  isDraggingAdd.value = false
+  const file = e.dataTransfer.files[0]
+  if (file && file.type.startsWith('image/')) {
+    formKaryawan.value.foto = file
+    previewAddFoto.value = URL.createObjectURL(file)
   }
+}
 
-  isCalculatingOngkir.value = true
-  try {
-    const latTujuan = parseFloat(pkg.customer.lat)
-    const lngTujuan = parseFloat(pkg.customer.lng)
-    
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${lngTujuan},${latTujuan}?overview=false`
-    
-    const response = await axios.get(osrmUrl)
-    if (response.data.code === 'Ok') {
-      const jarakKm = response.data.routes[0].distance / 1000
-      const tarifDasar = 10000
-      const tarifPerKm = 2500
-      formWork.value.harga_ongkos = Math.round(tarifDasar + (jarakKm * tarifPerKm))
-    }
-  } catch (error) {
-    console.error("OSRM Error:", error)
-  } finally {
-    isCalculatingOngkir.value = false
+const handleFileSelectAdd = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    formKaryawan.value.foto = file
+    previewAddFoto.value = URL.createObjectURL(file)
   }
+}
+
+// Pastikan saat closeModalKaryawan() dipanggil, preview foto di-reset kembali
+const closeModalKaryawan = () => {
+  isModalKaryawanOpen.value = false
+  formKaryawan.value = { name: '', email: '', role: 'kurir', no_telepon: '', foto: null }
+  previewAddFoto.value = null // Tambahkan baris ini
 }
 
 // --- METHODS: ADD WORK ---
 const openModalWork = async () => {
   isModalWorkOpen.value = true
   try {
-    const [resPkg, resUsr] = await Promise.all([
-      axios.get('http://localhost:8000/api/v1/packages'),
-      axios.get('http://localhost:8000/api/v1/users')
+    const [resPkg, resUsr, resVeh] = await Promise.all([
+      axios.get('/packages'),
+      axios.get('/users'),
+      axios.get('/vehicles')
     ])
-    apiPackages.value = resPkg.data.data?.filter(p => p.status_pengiriman !== 'Terkirim') || []
+    // Filter paket yang BENAR-BENAR belum diambil
+    apiPackages.value = resPkg.data.data?.filter(p => p.status_pengiriman === 'Pesanan diverifikasi') || []
     apiUsers.value = resUsr.data.data || []
+    apiVehicles.value = resVeh.data.data || []
   } catch (error) {
-    console.error("Gagal memuat resource dropdown:", error)
-    alert("Gagal memuat data dari server.")
+    alert("Gagal memuat data dropdown.")
+  }
+}
+
+// Logika otomatis mencari kendaraan default ketika kurir dipilih
+const autoSelectVehicle = () => {
+  const selectedKurir = apiUsers.value.find(u => u.id === formWork.value.user_id)
+  if (selectedKurir && selectedKurir.vehicle) {
+    formWork.value.vehicle_id = selectedKurir.vehicle.id
+  } else {
+    formWork.value.vehicle_id = '' // Kosongkan agar bisa milih manual
   }
 }
 
 const closeModalWork = () => {
   isModalWorkOpen.value = false
-  formWork.value = { package_ids: [], user_id: '' } // Reset state
+  formWork.value = { package_ids: [], user_id: '', vehicle_id: '' }
 }
 
 const saveWork = async () => {
-  if (formWork.value.package_ids.length === 0 || !formWork.value.user_id) {
-    return alert('Harap pilih minimal 1 paket dan tentukan kurirnya.')
+  if (formWork.value.package_ids.length === 0 || !formWork.value.user_id || !formWork.value.vehicle_id) {
+    return alert('Harap pilih paket, kurir, dan pastikan kendaraan telah dipilih.')
   }
-  
   isSavingWork.value = true
   try {
-    await axios.post('http://localhost:8000/api/v1/works', formWork.value)
+    await axios.post('/works', formWork.value)
     closeModalWork()
-    
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'pekerjaan', 10)
-    
   } catch (error) {
-    console.error("Error Saving Work:", error)
-    alert(error.response?.data?.message || 'Terjadi kesalahan saat menyimpan tugas kerja.')
+    alert(error.response?.data?.message || 'Gagal menyimpan tugas.')
   } finally {
     isSavingWork.value = false
   }
 }
 
 // --- METHODS: ADD KARYAWAN ---
-const openModalKaryawan = () => {
-  isModalKaryawanOpen.value = true
-}
+const openModalKaryawan = () => isModalKaryawanOpen.value = true
+// const closeModalKaryawan = () => {
+//   isModalKaryawanOpen.value = false
+//   formKaryawan.value = { name: '', email: '', role: 'kurir', no_telepon: '', foto: null }
+// }
 
-const closeModalKaryawan = () => {
-  isModalKaryawanOpen.value = false
-  formKaryawan.value = { name: '', email: '', password: '', nama_kendaraan: '', plat_nomor: '' }
+const handleFileUpload = (event) => {
+  formKaryawan.value.foto = event.target.files[0]
 }
 
 const saveKaryawan = async () => {
-  if (!formKaryawan.value.name || !formKaryawan.value.email || !formKaryawan.value.password || !formKaryawan.value.nama_kendaraan || !formKaryawan.value.plat_nomor) {
-    return alert('Harap isi semua data diri kurir dan informasi kendaraannya.')
-  }
+  if (!formKaryawan.value.name || !formKaryawan.value.email) return alert('Nama dan Email Wajib diisi!')
   
   isSavingKaryawan.value = true
   try {
-    await axios.post('http://localhost:8000/api/v1/users', formKaryawan.value)
+    const formData = new FormData()
+    formData.append('name', formKaryawan.value.name)
+    formData.append('email', formKaryawan.value.email)
+    formData.append('role', formKaryawan.value.role)
+    if (formKaryawan.value.no_telepon) formData.append('no_telepon', formKaryawan.value.no_telepon)
+    if (formKaryawan.value.foto) formData.append('foto', formKaryawan.value.foto)
+
+    await axios.post('/users', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
     closeModalKaryawan()
-    
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'karyawan', 10)
-    
   } catch (error) {
-    console.error("Error Saving Karyawan:", error)
-    alert('Terjadi kesalahan saat menyimpan data karyawan. Pastikan email atau plat nomor belum terpakai.')
+    alert('Gagal menambahkan karyawan. Pastikan email belum terpakai.')
   } finally {
     isSavingKaryawan.value = false
   }
@@ -337,32 +311,6 @@ const saveKaryawan = async () => {
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(5px);
-}
-
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-.animate-modal-in {
-  animation: modalIn 0.2s ease-out forwards;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  height: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
-  border-radius: 4px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 </style>

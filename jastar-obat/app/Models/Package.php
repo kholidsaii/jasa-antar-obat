@@ -14,7 +14,9 @@ class Package extends Model
         'deskripsi_pesanan', 
         'status_pengiriman', 
         'status_pembayaran',
-        'metode_pembayaran'
+        'metode_pembayaran',
+        'jarak_km',
+        'total_harga',
     ];
 
     // Relasi: Paket ini milik siapa?

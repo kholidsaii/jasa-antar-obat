@@ -7,4 +7,10 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  // Tambahkan blok resolve ini di bawah plugins
+  resolve: {
+    alias: {
+      vue: 'vue/dist/vue.esm-bundler.js',
+    },
+  },
 })

@@ -7,7 +7,7 @@
         <p class="text-sm text-gray-500 mt-1">Daftar alamat tujuan untuk paket yang sedang diproses atau diperjalanan.</p>
       </div>
       
-      <div class="flex space-x-3">
+      <div class="flex space-x-3 w-full sm:w-auto">
         <div class="relative w-full sm:w-64">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -43,12 +43,12 @@
               <p class="font-bold text-gray-900">{{ selectedRoute.estimasiWaktu || '-' }} Menit</p>
             </div>
             <div>
-              <p class="text-xs text-gray-500 mb-1">Estimasi Harga</p>
-              <p class="font-bold text-green-600">{{ selectedRoute.harga ? formatRupiah(selectedRoute.harga) : '-' }}</p>
+              <p class="text-xs text-gray-500 mb-1">Total Tagihan</p>
+              <p class="font-bold text-[#3b5998]">{{ formatRupiah(selectedRoute.total_harga || selectedRoute.harga) }}</p>
             </div>
             <div>
               <p class="text-xs text-gray-500 mb-1">Jarak Tempuh</p>
-              <p class="font-bold text-gray-900">{{ selectedRoute.jarakKm || '-' }} km</p>
+              <p class="font-bold text-gray-900">{{ selectedRoute.jarak_km || selectedRoute.jarakKm || '-' }} km</p>
             </div>
           </div>
         </div>
@@ -61,8 +61,12 @@
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+          <div v-if="paginatedRoutes.length === 0" class="text-center py-10">
+            <p class="text-gray-500 text-sm">Tidak ada rute yang ditemukan.</p>
+          </div>
+          
           <div 
-            v-for="pkg in filteredActiveRoutes" 
+            v-for="pkg in paginatedRoutes" 
             :key="pkg.id" 
             @click="tampilkanRute(pkg)"
             :class="[
@@ -88,11 +92,17 @@
               </div>
             </div>
             
-            <div v-if="pkg.jarakKm" class="mt-3 flex justify-between text-xs text-gray-600 border-t pt-2">
-               <span><i class="fas fa-motorcycle mr-1 text-gray-400"></i> {{ pkg.estimasiWaktu }} min ({{ pkg.jarakKm }} km)</span>
-               <span class="font-bold text-green-600">{{ formatRupiah(pkg.harga) }}</span>
+            <div v-if="pkg.jarak_km || pkg.jarakKm" class="mt-3 flex justify-between text-xs text-gray-600 border-t pt-2">
+               <span><i class="fas fa-motorcycle mr-1 text-gray-400"></i> {{ pkg.jarak_km || pkg.jarakKm }} km</span>
+               <span class="font-bold text-[#3b5998]">{{ formatRupiah(pkg.total_harga || pkg.harga) }}</span>
             </div>
           </div>
+        </div>
+
+        <div v-if="filteredActiveRoutes.length > 0" class="p-3 border-t border-gray-100 bg-white flex justify-between items-center">
+          <button @click="prevPage" :disabled="currentPage === 1" class="text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 px-4 py-2 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors">Prev</button>
+          <span class="text-xs font-bold text-gray-500">{{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages" class="text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 px-4 py-2 rounded hover:bg-gray-100 disabled:opacity-50 transition-colors">Next</button>
         </div>
       </div>
     </div>
@@ -100,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import axios from 'axios'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -112,15 +122,15 @@ const isLoading = ref(true)
 const searchQuery = ref('')
 const selectedRoute = ref(null)
 
+// --- Leaflet Vars ---
 let map = null
 let routingLayer = null 
 let markers = []
 
-// --- PUSAT KOORDINAT RSPPN (UPDATE BARU) ---
-// Jl. RC. Veteran Raya No.18, RT.9/RW.3, Bintaro, Pesanggrahan, Jakarta Selatan
+// Titik Koordinat RS (Bintaro)
 const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
 
-// Fix icon Leaflet di Vue
+// Fix icon Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -136,7 +146,8 @@ const hospitalIcon = L.icon({
   popupAnchor: [1, -34],
 })
 
-const activeRoutes = computed(() => packages.value.filter(pkg => pkg.status_pengiriman !== 'Terkirim'))
+// --- FILTERING & PAGINATION ---
+const activeRoutes = computed(() => packages.value.filter(pkg => pkg.status_pengiriman !== 'Terkirim' && pkg.status_pengiriman !== 'Dibatalkan'))
 
 const filteredActiveRoutes = computed(() => {
   if (!searchQuery.value) return activeRoutes.value
@@ -148,6 +159,21 @@ const filteredActiveRoutes = computed(() => {
   })
 })
 
+const currentPage = ref(1)
+const itemsPerPage = 5
+
+// Reset ke halaman 1 jika user mencari data
+watch(searchQuery, () => { currentPage.value = 1 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredActiveRoutes.value.length / itemsPerPage)))
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
+const endIndex = computed(() => startIndex.value + itemsPerPage)
+const paginatedRoutes = computed(() => filteredActiveRoutes.value.slice(startIndex.value, endIndex.value))
+
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+
+// --- API & DATA HANDLING ---
 const fetchPackages = async () => {
   isLoading.value = true
   try {
@@ -160,14 +186,18 @@ const fetchPackages = async () => {
   }
 }
 
-// Panggil OSRM API (Gratis)
+// OSRM Request
+// OSRM Request Menggunakan fetch() Murni
 const hitungRuteOSRM = async (latAwal, lngAwal, latTujuan, lngTujuan) => {
   try {
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngAwal},${latAwal};${lngTujuan},${latTujuan}?overview=full&geometries=geojson`;
-    const response = await axios.get(osrmUrl);
     
-    if (response.data.code === 'Ok') {
-      const rute = response.data.routes[0];
+    // GANTI axios DENGAN fetch()
+    const response = await fetch(osrmUrl);
+    const data = await response.json();
+    
+    if (data.code === 'Ok') {
+      const rute = data.routes[0];
       return {
         geometry: rute.geometry,
         jarakKm: (rute.distance / 1000).toFixed(1),
@@ -180,33 +210,11 @@ const hitungRuteOSRM = async (latAwal, lngAwal, latTujuan, lngTujuan) => {
   return null;
 }
 
-const hitungHarga = (jarakAsli) => {
-  const jarakKm = parseFloat(jarakAsli);
-  let totalHargaOngkir = 0;
-  
-  if (jarakKm <= 5.0) {
-    // 0 - 5 KM = Harga Flat Rp 20.000
-    totalHargaOngkir = 20000;
-  } else {
-    // Jika lebih dari 5 KM, bulatkan ke atas
-    const jarakDibulatkan = Math.ceil(jarakKm);
-    
-    // Cari sisa KM yang harus dihitung
-    const extraKm = jarakDibulatkan - 5;
-    
-    // Rp 20.000 + (Rp 5.000 per KM lebih)
-    totalHargaOngkir = 20000 + (extraKm * 5000);
-  }
-
-  // Tambahkan biaya admin tetap Rp 1.500 ke total akhir
-  const biayaAdmin = 1500;
-  return totalHargaOngkir + biayaAdmin;
-}
-
 const formatRupiah = (angka) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka)
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 }
 
+// Menampilkan Rute ke Map saat Item Sidebar Diklik
 const tampilkanRute = async (pkg) => {
   selectedRoute.value = pkg
 
@@ -215,6 +223,7 @@ const tampilkanRute = async (pkg) => {
     return;
   }
 
+  // Bersihkan peta dari rute sebelumnya
   if (routingLayer) map.removeLayer(routingLayer)
   markers.forEach(m => map.removeLayer(m))
   markers = []
@@ -248,8 +257,9 @@ const tampilkanRute = async (pkg) => {
     selectedRoute.value = {
       ...pkg,
       jarakKm: osrmData.jarakKm,
-      estimasiWaktu: osrmData.estimasiMenit,
-      harga: hitungHarga(osrmData.jarakKm)
+      estimasiWaktu: osrmData.estimasiMenit
+      // Kita tidak hitung harga manual lagi di sini karena prioritas utamanya 
+      // adalah menggunakan pkg.total_harga yang sudah disave di database
     };
 
     map.fitBounds(routingLayer.getBounds(), { padding: [50, 50] });
@@ -258,9 +268,7 @@ const tampilkanRute = async (pkg) => {
 }
 
 const initMap = () => {
-  // Map diinisialisasi terfokus ke area Bintaro
   map = L.map('map').setView(RUMAH_SAKIT_COORD, 14)
-  
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map)

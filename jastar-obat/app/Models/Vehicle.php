@@ -10,9 +10,10 @@ class Vehicle extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', // WAJIB DITAMBAHKAN
+        'user_id',
         'nama_kendaraan',
         'plat_nomor',
+        'jenis_kepemilikan',
         'status',
     ];
 
