@@ -142,7 +142,7 @@
 
                     <div class="flex flex-wrap gap-2">
                       <button v-if="work.package?.status_pengiriman !== 'Diperjalanan'" @click="markOtw(work)" :disabled="isSaving" class="flex-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg border border-yellow-200 text-xs font-bold transition">
-                        <i class="fas fa-motorcycle mr-1"></i> Otw
+                        <i class="fas fa-motorcycle mr-1"></i> Diperjalanan
                       </button>
                       <button @click="completeWork(work)" :disabled="isSaving" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg border border-green-200 text-xs font-bold transition">
                         <i class="fas fa-check-circle mr-1"></i> Selesai

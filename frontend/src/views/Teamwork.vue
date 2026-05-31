@@ -235,7 +235,7 @@ const openModalWork = async () => {
       axios.get('/vehicles')
     ])
     // Filter paket yang BENAR-BENAR belum diambil
-    apiPackages.value = resPkg.data.data?.filter(p => p.status_pengiriman === 'Pesanan diverifikasi') || []
+    apiPackages.value = resPkg.data.data?.filter(p => p.status_pengiriman === 'Pengemasan') || []
     apiUsers.value = resUsr.data.data || []
     apiVehicles.value = resVeh.data.data || []
   } catch (error) {
