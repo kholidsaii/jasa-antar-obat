@@ -217,7 +217,7 @@ const computedTabs = computed(() => {
 })
 
 // Set Active Tab Default Berdasarkan Role
-const activeTab = ref(['admin', 'superadmin'].includes(userRole.value) ? 'overview' : 'all-paket')
+const activeTab = ref(['admin', 'superadmin'].includes(userRole.value) ? 'all-paket' : 'overview')
 
 const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
 
