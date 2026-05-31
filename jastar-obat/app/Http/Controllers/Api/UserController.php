@@ -15,11 +15,20 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('vehicle')->withCount(['works' => function ($query) {
-            $query->whereHas('package', function ($q) {
-                $q->where('status_pengiriman', '!=', 'Terkirim');
-            });
-        }])->latest()->get();
+        $users = User::with('vehicle')
+            // Menghitung paket yang SEDANG DIANTAR (Aktif)
+            ->withCount(['works' => function ($query) {
+                $query->whereHas('package', function ($q) {
+                    $q->whereNotIn('status_pengiriman', ['Terkirim', 'Dibatalkan']);
+                });
+            }])
+            // Menghitung TOTAL RIWAYAT paket yang sudah SELESAI diantar (All-time)
+            ->withCount(['works as history_count' => function ($query) {
+                $query->whereHas('package', function ($q) {
+                    $q->where('status_pengiriman', 'Terkirim');
+                });
+            }])
+            ->latest()->get();
 
         return response()->json(['status' => 'success', 'data' => $users], 200);
     }
@@ -41,11 +50,9 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->only(['name', 'email', 'role', 'no_telepon']);
-            // Default Password
             $data['password'] = Hash::make('password123');
-            $data['is_online'] = false; // Default offline saat baru dibuat
+            $data['is_online'] = false; 
 
-            // Handle Upload Foto
             if ($request->hasFile('foto')) {
                 $path = $request->file('foto')->store('fotos', 'public');
                 $data['foto'] = $path;
@@ -53,6 +60,7 @@ class UserController extends Controller
 
             $user = User::create($data);
             $user->works_count = 0; 
+            $user->history_count = 0;
 
             DB::commit();
             return response()->json(['status' => 'success', 'data' => $user], 201);
@@ -99,7 +107,6 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        // ... (Kode destroy tetap sama seperti sebelumnya)
         $user = User::find($id);
         if (!$user) return response()->json(['status' => 'error', 'message' => 'User tidak ditemukan'], 404);
 

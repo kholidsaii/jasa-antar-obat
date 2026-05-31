@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full relative">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full relative min-h-[500px]">
     
     <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
@@ -7,18 +7,22 @@
         <p class="text-sm text-gray-500 mt-1">Monitor status pesanan obat dan pengiriman secara real-time.</p>
       </div>
       
-      <div class="relative w-full sm:w-80">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        <div class="relative w-full sm:w-72">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Cari ID, obat, atau pasien..." 
+            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#3b5998] focus:border-[#3b5998] transition duration-150"
+          >
         </div>
-        <input 
-          v-model="searchQuery"
-          type="text" 
-          placeholder="Cari ID, obat, atau nama pasien..." 
-          class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#3b5998] focus:border-[#3b5998] sm:text-sm transition duration-150 ease-in-out"
-        >
+        <button @click="fetchPackages" :disabled="isLoading" class="text-sm bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 px-4 py-2 rounded-lg font-medium transition-colors flex items-center disabled:opacity-50 w-full sm:w-auto justify-center whitespace-nowrap shadow-sm">
+          <svg :class="{'animate-spin': isLoading}" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Refresh Data
+        </button>
       </div>
     </div>
 
@@ -26,13 +30,13 @@
       {{ notification.message }}
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto flex-1">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
             <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">ID Paket</th>
             <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Pasien</th>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi Pesanan</th>
+            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Paket / Obat</th>
             <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Harga</th>
             <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status Pengiriman</th>
             <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status Pembayaran</th>
@@ -43,17 +47,13 @@
         
         <tbody v-if="isLoading" class="bg-white divide-y divide-gray-200">
           <tr v-for="i in 5" :key="i" class="animate-pulse">
-            <td colspan="8" class="px-6 py-4">
-              <div class="h-4 bg-gray-200 rounded w-full"></div>
-            </td>
+            <td colspan="8" class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-full"></div></td>
           </tr>
         </tbody>
 
         <tbody v-else-if="filteredPackages.length === 0" class="bg-white">
           <tr>
-            <td colspan="8" class="px-6 py-12 text-center">
-              <p class="text-gray-500 font-medium">Tidak ada data paket yang ditemukan.</p>
-            </td>
+            <td colspan="8" class="px-6 py-12 text-center text-gray-500 font-medium">Tidak ada data paket yang ditemukan.</td>
           </tr>
         </tbody>
 
@@ -83,14 +83,14 @@
               </span>
             </td>
             <td class="px-5 py-4 whitespace-nowrap text-center text-sm text-gray-700 font-medium">
-              {{ pkg.metode_pembayaran || 'Tunai / Cash' }}
+              <span class="uppercase tracking-wide border bg-gray-100 px-2 py-1 rounded">{{ pkg.metode_pembayaran || 'Tunai / Cash' }}</span>
             </td>
             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-blue-900 mr-3 transition-colors bg-blue-50 p-1.5 rounded-lg" title="Update Status">
-                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-blue-900 mr-2 transition-colors bg-blue-50 p-1.5 rounded-lg border border-blue-200" title="Update Status">
+                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
-              <button @click="confirmDelete(pkg)" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 p-1.5 rounded-lg" title="Hapus Paket">
-                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 p-1.5 rounded-lg border border-red-200" title="Hapus Paket">
+                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
               </button>
             </td>
           </tr>
@@ -99,16 +99,13 @@
     </div>
 
     <div v-if="filteredPackages.length > 0" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <span class="text-sm text-gray-500 font-medium flex items-center">
+      <span class="text-sm text-gray-500 font-medium text-center sm:text-left">
         Menampilkan {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredPackages.length) }} dari {{ filteredPackages.length }} paket
-        <button @click="fetchPackages" class="ml-4 text-sm text-[#3b5998] hover:underline flex items-center">
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Refresh
-        </button>
       </span>
-      <div class="flex space-x-2">
-        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm">Sebelumnya</button>
-        <div class="flex items-center px-2 text-sm font-bold text-gray-700">{{ currentPage }} / {{ totalPages }}</div>
-        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm">Selanjutnya</button>
+      <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm flex-1 sm:flex-none">Sebelumnya</button>
+        <span class="px-3 text-sm font-bold text-gray-700 whitespace-nowrap">{{ currentPage }} / {{ totalPages }}</span>
+        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm flex-1 sm:flex-none">Selanjutnya</button>
       </div>
     </div>
 
@@ -116,41 +113,64 @@
       <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeEditModal"></div>
       
       <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[90vh]">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
-          <h3 class="text-lg font-bold text-gray-900 mb-1">Update Status Paket</h3>
-          <p class="text-sm text-gray-500">#PKT-{{ String(editForm.id).padStart(4, '0') }} - {{ editForm.customer?.nama }}</p>
+        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Update Status Paket</h3>
+            <p class="text-sm text-gray-500">#PKT-{{ String(editForm.id).padStart(4, '0') }} - {{ editForm.customer?.nama }}</p>
+          </div>
+          <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
         
         <div class="p-6 overflow-y-auto">
           <form @submit.prevent="updatePackage" class="space-y-4">
+            
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Obat / Pesanan</label>
-              <textarea v-model="editForm.deskripsi_pesanan" rows="2" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] outline-none"></textarea>
+              <textarea v-model="editForm.deskripsi_pesanan" :disabled="userRole === 'kurir'" rows="2" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] disabled:bg-gray-100 disabled:text-gray-500 outline-none"></textarea>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pengiriman</label>
-                <select v-model="editForm.status_pengiriman" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] focus:border-[#3b5998] outline-none bg-white">
-                  <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
-                  <option value="Pengemasan">Pengemasan</option>
-                  <option value="Menunggu Driver">Menunggu Driver</option>
-                  <option value="Diperjalanan">Diperjalanan</option>
-                  <option value="Terkirim">Terkirim</option>
-                  <option value="Dibatalkan" class="text-red-600 font-bold">Dibatalkan</option>
+                <select v-model="editForm.status_pengiriman" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none bg-white">
+                  
+                  <template v-if="userRole === 'farmasi'">
+                    <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
+                    <option value="Pengemasan">Pengemasan</option>
+                  </template>
+
+                  <template v-else-if="userRole === 'kurir'">
+                    <option value="Diperjalanan">Diperjalanan</option>
+                    <option value="Terkirim">Terkirim</option>
+                    <option value="Dibatalkan" class="text-red-600 font-bold">Dibatalkan</option>
+                  </template>
+
+                  <template v-else>
+                    <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
+                    <option value="Pengemasan">Pengemasan</option>
+                    <option value="Menunggu Driver">Menunggu Driver</option>
+                    <option value="Diperjalanan">Diperjalanan</option>
+                    <option value="Terkirim">Terkirim</option>
+                    <option value="Dibatalkan" class="text-red-600 font-bold">Dibatalkan</option>
+                  </template>
+
                 </select>
-                <p v-if="editForm.status_pengiriman === 'Dibatalkan'" class="text-[10px] text-red-500 mt-1">Otomatis mencabut tugas kurir.</p>
+                <p v-if="editForm.status_pengiriman === 'Dibatalkan' && ['superadmin', 'admin', 'kurir'].includes(userRole)" class="text-[10px] text-red-500 mt-1">Otomatis mencabut tugas kurir.</p>
               </div>
+
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pembayaran</label>
-                <select v-model="editForm.status_pembayaran" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] outline-none bg-white">
+                <select v-model="editForm.status_pembayaran" :disabled="userRole === 'farmasi' || userRole === 'kurir'" required class="w-full border border-gray-300 rounded-lg p-2.5 disabled:bg-gray-100 disabled:text-gray-500 outline-none bg-white">
                   <option value="Belum Lunas">Belum Lunas</option>
                   <option value="Lunas">Lunas</option>
                 </select>
               </div>
+
               <div class="sm:col-span-2">
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
-                <select v-model="editForm.metode_pembayaran" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] outline-none bg-white">
+                <select v-model="editForm.metode_pembayaran" :disabled="userRole === 'farmasi'" required class="w-full border border-gray-300 rounded-lg p-2.5 disabled:bg-gray-100 disabled:text-gray-500 outline-none bg-white">
                   <option value="Tunai / Cash">Tunai / Cash</option>
                   <option value="Transfer Bank">Transfer Bank</option>
                   <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
@@ -164,14 +184,14 @@
           <button @click="closeEditModal" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
             Batal
           </button>
-          <button @click="updatePackage" :disabled="isSaving" type="button" :class="['px-5 py-2.5 rounded-lg text-white font-medium transition-colors disabled:opacity-50', editForm.status_pengiriman === 'Dibatalkan' ? 'bg-red-600 hover:bg-red-700' : 'bg-[#3b5998] hover:bg-blue-800']">
+          <button @click="updatePackage" :disabled="isSaving" type="button" :class="['px-5 py-2.5 rounded-lg text-white font-medium transition-colors shadow-sm disabled:opacity-50', editForm.status_pengiriman === 'Dibatalkan' ? 'bg-red-600 hover:bg-red-700' : 'bg-[#3b5998] hover:bg-blue-800']">
             {{ isSaving ? 'Memproses...' : 'Update Status' }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+    <div v-if="isDeleteModalOpen && ['superadmin', 'admin'].includes(userRole)" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
       <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="isDeleteModalOpen = false"></div>
       <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col overflow-hidden">
         <div class="p-6">
@@ -182,7 +202,7 @@
           <p class="text-sm text-gray-500 text-center">Anda yakin ingin menghapus <strong>#PKT-{{ packageToDelete?.id ? String(packageToDelete.id).padStart(4, '0') : '' }}</strong>?</p>
         </div>
         <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="isDeleteModalOpen = false" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium">Tutup</button>
+          <button @click="isDeleteModalOpen = false" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium">Batal</button>
           <button @click="deletePackage" :disabled="isSaving" type="button" class="px-5 py-2.5 bg-red-600 rounded-lg text-white font-medium hover:bg-red-700 disabled:opacity-50">
             {{ isSaving ? 'Menghapus...' : 'Ya, Hapus' }}
           </button>
@@ -196,7 +216,11 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8000/api/v1/packages' 
+// -- Get Role User --
+const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
+const userRole = computed(() => currentUser.value.role || 'guest')
+
+const API_URL = '/packages' 
 
 const packages = ref([])
 const isLoading = ref(true)
@@ -276,7 +300,7 @@ const updatePackage = async () => {
     if (index !== -1) packages.value[index] = updatedPkg
     
     closeEditModal()
-    showNotification('Status Paket berhasil diupdate!', 'success')
+    showNotification('Data Paket berhasil diupdate!', 'success')
   } catch (error) {
     showNotification('Gagal mengupdate paket', 'error')
   } finally { isSaving.value = false }

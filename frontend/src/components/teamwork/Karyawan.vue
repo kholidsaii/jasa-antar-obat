@@ -10,7 +10,7 @@
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
-          <input v-model="searchQuery" type="text" placeholder="Cari nama, email, atau role..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#3b5998] focus:border-[#3b5998] transition-all">
+          <input v-model="searchQuery" type="text" placeholder="Cari nama, email, atau role..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#3b5998]">
         </div>
         <button @click="fetchUsers" :disabled="isLoading" class="text-sm text-[#3b5998] hover:underline flex items-center font-medium whitespace-nowrap">
           <svg :class="{'animate-spin': isLoading}" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -34,7 +34,11 @@
       </div>
 
       <div v-for="user in paginatedUsers" :key="user.id" class="relative border border-gray-200 rounded-xl p-5 flex flex-col bg-white hover:border-[#3b5998] hover:shadow-md transition-all group">
+        
         <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2 bg-white/90 p-1 rounded-lg shadow-sm">
+          <button @click="openInfoModal(user)" class="text-green-600 hover:text-green-800 bg-green-50 p-1.5 rounded" title="Detail Riwayat">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          </button>
           <button @click="openEditModal(user)" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded" title="Edit Karyawan">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
           </button>
@@ -66,15 +70,13 @@
           <template v-if="user.role === 'kurir'">
             <div v-if="user.works_count > 0" class="flex items-center justify-between bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-100">
               <span class="text-xs font-semibold text-yellow-800 flex items-center">
-                <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span>
-                Sedang Bertugas
+                <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span> Sedang Bertugas
               </span>
               <span class="text-xs font-bold text-yellow-900">{{ user.works_count }} Paket</span>
             </div>
             <div v-else class="flex items-center bg-green-50 px-3 py-2 rounded-lg border border-green-100">
               <span class="text-xs font-semibold text-green-800 flex items-center">
-                <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                Standby (Kosong)
+                <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span> Standby (Kosong)
               </span>
             </div>
           </template>
@@ -91,19 +93,59 @@
     </div>
 
     <div v-if="filteredUsers.length > 0" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <span class="text-sm text-gray-500 font-medium">
-        Menampilkan {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredUsers.length) }} dari {{ filteredUsers.length }} data
-      </span>
+      <span class="text-sm text-gray-500 font-medium">Menampilkan {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredUsers.length) }} dari {{ filteredUsers.length }} data</span>
       <div class="flex space-x-2">
-        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors shadow-sm">
-          Sebelumnya
-        </button>
-        <div class="flex items-center px-2 text-sm font-bold text-gray-700">
-          {{ currentPage }} / {{ totalPages }}
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm">Sebelumnya</button>
+        <div class="flex items-center px-2 text-sm font-bold text-gray-700">{{ currentPage }} / {{ totalPages }}</div>
+        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm">Selanjutnya</button>
+      </div>
+    </div>
+
+    <div v-if="isInfoModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="isInfoModalOpen = false"></div>
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-auto overflow-hidden">
+        
+        <div class="bg-gradient-to-r from-[#2b4170] to-[#3b5998] p-6 text-center text-white relative">
+          <button @click="isInfoModalOpen = false" class="absolute top-4 right-4 text-white/70 hover:text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+          
+          <img :src="selectedUser?.foto ? 'http://localhost:8000/storage/' + selectedUser.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser?.name)}&background=random&color=fff`" 
+               class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover mx-auto mb-3">
+          <h3 class="text-xl font-bold">{{ selectedUser?.name }}</h3>
+          <p class="text-blue-200 text-sm font-medium uppercase tracking-widest">{{ selectedUser?.role }}</p>
         </div>
-        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors shadow-sm">
-          Selanjutnya
-        </button>
+
+        <div class="p-6 space-y-4 bg-gray-50/50">
+          <div class="flex items-center text-sm text-gray-700">
+            <i class="fas fa-envelope w-6 text-center text-gray-400"></i>
+            <span class="font-medium">{{ selectedUser?.email }}</span>
+          </div>
+          <div class="flex items-center text-sm text-gray-700">
+            <i class="fas fa-phone-alt w-6 text-center text-gray-400"></i>
+            <span class="font-medium font-mono">{{ selectedUser?.no_telepon || 'Tidak ada No Telp' }}</span>
+          </div>
+          <div class="flex items-center text-sm text-gray-700">
+            <i class="fas fa-circle w-6 text-center" :class="selectedUser?.is_online ? 'text-green-500' : 'text-gray-400'"></i>
+            <span class="font-medium">{{ selectedUser?.is_online ? 'Sedang Online' : 'Sedang Offline' }}</span>
+          </div>
+        </div>
+
+        <div v-if="selectedUser?.role === 'kurir'" class="px-6 pb-6 pt-2 bg-gray-50/50">
+          <div class="border-t border-gray-200 pt-4 mt-2">
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 text-center">Data Kinerja Kurir</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-3 text-center">
+                <p class="text-2xl font-black text-yellow-600">{{ selectedUser?.works_count || 0 }}</p>
+                <p class="text-[10px] font-bold text-yellow-800 uppercase mt-1">Paket Aktif</p>
+              </div>
+              <div class="bg-green-50 border border-green-100 rounded-lg p-3 text-center">
+                <p class="text-2xl font-black text-green-600">{{ selectedUser?.history_count || 0 }}</p>
+                <p class="text-[10px] font-bold text-green-800 uppercase mt-1">Total Selesai</p>
+              </div>
+            </div>
+            <p class="text-[10px] text-gray-400 text-center mt-3">Total Selesai mencakup seluruh paket yang telah diantarkan semenjak kurir bekerja.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -174,7 +216,6 @@
                 </div>
               </div>
             </div>
-
           </form>
         </div>
         <div class="bg-gray-50 px-6 py-4 border-t flex justify-end space-x-3">
@@ -236,7 +277,6 @@ watch(searchQuery, () => { currentPage.value = 1 })
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)))
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
 const endIndex = computed(() => startIndex.value + itemsPerPage)
-
 const paginatedUsers = computed(() => filteredUsers.value.slice(startIndex.value, endIndex.value))
 
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
@@ -245,10 +285,12 @@ const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.v
 const isDeleteModalOpen = ref(false)
 const userToDelete = ref(null)
 
+const isInfoModalOpen = ref(false)
+const selectedUser = ref(null)
+
 const isEditModalOpen = ref(false)
 const formEdit = ref({ id: '', name: '', email: '', role: '', no_telepon: '', password: '', foto: null })
 
-// --- State & Logika Drag & Drop Edit ---
 const isDraggingEdit = ref(false)
 const previewEditFoto = ref(null)
 const fileInputEdit = ref(null)
@@ -258,9 +300,7 @@ const handleDropEdit = (e) => {
   const file = e.dataTransfer.files[0]
   if (file && file.type.startsWith('image/')) {
     formEdit.value.foto = file
-    previewEditFoto.value = URL.createObjectURL(file) // Buat link preview lokal
-  } else {
-    alert('Harap masukkan file gambar (PNG/JPG).')
+    previewEditFoto.value = URL.createObjectURL(file) 
   }
 }
 
@@ -268,10 +308,9 @@ const handleFileSelectEdit = (e) => {
   const file = e.target.files[0]
   if (file) {
     formEdit.value.foto = file
-    previewEditFoto.value = URL.createObjectURL(file) // Buat link preview lokal
+    previewEditFoto.value = URL.createObjectURL(file) 
   }
 }
-// ----------------------------------------
 
 const showNotification = (message, type = 'success') => {
   notification.value = { show: true, message, type }
@@ -288,6 +327,11 @@ const fetchUsers = async () => {
   } finally { isLoading.value = false }
 }
 
+const openInfoModal = (user) => {
+  selectedUser.value = user
+  isInfoModalOpen.value = true
+}
+
 const openEditModal = (user) => {
   formEdit.value = { 
     id: user.id, 
@@ -298,14 +342,13 @@ const openEditModal = (user) => {
     password: '', 
     foto: null 
   }
-  // Load foto lama jika ada
   previewEditFoto.value = user.foto ? 'http://localhost:8000/storage/' + user.foto : null
   isEditModalOpen.value = true
 }
 
 const closeEditModal = () => {
   isEditModalOpen.value = false
-  previewEditFoto.value = null // Reset preview saat tutup
+  previewEditFoto.value = null 
 }
 
 const updateUser = async () => {

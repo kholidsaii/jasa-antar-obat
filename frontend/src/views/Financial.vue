@@ -139,13 +139,13 @@ const BankIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" strok
 const ChartIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>` })
 
 const tabs = [
-  { id: 'overview', name: 'Overview', icon: EyeIcon },
-  { id: 'all-transaksi', name: 'Buku Besar', icon: ListIcon },
+  { id: 'overview', name: 'Overview', icon: ChartIcon },
+  { id: 'all-transaksi', name: 'All Transaksi', icon: ListIcon },
   { id: 'banking', name: 'Dompet & Banking', icon: BankIcon },
   { id: 'accounting', name: 'Laba / Rugi', icon: ChartIcon },
 ]
 
-const activeTab = ref('overview')
+const activeTab = ref('all-transaksi')
 const isModalTransaksiOpen = ref(false)
 const isSaving = ref(false)
 

@@ -35,7 +35,7 @@ class RoleUserSeeder extends Seeder
         ]);
 
         // 4. Kurir
-        $kurir = User::updateOrCreate(['email' => 'kurir.budi@jastar.com'], [
+        $kurir = User::updateOrCreate(['email' => 'kurirbudi@jastar.com'], [
             'name' => 'Budi Kurir',
             'password' => $defaultPassword,
             'role' => 'kurir'

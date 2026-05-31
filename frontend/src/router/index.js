@@ -23,7 +23,7 @@ const routes = [
     path: '/pengiriman',
     name: 'Pengiriman',
     component: Pengiriman,
-    meta: { requiresAuth: true, roles: ['superadmin', 'admin', 'farmasi'] }
+    meta: { requiresAuth: true, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] }
   },
   {
     path: '/teamwork',
