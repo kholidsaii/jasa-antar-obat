@@ -148,7 +148,7 @@ const summaryUangReal = computed(() => {
 const fetchTransactions = async () => {
   isLoading.value = true
   try {
-    const response = await axios.get('http://127.0.0.1:8000/api/v1/transactions')
+    const response = await axios.get('http://localhost:8000/api/v1/transactions')
     transactions.value = response.data.data
   } catch (e) { console.error(e) } finally { isLoading.value = false }
 }

@@ -181,7 +181,7 @@ const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currenc
 
 const fetchCustomersForDropdown = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/api/v1/customers')
+    const response = await axios.get('http://localhost:8000/api/v1/customers')
     customersList.value = response.data.data
   } catch (error) { console.error("Gagal mengambil data:", error) }
 }
@@ -254,7 +254,7 @@ const handleCustomerSelect = async () => {
 const savePaket = async () => {
   isSaving.value = true
   try {
-    await axios.post('http://127.0.0.1:8000/api/v1/packages', formPaket.value)
+    await axios.post('http://localhost:8000/api/v1/packages', formPaket.value)
     closeModalPaket()
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'all-paket', 10)

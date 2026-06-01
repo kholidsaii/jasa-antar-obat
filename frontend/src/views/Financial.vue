@@ -205,7 +205,7 @@ const saveTransaksi = async () => {
       delete payload.ke_rekening;
     }
 
-    await axios.post('http://127.0.0.1:8000/api/v1/transactions', payload)
+    await axios.post('http://localhost:8000/api/v1/transactions', payload)
     closeModalTransaksi()
     alert('Transaksi berhasil dibukukan.')
 
