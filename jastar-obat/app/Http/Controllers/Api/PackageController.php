@@ -23,11 +23,11 @@ class PackageController extends Controller
         $validator = Validator::make($request->all(), [
             'customer_id'       => 'required|exists:customers,id',
             'deskripsi_pesanan' => 'required|string',
-            'status_pengiriman' => 'nullable|in:Pesanan diverifikasi,Pengemasan,Menunggu Driver,Diperjalanan,Terkirim,Dibatalkan',
-            'status_pembayaran' => 'nullable|in:Belum Lunas,Lunas',
+            'status_pengiriman' => 'nullable|string',
+            'status_pembayaran' => 'nullable|string',
             'metode_pembayaran' => 'nullable|string',
             'jarak_km'          => 'nullable|numeric',
-            'total_harga'       => 'nullable|numeric'
+            'total_harga'       => 'nullable|numeric' // Admin bisa kirim custom harga
         ]);
 
         if ($validator->fails()) return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
@@ -62,21 +62,10 @@ class PackageController extends Controller
         $package = Package::find($id);
         if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
 
-        $validator = Validator::make($request->all(), [
-            'customer_id'       => 'sometimes|required|exists:customers,id',
-            'deskripsi_pesanan' => 'sometimes|required|string',
-            'status_pengiriman' => 'sometimes|required',
-            'status_pembayaran' => 'sometimes|required',
-            'metode_pembayaran' => 'sometimes|required'
-        ]);
-
-        if ($validator->fails()) return response()->json(['status' => 'error', 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
-
         try {
             $package->update($request->all());
             $package->load('customer');
 
-            // LOGIKA PEMBATALAN: Hapus Work dan Bebaskan Kendaraan
             if ($package->status_pengiriman === 'Dibatalkan') {
                 $work = Work::where('package_id', $package->id)->first();
                 if ($work) {
@@ -85,47 +74,57 @@ class PackageController extends Controller
                 }
             }
 
-            // SINKRONISASI TRANSAKSI KEUANGAN DENGAN STATUS PAKET
+            // --- SINKRONISASI BUKU KAS GANDA ---
             $isLunas = $package->status_pembayaran === 'Lunas';
             $isTerkirim = $package->status_pengiriman === 'Terkirim';
-            $deskripsi = 'Pendapatan Paket #PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
-            $nominal = $package->total_harga ?? 0;
+            $kodeUnik = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
+            $nominalTotal = $package->total_harga ?? 0;
+            $metode = $package->metode_pembayaran ?? 'Tunai / Cash (Sistem)';
 
             if ($isLunas && $isTerkirim) {
-                // Jika valid (Lunas & Terkirim), Cek apakah transaksi sudah ada
-                $trx = Transaction::where('deskripsi', $deskripsi)->first();
-                
-                if (!$trx) {
-                    // Buat Baru
+                Transaction::where('deskripsi', 'LIKE', "%{$kodeUnik}%")->delete();
+
+                if (strtolower($metode) === 'gratis / amal') {
                     Transaction::create([
-                        'deskripsi'         => $deskripsi,
-                        'nominal'           => $nominal,
+                        'deskripsi'         => 'Sedekah / Gratis Paket ' . $kodeUnik,
+                        'nominal'           => $nominalTotal,
                         'tipe'              => 'Uang Masuk',
-                        'metode_pembayaran' => $package->metode_pembayaran ?? 'Tunai / Cash'
+                        'metode_pembayaran' => 'Gratis / Amal'
                     ]);
                 } else {
-                    // Update yang sudah ada (jaga-jaga user mengubah harga/metode di paket)
-                    $trx->update([
-                        'nominal'           => $nominal,
-                        'metode_pembayaran' => $package->metode_pembayaran ?? 'Tunai / Cash'
+                    $biayaAdmin = 1500;
+                    $biayaDasar = max(0, $nominalTotal - $biayaAdmin);
+
+                    // AUTO-ROUTING TRANSFER: Jika Transfer, uang langsung masuk ke Rek Budi (Real).
+                    // Jika Cash/QRIS, uang tertahan di tangan kurir (Sistem).
+                    $metodeDasar = str_contains(strtolower($metode), 'transfer') 
+                                   ? 'Rek. Bank Budi (Operasional)' 
+                                   : $metode;
+
+                    // Transaksi 1: Biaya Dasar (Pendapatan Operasional)
+                    Transaction::create([
+                        'deskripsi'         => 'Pendapatan Dasar ' . $kodeUnik,
+                        'nominal'           => $biayaDasar,
+                        'tipe'              => 'Uang Masuk',
+                        'metode_pembayaran' => $metodeDasar
+                    ]);
+
+                    // Transaksi 2: Biaya Admin (Sistem - menunggu dimutasi ke Rek Syamil)
+                    Transaction::create([
+                        'deskripsi'         => 'Biaya Admin ' . $kodeUnik,
+                        'nominal'           => $biayaAdmin,
+                        'tipe'              => 'Uang Masuk',
+                        'metode_pembayaran' => 'Biaya Admin (Sistem)'
                     ]);
                 }
             } else {
-                // Jika status paket dikembalikan menjadi belum lunas / dibatalkan, hapus dari buku kas!
-                Transaction::where('deskripsi', $deskripsi)->delete();
+                Transaction::where('deskripsi', 'LIKE', "%{$kodeUnik}%")->delete();
             }
 
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'Paket berhasil diupdate dan transaksi telah disesuaikan',
-                'data'    => $package
-            ], 200);
+            return response()->json(['status' => 'success', 'data' => $package], 200);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Gagal mengupdate paket: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['status'  => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -135,19 +134,13 @@ class PackageController extends Controller
         if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
 
         try {
-            // Hapus Work & Lepaskan Kendaraan
             $work = Work::where('package_id', $id)->first();
-            if ($work && $work->vehicle_id) {
-                Vehicle::where('id', $work->vehicle_id)->update(['status' => 'Tersedia']);
-            }
+            if ($work && $work->vehicle_id) Vehicle::where('id', $work->vehicle_id)->update(['status' => 'Tersedia']);
             
-            // HAPUS TRANSAKSI KEUANGAN YANG BERKAITAN (Sinkronisasi)
-            $deskripsi = 'Pendapatan Paket #PKT-' . str_pad($id, 4, '0', STR_PAD_LEFT);
-            Transaction::where('deskripsi', $deskripsi)->delete();
+            $kodeUnik = '#PKT-' . str_pad($id, 4, '0', STR_PAD_LEFT);
+            Transaction::where('deskripsi', 'LIKE', "%{$kodeUnik}%")->delete();
 
-            // Hapus Paket
             $package->delete();
-
             return response()->json(['status' => 'success', 'message' => 'Dihapus'], 200);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);

@@ -168,13 +168,19 @@
                 </select>
               </div>
 
-              <div class="sm:col-span-2">
+              <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
-                <select v-model="editForm.metode_pembayaran" :disabled="userRole === 'farmasi'" required class="w-full border border-gray-300 rounded-lg p-2.5 disabled:bg-gray-100 disabled:text-gray-500 outline-none bg-white">
-                  <option value="Tunai / Cash">Tunai / Cash</option>
-                  <option value="Transfer Bank">Transfer Bank</option>
-                  <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
+                <select v-model="editForm.metode_pembayaran" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
+                  <option value="Tunai / Cash (Sistem)">Tunai / Cash (Sistem)</option>
+                  <option value="Transfer Bank (Sistem)">Transfer Bank (Sistem)</option>
+                  <option value="QRIS / E-Wallet (Sistem)">QRIS / E-Wallet (Sistem)</option>
+                  <option v-if="['superadmin', 'admin'].includes(userRole)" value="Gratis / Amal" class="text-purple-600 font-bold">Gratis / Amal</option>
                 </select>
+              </div>
+              
+              <div v-if="['superadmin', 'admin'].includes(userRole)" class="sm:col-span-2 pt-2 border-t mt-2">
+                <label class="block text-sm font-bold text-gray-800 mb-1">Ubah Total Tagihan (Rp)</label>
+                <input v-model="editForm.total_harga" type="number" class="w-full border border-blue-300 bg-white text-[#3b5998] font-black text-lg rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#3b5998]">
               </div>
             </div>
           </form>
@@ -218,7 +224,8 @@ import axios from 'axios'
 
 // -- Get Role User --
 const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
-const userRole = computed(() => currentUser.value.role || 'guest')
+// const userRole = computed(() => currentUser.value.role || 'guest')
+const userRole = ref(JSON.parse(localStorage.getItem('user'))?.role || '')
 
 const API_URL = '/packages' 
 

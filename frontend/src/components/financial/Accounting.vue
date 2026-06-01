@@ -77,7 +77,6 @@ const API_URL = 'http://localhost:8000/api/v1/transactions'
 const transactions = ref([])
 const isLoading = ref(true)
 
-// Kategori Akuntansi Cerdas (Sistem Pembacaan Keyword dari Deskripsi)
 const getKategoriAkuntansi = (deskripsi, tipe) => {
   const text = deskripsi.toLowerCase()
   if (tipe === 'Uang Masuk') {
@@ -95,7 +94,8 @@ const getKategoriAkuntansi = (deskripsi, tipe) => {
 }
 
 const incomeCategories = computed(() => {
-  const incomes = transactions.value.filter(t => t.tipe === 'Uang Masuk')
+  // Hanya menghitung Uang Masuk operasional murni (Mengecualikan Amal & Mutasi)
+  const incomes = transactions.value.filter(t => t.tipe === 'Uang Masuk' && t.metode_pembayaran !== 'Gratis / Amal')
   const groups = {}
   incomes.forEach(t => {
     const akun = getKategoriAkuntansi(t.deskripsi || '', 'Uang Masuk')
@@ -106,6 +106,7 @@ const incomeCategories = computed(() => {
 })
 
 const expenseCategories = computed(() => {
+  // Hanya menghitung Uang Keluar operasional murni (Mengecualikan Mutasi Keluar)
   const expenses = transactions.value.filter(t => t.tipe === 'Uang Keluar')
   const groups = {}
   expenses.forEach(t => {

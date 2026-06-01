@@ -59,14 +59,14 @@
             <td class="px-6 py-4 text-sm text-gray-800 break-words min-w-[200px]">{{ trx.deskripsi }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
               <span :class="getTipeClass(trx.tipe)" class="px-3 py-1.5 inline-flex text-xs font-bold rounded-full border">
-                <i :class="trx.tipe === 'Uang Masuk' ? 'fas fa-arrow-down mr-1' : 'fas fa-arrow-up mr-1'"></i> {{ trx.tipe }}
+                <i :class="trx.tipe.includes('Masuk') ? 'fas fa-arrow-down mr-1' : 'fas fa-arrow-up mr-1'"></i> {{ trx.tipe }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-600">
               <span class="uppercase tracking-wide border bg-gray-100 px-2 py-1.5 rounded">{{ trx.metode_pembayaran || 'Tunai / Cash' }}</span>
             </td>
-            <td :class="['px-6 py-4 whitespace-nowrap text-right text-sm font-bold', trx.tipe === 'Uang Masuk' ? 'text-green-600' : 'text-red-600']">
-              {{ trx.tipe === 'Uang Masuk' ? '+' : '-' }} {{ formatRupiah(trx.nominal) }}
+            <td :class="['px-6 py-4 whitespace-nowrap text-right text-sm font-bold', trx.tipe.includes('Masuk') ? 'text-green-600' : 'text-red-600']">
+              {{ trx.tipe.includes('Masuk') ? '+' : '-' }} {{ formatRupiah(trx.nominal) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
               <button @click="openEditModal(trx)" class="text-[#3b5998] hover:text-blue-900 bg-blue-50 p-1.5 rounded-lg border border-blue-200 mr-2 transition-colors" title="Edit Transaksi">
@@ -107,29 +107,31 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-semibold mb-1">Tipe Transaksi</label>
-              <select v-model="editForm.tipe" :disabled="editForm.deskripsi.includes('#PKT-')" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] disabled:bg-gray-100">
+              <select v-model="editForm.tipe" :disabled="editForm.deskripsi.includes('#PKT-')" class="w-full border rounded-lg p-2.5 bg-white">
                 <option value="Uang Masuk">Uang Masuk</option>
                 <option value="Uang Keluar">Uang Keluar</option>
+                <option value="Mutasi Masuk">Mutasi Masuk</option>
+                <option value="Mutasi Keluar">Mutasi Keluar</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm font-semibold mb-1">Metode Pembayaran</label>
-              <input v-model="editForm.metode_pembayaran" type="text" placeholder="Contoh: Tunai / Transfer BCA" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998]">
+              <label class="block text-sm font-semibold mb-1">Metode / Dompet</label>
+              <input v-model="editForm.metode_pembayaran" type="text" required class="w-full border rounded-lg p-2.5">
             </div>
           </div>
           <div>
             <label class="block text-sm font-semibold mb-1">Nominal (Rp)</label>
-            <input v-model="editForm.nominal" type="number" required min="0" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998]">
+            <input v-model="editForm.nominal" type="number" required min="0" class="w-full border rounded-lg p-2.5">
           </div>
           <div>
             <label class="block text-sm font-semibold mb-1">Deskripsi</label>
-            <textarea v-model="editForm.deskripsi" :disabled="editForm.deskripsi.includes('#PKT-')" rows="2" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] disabled:bg-gray-100"></textarea>
+            <textarea v-model="editForm.deskripsi" :disabled="editForm.deskripsi.includes('#PKT-')" rows="2" class="w-full border rounded-lg p-2.5 disabled:bg-gray-100"></textarea>
           </div>
         </form>
         
         <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
-          <button @click="isEditModalOpen = false" class="px-5 py-2.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Batal</button>
-          <button @click="updateTransaksi" :disabled="isSaving" class="px-5 py-2.5 bg-[#3b5998] text-white rounded-lg hover:bg-blue-800 disabled:opacity-50 transition-colors shadow-sm">Update</button>
+          <button @click="isEditModalOpen = false" class="px-5 py-2.5 bg-gray-100 rounded-lg">Batal</button>
+          <button @click="updateTransaksi" :disabled="isSaving" class="px-5 py-2.5 bg-[#3b5998] text-white rounded-lg">Update</button>
         </div>
       </div>
     </div>
@@ -139,12 +141,10 @@
       <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
         <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
         <h3 class="text-lg font-bold mb-2">Hapus Transaksi?</h3>
-        <p class="text-sm text-gray-500 mb-6">Penghapusan ini tidak dapat dibatalkan dan akan memengaruhi neraca buku besar.</p>
+        <p class="text-sm text-gray-500 mb-6">Penghapusan ini memengaruhi neraca buku besar.</p>
         <div class="flex justify-center space-x-3">
-          <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 transition-colors">Batal</button>
-          <button @click="deleteTransaksi" :disabled="isSaving" class="px-5 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50">
-            {{ isSaving ? 'Menghapus...' : 'Ya, Hapus' }}
-          </button>
+          <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 bg-gray-100 rounded-lg">Batal</button>
+          <button @click="deleteTransaksi" :disabled="isSaving" class="px-5 py-2.5 bg-red-600 text-white rounded-lg">Ya, Hapus</button>
         </div>
       </div>
     </div>
@@ -172,7 +172,8 @@ const filteredTransactions = computed(() => {
   return transactions.value.filter(trx => 
     trx.deskripsi.toLowerCase().includes(query) || 
     trx.nominal.toString().includes(query) ||
-    (trx.metode_pembayaran || '').toLowerCase().includes(query)
+    (trx.metode_pembayaran || '').toLowerCase().includes(query) ||
+    trx.tipe.toLowerCase().includes(query)
   )
 })
 
@@ -236,7 +237,15 @@ const deleteTransaksi = async () => {
 
 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 const formatDate = (dateString) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString))
-const getTipeClass = (tipe) => tipe === 'Uang Masuk' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
+
+const getTipeClass = (tipe) => {
+  if (tipe === 'Uang Masuk') return 'bg-green-50 text-green-700 border-green-200'
+  if (tipe === 'Uang Keluar') return 'bg-red-50 text-red-700 border-red-200'
+  if (tipe === 'Mutasi Masuk') return 'bg-blue-50 text-blue-700 border-blue-200'
+  if (tipe === 'Mutasi Keluar') return 'bg-indigo-50 text-indigo-700 border-indigo-200'
+  return 'bg-gray-50 text-gray-700 border-gray-200'
+}
+
 const showNotification = (message, type) => {
   notification.value = { show: true, message, type }
   setTimeout(() => notification.value.show = false, 3000)
