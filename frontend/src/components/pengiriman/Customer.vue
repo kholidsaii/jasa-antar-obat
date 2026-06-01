@@ -160,7 +160,7 @@ import axios from 'axios'
 const currentUser = JSON.parse(localStorage.getItem('user')) || {}
 const userRole = ref(currentUser.role || '')
 
-const API_URL = 'http://127.0.0.1:8000/api/v1/customers'
+const API_URL = 'http://localhost:8000/api/v1/customers'
 const customers = ref([])
 const isLoading = ref(true)
 const isSaving = ref(false)
