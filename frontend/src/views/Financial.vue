@@ -76,12 +76,14 @@
     <!-- ========================================== -->
     <!-- 3. TAB CONTENTS (CHILD COMPONENTS)         -->
     <!-- ========================================== -->
-    <div class="mt-6 min-h-[500px] relative">
+    <div class="mt-6 relative min-h-[400px] w-full">
       <Transition name="fade-slide" mode="out-in">
-        <Overview v-if="activeTab === 'overview'" />
-        <AllTransaksi v-else-if="activeTab === 'all-transaksi'" />
-        <Banking v-else-if="activeTab === 'banking'" />
-        <Accounting v-else-if="activeTab === 'accounting'" />
+        <div :key="activeTab" class="w-full">
+          <Overview v-if="activeTab === 'overview'" />
+          <AllTransaksi v-else-if="activeTab === 'all-transaksi'" />
+          <Banking v-else-if="activeTab === 'banking'" />
+          <Accounting v-else-if="activeTab === 'accounting'" />
+        </div>
       </Transition>
     </div>
 

@@ -52,12 +52,14 @@
       </div>
     </div>
 
-    <div class="mt-6 min-h-[500px] relative">
+    <div class="mt-6 min-h-[500px] relative w-full">
       <Transition name="fade" mode="out-in">
-        <Overview v-if="activeTab === 'overview'" />
-        <AllPaket v-else-if="activeTab === 'all-paket'" />
-        <Customer v-else-if="activeTab === 'customer'" />
-        <Alamat v-else-if="activeTab === 'alamat'" />
+        <div :key="activeTab" class="w-full">
+          <Overview v-if="activeTab === 'overview'" />
+          <AllPaket v-else-if="activeTab === 'all-paket'" />
+          <Customer v-else-if="activeTab === 'customer'" />
+          <Alamat v-else-if="activeTab === 'alamat'" />
+        </div>
       </Transition>
     </div>
 

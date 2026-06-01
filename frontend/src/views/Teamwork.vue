@@ -58,12 +58,14 @@
       </div>
     </div>
 
-    <div class="mt-6 min-h-[500px] relative">
+    <div class="mt-6 min-h-[500px] relative w-full">
       <Transition name="fade-slide" mode="out-in">
-        <Overview v-if="activeTab === 'overview'" />
-        <Pekerjaan v-else-if="activeTab === 'pekerjaan'" />
-        <Karyawan v-else-if="activeTab === 'karyawan'" />
-        <Kendaraan v-else-if="activeTab === 'kendaraan'" />
+        <div :key="activeTab" class="w-full">
+          <Overview v-if="activeTab === 'overview'" />
+          <Pekerjaan v-else-if="activeTab === 'pekerjaan'" />
+          <Karyawan v-else-if="activeTab === 'karyawan'" />
+          <Kendaraan v-else-if="activeTab === 'kendaraan'" />
+        </div>
       </Transition>
     </div>
 
