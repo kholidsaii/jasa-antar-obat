@@ -4,8 +4,8 @@ import router from './router'
 import axios from 'axios'
 import './style.css' // Asumsi Anda pakai Tailwind
 
-// Setup Global Axios (Ubah ke domain API asli Anda)
-axios.defaults.baseURL = 'https://api.jasaantarobat.com/api/v1';
+// Setup Global Axios
+axios.defaults.baseURL = 'http://localhost:8000/api/v1';
 
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
