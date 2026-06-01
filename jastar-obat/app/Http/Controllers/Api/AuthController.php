@@ -23,7 +23,7 @@ class AuthController extends Controller
             $user->update(['is_online' => true]);
             
             // Hapus token lama jika ingin membatasi 1 device, atau biarkan menumpuk
-            $user->tokens()->delete(); 
+            // $user->tokens()->delete(); 
 
             // Buat token baru
             $token = $user->createToken('auth_token')->plainTextToken;
