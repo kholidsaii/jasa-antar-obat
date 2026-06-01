@@ -10,26 +10,28 @@
       </div>
       
       <div class="px-6 sm:px-8 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between relative">
-        <div class="flex items-end -mt-12 sm:-mt-16 mb-4 sm:mb-0">
-          <div class="bg-white p-1.5 rounded-2xl shadow-lg border border-gray-100 inline-block z-10">
+        
+        <div class="flex flex-col sm:flex-row sm:items-end -mt-12 sm:-mt-16 mb-4 sm:mb-0 relative z-10">
+          <div class="bg-white p-1.5 rounded-2xl shadow-lg border border-gray-100 inline-block shrink-0 w-max">
             <img 
               src="https://api.dicebear.com/7.x/bottts/svg?seed=Delivery&backgroundColor=e2e8f0" 
               alt="Maskot" 
               class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover bg-gray-50"
             />
           </div>
-          <div class="ml-5 pb-2 text-white sm:text-gray-900 drop-shadow-md sm:drop-shadow-none relative z-10 sm:z-auto top-10 sm:top-0">
-            <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">PENGIRIMAN</h1>
-            <p class="text-gray-200 sm:text-gray-500 text-sm sm:text-base font-medium mt-1">Manajemen Data Pasien & Paket Obat</p>
+          
+          <div class="mt-4 sm:mt-0 sm:ml-5 pb-1 sm:pb-2">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">PENGIRIMAN</h1>
+            <p class="text-gray-500 text-sm sm:text-base font-medium mt-1">Manajemen Data Pasien & Paket Obat</p>
           </div>
         </div>
         
-        <div class="flex space-x-3 pb-2 pt-14 sm:pt-0" v-if="['superadmin', 'admin', 'farmasi'].includes(userRole)">
-          <button @click="openModalPaket" class="bg-[#3b5998] hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-md hover:shadow-lg flex items-center transform hover:-translate-y-0.5">
+        <div class="flex space-x-3 mt-4 sm:mt-0 pb-2 w-full sm:w-auto overflow-x-auto" v-if="['superadmin', 'admin', 'farmasi'].includes(userRole)">
+          <button @click="openModalPaket" class="flex-1 sm:flex-none justify-center bg-[#3b5998] hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-md hover:shadow-lg flex items-center transform hover:-translate-y-0.5">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
             Buat Paket
           </button>
-          <button @click="openModalCustomer" class="bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-sm flex items-center">
+          <button @click="openModalCustomer" class="flex-1 sm:flex-none justify-center bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-sm flex items-center">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg> 
             Pasien Baru
           </button>
@@ -262,20 +264,16 @@ const tabs = [
 const computedTabs = computed(() => {
   const role = userRole.value;
   if (role === 'farmasi') {
-    // Farmasi hanya mengurus Database Paket dan Buku Pasien
     return tabs.filter(t => ['all-paket', 'customer'].includes(t.id))
   } else if (role === 'kurir') {
-    // Kurir hanya butuh Daftar Paket dan Peta Navigasi
     return tabs.filter(t => ['all-paket', 'alamat'].includes(t.id))
   }
-  // Admin & Superadmin bebas melihat semua tab
   return tabs 
 })
 
-// Set Active Tab Default: Admin ke 'overview', Farmasi/Kurir ke 'all-paket'
+// Set Active Tab Default
 const activeTab = ref(['admin', 'superadmin'].includes(userRole.value) ? 'overview' : 'all-paket')
 
-// Titik Tetap Pusat Rumah Sakit (Koordinat Bintaro)
 const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
 
 // --- STATE MANAGEMENT MODALS & FORMS ---
@@ -287,7 +285,6 @@ const customersList = ref([])
 
 const selectedCustomerAddress = ref('')
 const formCustomer = ref({ nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', umur: null, alamat: '', detail_alamat: '' })
-// Form Paket di set default ke 'Pesanan diverifikasi' (Langkah awal Farmasi)
 const formPaket = ref({ customer_id: '', deskripsi_pesanan: '', status_pengiriman: 'Pesanan diverifikasi', status_pembayaran: 'Belum Lunas', metode_pembayaran: 'Tunai / Cash', jarak_km: null, total_harga: 0 })
 const rincianHarga = ref({ baseHarga: 0, admin: 0 })
 
@@ -296,7 +293,7 @@ const formatRupiah = (angka) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 }
 
-// --- FUNGSI API (MEMAKAI RELATIVE PATH AGAR OTOMATIS IKUT MAIN.JS BASE URL) ---
+// --- FUNGSI API ---
 const fetchCustomersForDropdown = async () => {
   try {
     const response = await axios.get('/customers')
@@ -332,11 +329,9 @@ const handleCustomerSelect = async () => {
   let lat = parseFloat(customer.lat);
   let lng = parseFloat(customer.lng);
 
-  // Jika pasien tidak punya data koordinat di DB, cari on-the-fly pakai Nominatim
   if (!lat || !lng) {
     try {
       const query = encodeURIComponent(`${customer.alamat}, Jakarta, Indonesia`);
-      // Pakai fetch murni agar tidak ter-intercept token Laravel
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
       const data = await response.json();
       
@@ -355,17 +350,15 @@ const handleCustomerSelect = async () => {
     }
   }
 
-  // Hitung jarak via OSRM Router API
   try {
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${lng},${lat}?overview=false`;
-    const response = await fetch(osrmUrl); // Pakai fetch murni
+    const response = await fetch(osrmUrl);
     const data = await response.json();
     
     if (data.code === 'Ok') {
       const rute = data.routes[0];
       const jarakKm = parseFloat((rute.distance / 1000).toFixed(1));
       
-      // Rumus Bisnis: Base 20.000 untuk 5km pertama. Sisanya 5000/km. Admin 1500.
       let baseHarga = 20000;
       if (jarakKm > 5.0) {
         const extraKm = Math.ceil(jarakKm) - 5;
@@ -402,22 +395,18 @@ const getCoordinatesFromAddress = async (alamatUtama) => {
   } catch (error) { return null; }
 }
 
-// --- FUNGSI SAVE/INSERT DATA ---
 const saveCustomer = async () => {
   if(!formCustomer.value.nama || !formCustomer.value.alamat) return alert('Nama & Alamat Utama Wajib Diisi!');
   isSaving.value = true
   try {
-    // Ambil koordinat dulu via fetch murni
     const coords = await getCoordinatesFromAddress(formCustomer.value.alamat);
     const payload = { ...formCustomer.value, lat: coords ? coords.lat : null, lng: coords ? coords.lng : null }
     
-    // Tembak Axios ke Laravel API
     await axios.post('/customers', payload)
     
     closeModalCustomer()
     alert('Data Pasien (Customer) Berhasil Disimpan ke Database!')
     
-    // Auto Refresh Komponen Customer
     if (activeTab.value === 'customer') {
       activeTab.value = ''
       setTimeout(() => activeTab.value = 'customer', 10)
@@ -433,13 +422,9 @@ const savePaket = async () => {
   if(!formPaket.value.customer_id || !formPaket.value.deskripsi_pesanan) return alert('Harap isi form dengan lengkap!');
   isSaving.value = true
   try {
-    // Tembak Axios ke Laravel API
     await axios.post('/packages', formPaket.value)
-    
     closeModalPaket()
     alert('Resi Tagihan dan Paket Berhasil Dibuat!')
-    
-    // Auto Refresh Komponen Paket
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'all-paket', 10)
   } catch (error) { 
@@ -449,7 +434,6 @@ const savePaket = async () => {
   }
 }
 
-// Inisialisasi data dropdown saat mount (untuk jaga-jaga)
 onMounted(() => { 
   if(['superadmin', 'admin', 'farmasi'].includes(userRole.value)){
     fetchCustomersForDropdown() 
@@ -458,20 +442,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Transisi Vue standar untuk pergerakan Tab/Component */
 .fade-enter-active,
 .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .fade-enter-from,
 .fade-leave-to { opacity: 0; transform: translateY(5px); }
 
-/* Animasi Muncul Pop-up Modal */
 @keyframes modalIn {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 .animate-modal-in { animation: modalIn 0.2s ease-out forwards; }
 
-/* Kustomisasi Scrollbar agar Elegan */
 .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
