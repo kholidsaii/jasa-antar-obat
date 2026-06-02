@@ -120,69 +120,6 @@
       </div>
     </div>
 
-    <div class="block lg:hidden flex-1 bg-gray-50/50">
-      
-      <div v-if="isLoading" class="p-6 space-y-4">
-        <div v-for="i in 4" :key="i" class="h-32 bg-white rounded-xl border border-gray-100 animate-pulse"></div>
-      </div>
-
-      <div v-else-if="filteredPackages.length === 0" class="p-10 text-center text-gray-500 font-medium">
-        Tidak ada data paket ditemukan.
-      </div>
-
-      <div v-else class="divide-y divide-gray-100">
-        <div v-for="pkg in paginatedPackages" :key="'mob-'+pkg.id" class="bg-white p-4 hover:bg-blue-50/20 active:bg-gray-50 transition-colors">
-          
-          <div class="flex justify-between items-start mb-3">
-            <div>
-             <span class="text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
-                #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
-              </span>
-            </div>
-            <span :class="getStatusPengirimanClass(pkg.status_pengiriman)" class="px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md border shadow-sm max-w-[120px] text-center truncate">
-              {{ pkg.status_pengiriman }}
-            </span>
-          </div>
-
-          <div class="flex justify-between items-center mb-2">
-            <div>
-              <p class="font-black text-gray-900 text-sm sm:text-base">{{ pkg.customer?.nama || 'Tidak diketahui' }}</p>
-              <p class="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5"><i class="fas fa-phone-alt text-gray-400 mr-1"></i> {{ pkg.customer?.no_telp || '-' }}</p>
-            </div>
-            <div class="text-right">
-              <span :class="getStatusPembayaranClass(pkg.status_pembayaran)" class="px-2 py-1 inline-flex text-[9px] font-black rounded-md border uppercase tracking-widest shadow-sm">
-                {{ pkg.status_pembayaran }}
-              </span>
-            </div>
-          </div>
-
-          <div class="bg-gray-50/80 p-2.5 rounded-lg border border-gray-100 mb-3">
-            <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">{{ pkg.deskripsi_pesanan }}</p>
-          </div>
-
-          <div class="flex flex-col gap-3 pt-3 border-t border-gray-50">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Tagihan</span>
-              <span class="font-black text-[#3b5998] text-base">{{ pkg.total_harga ? formatRupiah(pkg.total_harga) : '-' }}</span>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2 mt-1">
-              <button @click="copyTrackingLink(pkg)" class="flex justify-center items-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2.5 rounded-xl border border-emerald-200 text-xs font-bold transition-all active:scale-95 shadow-sm">
-                <i class="fas fa-link mr-1.5"></i> Salin Link
-              </button>
-              <button @click="openEditModal(pkg)" class="flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-[#3b5998] py-2.5 rounded-xl border border-blue-200 text-xs font-bold transition-all active:scale-95 shadow-sm">
-                <i class="fas fa-edit mr-1.5"></i> Update Status
-              </button>
-              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="col-span-2 flex justify-center items-center bg-red-50 hover:bg-red-100 text-red-600 py-2.5 rounded-xl border border-red-200 text-xs font-bold transition-all active:scale-95 shadow-sm">
-                <i class="fas fa-trash-alt mr-1.5"></i> Hapus Paket
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
     <div v-if="filteredPackages.length > 0" class="px-5 py-4 border-t border-gray-100 bg-white sm:bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
       <span class="text-[11px] sm:text-sm text-gray-500 font-bold uppercase tracking-wider text-center sm:text-left">
         Hal {{ currentPage }} dari {{ totalPages }} <span class="hidden sm:inline">• Total {{ filteredPackages.length }} Data</span>
