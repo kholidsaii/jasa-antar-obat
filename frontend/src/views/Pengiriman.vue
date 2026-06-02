@@ -1,30 +1,34 @@
 <template>
-  <div class="max-w-7xl mx-auto pb-10">
-    <div class="bg-white rounded-t-xl overflow-hidden shadow-sm border border-gray-100">
-      <div class="h-48 w-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=2070&auto=format&fit=crop');"></div>
-      <div class="px-6 sm:px-8 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between relative">
-        <div class="flex items-end -mt-12 sm:-mt-16 mb-4 sm:mb-0">
-          <div class="bg-white p-1.5 rounded-2xl shadow-md border border-gray-100 inline-block">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Delivery&backgroundColor=e2e8f0" alt="Maskot" class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover bg-gray-100"/>
+  <div class="max-w-7xl mx-auto pb-10 sm:pb-12 bg-gray-50/50 min-h-screen">
+    <div class="bg-white rounded-b-2xl sm:rounded-t-xl sm:rounded-b-none overflow-hidden shadow-sm border-b sm:border border-gray-100">
+      
+      <div class="h-32 sm:h-48 w-full bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=2070&auto=format&fit=crop');">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent sm:hidden"></div>
+      </div>
+      
+      <div class="px-4 sm:px-8 pb-5 sm:pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between relative">
+        <div class="flex items-end -mt-10 sm:-mt-16 mb-4 sm:mb-0 relative z-10">
+          <div class="bg-white p-1 sm:p-1.5 rounded-xl sm:rounded-2xl shadow-md border border-gray-100 inline-block">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Delivery&backgroundColor=e2e8f0" alt="Maskot" class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl object-cover bg-gray-100"/>
           </div>
-          <div class="ml-5 pb-2">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">PENGIRIMAN</h1>
-            <p class="text-gray-500 text-sm sm:text-base font-medium mt-1">Manajemen Data & Operasional</p>
+          <div class="ml-4 sm:ml-5 pb-1 sm:pb-2">
+            <h1 class="text-xl sm:text-3xl font-black text-gray-900 leading-tight">PENGIRIMAN</h1>
+            <p class="text-gray-500 text-xs sm:text-sm font-medium mt-0.5 sm:mt-1">Manajemen Data & Operasional</p>
           </div>
         </div>
         
-        <div class="flex space-x-3 pb-2" v-if="userRole !== 'kurir'">
-          <button @click="openModalPaket" class="bg-[#3b5998] hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
-            Pesanan Baru
+        <div class="w-full sm:w-auto mt-2 sm:mt-0 relative z-10" v-if="userRole !== 'kurir'">
+          <button @click="openModalPaket" class="w-full sm:w-auto justify-center bg-[#3b5998] hover:bg-blue-800 text-white px-6 py-3.5 sm:py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center">
+            <svg class="w-5 h-5 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
+            Buat Pesanan Baru
           </button>
         </div>
       </div>
       
-      <div class="px-6 sm:px-8 border-t border-gray-100">
-        <nav class="flex space-x-8 overflow-x-auto" aria-label="Tabs">
+      <div class="border-t border-gray-100 bg-white">
+        <nav class="flex overflow-x-auto hide-scrollbar scroll-smooth px-2 sm:px-8" aria-label="Tabs">
           <button v-for="tab in allowedTabs" :key="tab.id" @click="activeTab = tab.id"
-            :class="[activeTab === tab.id ? 'border-[#3b5998] text-[#3b5998]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'group inline-flex items-center py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap']">
+            :class="[activeTab === tab.id ? 'border-[#3b5998] text-[#3b5998]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'group inline-flex items-center px-4 py-3.5 sm:py-4 border-b-2 font-bold text-[13px] sm:text-sm transition-colors whitespace-nowrap flex-shrink-0']">
             <component :is="tab.icon" :class="[activeTab === tab.id ? 'text-[#3b5998]' : 'text-gray-400 group-hover:text-gray-500', '-ml-0.5 mr-2 h-5 w-5']" />
             {{ tab.name }}
           </button>
@@ -32,154 +36,168 @@
       </div>
     </div>
 
-    <div class="mt-6">
+    <div class="mt-4 sm:mt-6 px-0 sm:px-0">
       <!-- <Overview v-if="activeTab === 'overview'" /> -->
       <AllPaket v-if="activeTab === 'all-paket'" />
       <Customer v-if="activeTab === 'customer'" ref="customerRef" />
       <Alamat v-if="activeTab === 'alamat'" />
     </div>
 
-    <div v-if="isModalPaketOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="closeModalPaket"></div>
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-auto flex flex-col overflow-hidden max-h-[95vh]">
+    <div v-if="isModalPaketOpen" class="fixed inset-0 z-[100] flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
+      <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeModalPaket"></div>
+      
+      <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl mx-auto flex flex-col overflow-hidden max-h-[92vh] sm:max-h-[95vh] animate-slide-up sm:animate-modal-in">
         
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-black text-gray-900">
-              {{ modalStep === 1 ? '1. Cari Alamat & Rute (OSM)' : (modalStep === 2 ? '2. Data Pasien & Struk' : '3. Pembayaran') }}
+        <div class="w-full flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing" @click="closeModalPaket">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-white flex justify-between items-center sticky top-0 z-20">
+          <div class="w-full pr-4">
+            <h3 class="text-base sm:text-lg font-black text-gray-900 leading-tight truncate">
+              {{ modalStep === 1 ? '1. Cari Alamat & Rute' : (modalStep === 2 ? '2. Data Pasien & Struk' : '3. Pembayaran Lunas') }}
             </h3>
-            <div class="flex space-x-1 mt-2">
-              <div class="h-1.5 w-10 rounded-full transition-colors" :class="modalStep >= 1 ? 'bg-blue-600' : 'bg-gray-200'"></div>
-              <div class="h-1.5 w-10 rounded-full transition-colors" :class="modalStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'"></div>
-              <div class="h-1.5 w-10 rounded-full transition-colors" :class="modalStep >= 3 ? 'bg-blue-600' : 'bg-gray-200'"></div>
+            <div class="flex space-x-1.5 mt-2">
+              <div class="h-1.5 flex-1 rounded-full transition-colors duration-300" :class="modalStep >= 1 ? 'bg-blue-600' : 'bg-gray-200'"></div>
+              <div class="h-1.5 flex-1 rounded-full transition-colors duration-300" :class="modalStep >= 2 ? 'bg-blue-600' : 'bg-gray-200'"></div>
+              <div class="h-1.5 flex-1 rounded-full transition-colors duration-300" :class="modalStep >= 3 ? 'bg-blue-600' : 'bg-gray-200'"></div>
             </div>
           </div>
-          <button @click="closeModalPaket" class="text-gray-400 hover:text-red-500 bg-white p-2 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+          <button @click="closeModalPaket" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-2 rounded-full transition-colors shrink-0">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
         
-        <div class="p-6 overflow-y-auto custom-scrollbar">
+        <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30 pb-20 sm:pb-6">
           
           <div v-show="modalStep === 1" class="space-y-4">
-            
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div class="relative z-20">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400"></i>
               </div>
               <input 
                 v-model="searchQueryAddress" 
                 @keyup.enter="searchAddress"
                 type="text" 
-                placeholder="Ketik alamat (contoh: Kramat Jati, Jakarta) lalu tekan Enter..." 
-                class="w-full border border-gray-300 rounded-xl py-3 pl-10 pr-24 outline-none focus:ring-2 focus:ring-[#3b5998] font-medium shadow-sm transition-shadow"
+                placeholder="Ketik jalan tujuan lalu Enter..." 
+                class="w-full border border-gray-300 rounded-xl py-3.5 sm:py-3 pl-10 pr-20 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm font-medium shadow-sm transition-shadow"
               >
-              <button @click="searchAddress" class="absolute inset-y-1.5 right-1.5 bg-[#3b5998] hover:bg-blue-800 text-white text-xs font-bold px-3 rounded-lg">
+              <button @click="searchAddress" class="absolute inset-y-1.5 right-1.5 bg-[#3b5998] hover:bg-blue-800 text-white text-xs font-bold px-4 rounded-lg active:scale-95 transition-transform">
                 CARI
               </button>
             </div>
 
-            <ul v-if="addressResults.length > 0" class="border border-gray-200 rounded-lg max-h-40 overflow-y-auto bg-white shadow-sm -mt-2">
-              <li v-for="(result, index) in addressResults" :key="index" @click="selectAddress(result)" class="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 text-sm flex items-start">
-                <i class="fas fa-map-marker-alt text-red-500 mt-1 mr-2"></i>
-                <span>{{ result.display_name }}</span>
+            <ul v-if="addressResults.length > 0" class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-white shadow-lg relative z-30 -mt-2 custom-scrollbar">
+              <li v-for="(result, index) in addressResults" :key="index" @click="selectAddress(result)" class="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-50 text-[13px] sm:text-sm flex items-start transition-colors active:bg-blue-100">
+                <i class="fas fa-map-marker-alt text-red-500 mt-1 mr-3 shrink-0"></i>
+                <span class="leading-relaxed text-gray-700 font-medium">{{ result.display_name }}</span>
               </li>
             </ul>
 
             <div class="border border-gray-200 rounded-xl overflow-hidden shadow-inner relative z-0">
-              <div id="leaflet-map" class="w-full h-56 bg-gray-100"></div>
+              <div id="leaflet-map" class="w-full h-48 sm:h-56 bg-gray-100"></div>
               
               <div v-if="isCalculating" class="absolute inset-0 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center z-10">
                 <svg class="animate-spin h-8 w-8 text-[#3b5998] mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span class="text-sm font-bold text-[#3b5998]">Menarik Garis Rute...</span>
+                <span class="text-sm font-bold text-[#3b5998]">Memproses Rute...</span>
               </div>
             </div>
 
-            <div v-if="estimasiSelesai" class="mt-4 border border-emerald-200 rounded-xl p-4 bg-emerald-50/80 shadow-sm animate-fade-in">
-              <div class="flex justify-between items-center border-b border-emerald-100 pb-2 mb-2">
-                <span class="text-sm font-bold text-emerald-900"><i class="fas fa-route mr-1"></i> Jarak Tempuh Rute</span>
-                <span class="text-sm font-black text-emerald-700">{{ formBaru.jarak_km }} km</span>
+            <div v-if="estimasiSelesai" class="mt-4 border border-emerald-200 rounded-xl p-4 bg-emerald-50 shadow-sm animate-fade-in">
+              <div class="flex justify-between items-center border-b border-emerald-100 pb-2.5 mb-2.5">
+                <span class="text-xs sm:text-sm font-bold text-emerald-900"><i class="fas fa-route mr-1.5 text-emerald-600"></i> Jarak Tempuh Rute</span>
+                <span class="text-sm font-black text-emerald-700 bg-white px-2 py-0.5 rounded shadow-sm">{{ formBaru.jarak_km }} km</span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-sm font-bold text-gray-700">Total Tarif</span>
-                <span class="text-2xl font-black text-[#3b5998]">{{ formatRupiah(formBaru.total_harga) }}</span>
+                <span class="text-xs sm:text-sm font-bold text-gray-700">Total Tarif Pengiriman</span>
+                <span class="text-xl sm:text-2xl font-black text-[#3b5998]">{{ formatRupiah(formBaru.total_harga) }}</span>
               </div>
             </div>
           </div>
 
           <div v-if="modalStep === 2" class="space-y-4 animate-fade-in">
             <div>
-              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Pasien</label>
-              <input v-model="formBaru.nama" type="text" placeholder="Masukkan nama..." class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-[#3b5998]">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">No. Telepon / WhatsApp</label>
-              <input v-model="formBaru.no_telp" type="number" placeholder="08..." class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-[#3b5998]">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nomor Struk Antrian</label>
-              <input v-model="formBaru.no_struk" type="text" placeholder="Masukkan nomor struk..." class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-[#3b5998]">
+              <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Pasien</label>
+              <input v-model="formBaru.nama" type="text" placeholder="Ketik nama pasien..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all">
             </div>
             
-            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Alamat Tujuan (Terkunci via Maps)</label>
-              <p class="text-sm font-medium text-gray-800 line-clamp-2"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> {{ formBaru.alamat }}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">No. WA (Aktif)</label>
+                <input v-model="formBaru.no_telp" type="number" placeholder="08..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all">
+              </div>
+              <div>
+                <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">No. Struk Antrian</label>
+                <input v-model="formBaru.no_struk" type="text" placeholder="Misal: F-123" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all font-bold text-gray-800">
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+              <label class="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Tujuan (Otomatis Maps)</label>
+              <p class="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-3 leading-relaxed"><i class="fas fa-map-marker-alt text-red-500 mr-1.5"></i> {{ formBaru.alamat }}</p>
             </div>
 
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors">
-              <label class="cursor-pointer block">
-                <div class="mx-auto w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2">
+            <div class="border-2 border-dashed border-blue-200 rounded-xl p-5 text-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group relative overflow-hidden">
+              <label class="cursor-pointer block w-full h-full relative z-10">
+                <div class="mx-auto w-12 h-12 bg-white text-blue-600 rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
                   <i class="fas fa-camera text-xl"></i>
                 </div>
-                <span class="block text-sm font-bold text-gray-800">Upload / Foto Struk Antrian</span>
-                <span class="block text-xs text-gray-500 mt-1">Wajib sebagai bukti pengambilan obat ke farmasi</span>
+                <span class="block text-sm font-bold text-blue-900">Ketuk untuk Foto Struk</span>
+                <span class="block text-[11px] text-blue-600 mt-1">Bukti fisik untuk ambil obat ke Farmasi</span>
                 <input type="file" @change="handleFileUpload" accept="image/*" capture="environment" class="hidden">
               </label>
-              <div v-if="formBaru.foto_struk" class="mt-3 text-xs font-bold text-green-600 bg-green-50 py-1.5 px-3 rounded inline-block border border-green-200">
-                <i class="fas fa-check-circle mr-1"></i> {{ formBaru.foto_struk.name }}
+              <div v-if="formBaru.foto_struk" class="mt-4 text-[11px] sm:text-xs font-bold text-green-700 bg-green-100 py-2 px-3 rounded-lg inline-block border border-green-200 shadow-sm truncate max-w-full">
+                <i class="fas fa-check-circle mr-1 text-green-600"></i> {{ formBaru.foto_struk.name }}
               </div>
             </div>
           </div>
 
           <div v-if="modalStep === 3" class="space-y-5 animate-fade-in">
-            <div class="bg-gray-900 text-white p-5 rounded-xl text-center shadow-md border-b-4 border-[#3b5998]">
-              <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1">Total Tagihan Final</p>
-              <p class="text-3xl font-black">{{ formatRupiah(formBaru.total_harga) }}</p>
+            <div class="bg-gray-900 text-white p-6 rounded-2xl text-center shadow-lg border-b-4 border-[#3b5998] relative overflow-hidden">
+              <div class="absolute -right-4 -top-4 opacity-10"><i class="fas fa-wallet text-9xl"></i></div>
+              <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-2 relative z-10">Total Tagihan Final</p>
+              <p class="text-3xl sm:text-4xl font-black relative z-10">{{ formatRupiah(formBaru.total_harga) }}</p>
             </div>
 
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Metode Pembayaran</label>
-              <select v-model="formBaru.metode_pembayaran" class="w-full border border-gray-300 rounded-xl py-3 px-4 bg-white text-sm font-bold outline-none focus:ring-2 focus:ring-[#3b5998] shadow-sm appearance-none">
+            <div class="bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-2 px-3">Metode Pembayaran</label>
+              <select v-model="formBaru.metode_pembayaran" class="w-full border-none rounded-xl py-3 px-3 text-sm font-bold outline-none focus:ring-0 bg-transparent appearance-none cursor-pointer text-gray-800">
                 <option value="Tunai / Cash (Sistem)">💵 Tunai / Cash (Bayar ke Stand)</option>
                 <option value="QRIS / E-Wallet (Sistem)">📱 QRIS / E-Wallet digital</option>
-                <option value="Transfer Bank">🏦 Transfer Bank (Virtual Account)</option>
+                <option value="Transfer Bank (Sistem)">🏦 Transfer Bank (Virtual Account)</option>
               </select>
+              <div class="pointer-events-none absolute right-6 top-[55%] transform -translate-y-1/2">
+                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+              </div>
             </div>
 
-            <div class="bg-green-50 border border-green-200 p-4 rounded-xl flex items-start shadow-sm">
-              <i class="fas fa-shield-check text-green-600 mt-0.5 mr-3 text-lg"></i>
-              <p class="text-xs text-green-800 font-medium leading-relaxed">
-                Pembayaran akan langsung dicatat sebagai <strong>Lunas</strong>. Setelah disimpan, sistem akan otomatis membuatkan Resi dan Link Tracking pengiriman untuk pasien.
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-start shadow-sm">
+              <i class="fas fa-shield-check text-emerald-600 mt-0.5 mr-3 text-xl"></i>
+              <p class="text-xs text-emerald-800 font-medium leading-relaxed">
+                Pembayaran akan langsung dicatat <strong>LUNAS</strong>. Klik "Proses Pesanan" dan sistem otomatis mengirim URL Tracking ke WhatsApp pasien.
               </p>
             </div>
           </div>
 
         </div>
 
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-between items-center rounded-b-2xl">
-          <button v-if="modalStep > 1" @click="modalStep--" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-700 font-bold hover:bg-gray-100 transition-colors shadow-sm">
+        <div class="bg-white sm:bg-gray-50 px-5 sm:px-6 py-4 border-t border-gray-100 flex gap-3 items-center sticky bottom-0 z-30 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none sm:rounded-b-2xl">
+          
+          <button v-if="modalStep > 1" @click="modalStep--" type="button" class="w-1/3 sm:w-auto px-4 py-3.5 sm:py-2.5 bg-gray-100 border border-transparent rounded-xl text-gray-700 font-bold hover:bg-gray-200 transition-colors active:scale-95 text-sm">
             Kembali
           </button>
-          <div v-else></div> 
           
-          <button v-if="modalStep === 1 && estimasiSelesai" @click="modalStep = 2" type="button" class="px-6 py-2.5 bg-[#3b5998] rounded-xl text-white font-bold hover:bg-blue-800 transition-colors shadow-md">
-            Lanjut Isi Data <i class="fas fa-arrow-right ml-1"></i>
+          <button v-if="modalStep === 1" @click="modalStep = 2" :disabled="!estimasiSelesai" type="button" class="w-full px-4 py-3.5 sm:py-2.5 bg-[#3b5998] rounded-xl text-white font-bold hover:bg-blue-800 transition-colors shadow-md disabled:opacity-50 disabled:active:scale-100 active:scale-95 text-sm">
+            Lanjut Data Pasien <i class="fas fa-arrow-right ml-1"></i>
           </button>
           
-          <button v-if="modalStep === 2" @click="cekValidasiPasien" type="button" class="px-6 py-2.5 bg-[#3b5998] rounded-xl text-white font-bold hover:bg-blue-800 transition-colors shadow-md">
+          <button v-if="modalStep === 2" @click="cekValidasiPasien" type="button" class="flex-1 px-4 py-3.5 sm:py-2.5 bg-[#3b5998] rounded-xl text-white font-bold hover:bg-blue-800 transition-colors shadow-md active:scale-95 text-sm">
             Lanjut Bayar <i class="fas fa-arrow-right ml-1"></i>
           </button>
           
-          <button v-if="modalStep === 3" @click="submitPaket" :disabled="isSaving" type="button" class="px-6 py-2.5 bg-emerald-600 rounded-xl text-white font-black hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-lg shadow-emerald-200 transform hover:-translate-y-0.5">
-            {{ isSaving ? 'Memproses...' : 'Konfirmasi Selesai' }}
+          <button v-if="modalStep === 3" @click="submitPaket" :disabled="isSaving" type="button" class="flex-1 px-4 py-3.5 sm:py-2.5 bg-emerald-600 rounded-xl text-white font-black hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-lg shadow-emerald-200 active:scale-95 flex justify-center items-center text-sm">
+            <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            {{ isSaving ? 'Menyimpan...' : 'Proses Pesanan' }}
           </button>
         </div>
 
@@ -192,7 +210,7 @@
 import { ref, computed, markRaw, nextTick, onMounted } from 'vue'
 import axios from 'axios'
 
-// Pastikan Leaflet (Open Source Map) di-load ke halaman Anda
+// Load Leaflet Styles for Map
 const loadLeafletStyle = () => {
   if (!document.getElementById('leaflet-css')) {
     const link = document.createElement('link');
@@ -217,15 +235,15 @@ const MapPinIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" str
 
 const allTabs = [
   // { id: 'overview', name: 'Overview', icon: EyeIcon, roles: ['superadmin', 'admin'] },
-  { id: 'all-paket', name: 'All Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
-  { id: 'customer', name: 'Customer', icon: UsersIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
-  { id: 'alamat', name: 'Alamat', icon: MapPinIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'all-paket', name: 'Semua Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'customer', name: 'Data Customer', icon: UsersIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'alamat', name: 'Peta Alamat', icon: MapPinIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
 ]
 
 const allowedTabs = computed(() => allTabs.filter(tab => tab.roles.includes(userRole.value)))
 const activeTab = ref(allowedTabs.value.some(t => t.id === 'all-paket') ? 'all-paket' : allowedTabs.value[0]?.id || '')
 
-// KOORDINAT RSPPN SOEDIRMAN SEBAGAI TITIK ASAL
+// KOORDINAT RS PUSAT
 const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
 
 // --- STATE WIZARD & MAPS ---
@@ -238,43 +256,41 @@ const isSaving = ref(false)
 const searchQueryAddress = ref('')
 const addressResults = ref([])
 
-let L = null; // Leaflet Object
+let L = null; 
 let mapInstance = null;
 let originMarker = null;
 let destMarker = null;
 let routeLine = null;
 
 const formBaru = ref({
-  alamat: '', jarak_km: 0, total_harga: 0, 
-  nama: '', no_telp: '', no_struk: '', // <-- Tambah no_struk
-  foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)'
+  alamat: '',
+  jarak_km: 0,
+  total_harga: 0,
+  nama: '',
+  no_telp: '',
+  no_struk: '', // Field baru no_struk
+  foto_struk: null,
+  metode_pembayaran: 'QRIS / E-Wallet (Sistem)'
 })
 
 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 
-// --- MENGGUNAKAN NOMINATIM (GRATIS) UNTUK PENCARIAN ALAMAT ---
-// --- MENGGUNAKAN NOMINATIM (GRATIS) UNTUK PENCARIAN ALAMAT ---
+// PENCARIAN NOMINATIM
 const searchAddress = async () => {
   if (!searchQueryAddress.value) return;
+  isCalculating.value = true;
   
-  isCalculating.value = true; // Munculkan loading agar admin tahu sistem sedang mencari
-  
-  // Hapus hardcode tambahan kata, biarkan murni apa yang diketik user
   const query = encodeURIComponent(searchQueryAddress.value);
-  
   try {
-    // Tambahkan parameter &countrycodes=id agar fokus mencari di Indonesia saja
     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=id&limit=5`);
     const data = await res.json();
-    
     addressResults.value = data;
     
     if (data.length === 0) {
-      alert("Alamat tidak ditemukan di database peta.\n\nTIPS:\n1. Coba persingkat (Contoh: 'Jalan Masjid Bendungan' saja).\n2. Perhatikan ejaan (Masjid vs Mesjid).");
+      alert("Alamat tidak ditemukan. Coba ketik nama jalannya saja secara singkat.");
     }
   } catch (error) { 
     console.error("Nominatim error", error); 
-    alert("Terjadi kesalahan jaringan saat mencari alamat.");
   } finally {
     isCalculating.value = false;
   }
@@ -287,9 +303,8 @@ const selectAddress = (result) => {
   drawRoute(result.lat, result.lon);
 }
 
-// --- INISIALISASI PETA LEAFLET (GRATIS) ---
+// INISIALISASI PETA
 const initLeafletMap = async () => {
-  // Load script Leaflet secara dinamis jika belum ada
   if (!window.L) {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
@@ -299,31 +314,26 @@ const initLeafletMap = async () => {
   
   L = window.L;
   if (mapInstance) {
-    mapInstance.remove(); // Hapus instance lama agar tidak error
+    mapInstance.remove(); 
+    mapInstance = null;
   }
 
-  mapInstance = L.map('leaflet-map').setView([RUMAH_SAKIT_COORD[0], RUMAH_SAKIT_COORD[1]], 14);
-  
-  // Gunakan tile map standard OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-  }).addTo(mapInstance);
-
-  // Marker Rumah Sakit (Asal)
-  originMarker = L.marker([RUMAH_SAKIT_COORD[0], RUMAH_SAKIT_COORD[1]]).addTo(mapInstance)
-    .bindPopup('<b>RSPPN Soedirman</b><br>Titik Awal').openPopup();
+  // Gunakan ID HTML leaflet-map
+  const mapElement = document.getElementById('leaflet-map');
+  if(mapElement) {
+      mapInstance = L.map('leaflet-map', { zoomControl: false }).setView([RUMAH_SAKIT_COORD[0], RUMAH_SAKIT_COORD[1]], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OSM' }).addTo(mapInstance);
+      originMarker = L.marker([RUMAH_SAKIT_COORD[0], RUMAH_SAKIT_COORD[1]]).addTo(mapInstance).bindPopup('<b>RSPPN Soedirman</b>').openPopup();
+  }
 }
 
-// --- MENGGAMBAR RUTE MENGGUNAKAN OSRM (GRATIS) ---
+// MENGGAMBAR RUTE OSRM
 const drawRoute = async (destLat, destLon) => {
   isCalculating.value = true;
   estimasiSelesai.value = false;
 
   try {
-    // API OSRM Public Server (format: lng,lat)
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${destLon},${destLat}?overview=full&geometries=geojson`;
-    
     const response = await fetch(osrmUrl);
     const data = await response.json();
 
@@ -331,22 +341,15 @@ const drawRoute = async (destLat, destLon) => {
       const route = data.routes[0];
       const jarakKm = parseFloat((route.distance / 1000).toFixed(1));
       
-      // Hapus marker/garis lama jika ada
       if (destMarker) mapInstance.removeLayer(destMarker);
       if (routeLine) mapInstance.removeLayer(routeLine);
 
-      // Marker Tujuan
-      destMarker = L.marker([destLat, destLon]).addTo(mapInstance)
-        .bindPopup('<b>Tujuan Pasien</b>').openPopup();
+      destMarker = L.marker([destLat, destLon]).addTo(mapInstance).bindPopup('<b>Tujuan Pasien</b>').openPopup();
 
-      // Gambar Garis Rute (GeoJSON membalik lat/lng menjadi lng/lat array, Leaflet butuh lat/lng)
       const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
       routeLine = L.polyline(coordinates, {color: '#3b5998', weight: 5}).addTo(mapInstance);
-      
-      // Fit bounds agar kedua marker terlihat jelas di peta
       mapInstance.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
 
-      // Hitung Tarif (Rules)
       let baseHarga = 20000;
       if (jarakKm > 5.0) {
         const extraKm = Math.ceil(jarakKm) - 5;
@@ -354,7 +357,7 @@ const drawRoute = async (destLat, destLon) => {
       }
       
       formBaru.value.jarak_km = jarakKm;
-      formBaru.value.total_harga = baseHarga + 1500; // Harga + Biaya Admin
+      formBaru.value.total_harga = baseHarga + 1500; 
       estimasiSelesai.value = true;
     }
   } catch (error) {
@@ -375,7 +378,7 @@ const closeModalPaket = () => {
   estimasiSelesai.value = false
   searchQueryAddress.value = ''
   addressResults.value = []
-  formBaru.value = { alamat: '', jarak_km: 0, total_harga: 0, nama: '', no_telp: '', foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)' }
+  formBaru.value = { alamat: '', jarak_km: 0, total_harga: 0, nama: '', no_telp: '', no_struk: '', foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)' }
 }
 
 const handleFileUpload = (e) => {
@@ -384,10 +387,12 @@ const handleFileUpload = (e) => {
 
 const cekValidasiPasien = () => {
   if (!formBaru.value.nama || !formBaru.value.no_telp) return alert("Nama & No. Telp wajib diisi!");
+  if (!formBaru.value.no_struk) return alert("Nomor Struk wajib diisi!");
   if (!formBaru.value.foto_struk) return alert("Foto / Gambar struk antrian wajib dilampirkan!");
   modalStep.value = 3;
 }
 
+// PENYIMPANAN DAN GENERATE WA +62
 const submitPaket = async () => {
   isSaving.value = true
   
@@ -402,37 +407,31 @@ const submitPaket = async () => {
   if (formBaru.value.foto_struk) formData.append('foto_struk', formBaru.value.foto_struk)
 
   try {
-    // 1. Simpan ke Database & Tangkap Data Paket Barunya
-    const response = await axios.post('http://localhost:8000/api/v1/packages', formData, {
+    const response = await axios.post('/packages', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
-    debugger
-    // 2. Format Resi & Link Tracking
+    
     const paketBaru = response.data.data;
-    // Format resi menjadi: #PKT-0001-12345
     const kodeResi = '#PKT-' + String(paketBaru.id).padStart(4, '0') + '-' + formBaru.value.no_struk;
     const trackingLink = `${window.location.origin}/tracking/${kodeResi.replace('#', '')}`;
 
-    // 3. Format Nomor Telepon +62
-    let phoneWhatsApp = formBaru.value.no_telp.toString();
+    let phoneWhatsApp = String(formBaru.value.no_telp).trim();
     if (phoneWhatsApp.startsWith('0')) {
-      phoneWhatsApp = '+62' + phoneWhatsApp.substring(1);
-    } else if (phoneWhatsApp.startsWith('62')) {
-      phoneWhatsApp = '+' + phoneWhatsApp;
+      phoneWhatsApp = '62' + phoneWhatsApp.substring(1);
+    } else if (phoneWhatsApp.startsWith('+62')) {
+      phoneWhatsApp = phoneWhatsApp.substring(1); 
+    } else if (!phoneWhatsApp.startsWith('62')) {
+      phoneWhatsApp = '62' + phoneWhatsApp;
     }
 
-    // 4. Racik Teks Pesan WhatsApp
     const waMessage = `Halo kak *${formBaru.value.nama}*,\n\nPesanan Jasa Antar Obat dari *RSPPN Soedirman* telah kami terima. Berikut rinciannya:\n\n📦 *No. Resi:* ${kodeResi}\n💵 *Total:* ${formatRupiah(formBaru.value.total_harga)}\n✅ *Status:* Lunas (${formBaru.value.metode_pembayaran})\n\nSilakan pantau pergerakan kurir dan status obat kakak secara real-time melalui link berikut:\n👇👇👇\n${trackingLink}\n\nTerima kasih! 🙏`;
 
     closeModalPaket()
+    
     activeTab.value = ''
     setTimeout(() => activeTab.value = 'all-paket', 10)
-    
-    alert("Pesanan dibuat! Mengarahkan ke WhatsApp untuk kirim link tracking...");
 
-    // 5. Buka Tab Baru WhatsApp Web/App (URL API WA mengharuskan tanpa lambang +)
-    const cleanPhoneUrl = phoneWhatsApp.replace('+', '');
-    const waUrl = `https://wa.me/${cleanPhoneUrl}?text=${encodeURIComponent(waMessage)}`;
+    const waUrl = `https://wa.me/${phoneWhatsApp}?text=${encodeURIComponent(waMessage)}`;
     window.open(waUrl, '_blank');
 
   } catch (error) { 
@@ -443,15 +442,36 @@ const submitPaket = async () => {
   }
 }
 
-onMounted(() => {
-  loadLeafletStyle();
-});
+onMounted(() => { loadLeafletStyle() });
 </script>
 
 <style scoped>
+/* Sembunyikan scrollbar untuk area tab agar mulus di swipe di HP */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+/* Animasi HP Bottom Sheet */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0.5; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Animasi Fade In standard */
 .animate-fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-</style>
+
+/* Pengamanan padding di HP (Khusus iPhone Swipe Bar) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+}
+</style>  

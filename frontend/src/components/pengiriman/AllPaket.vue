@@ -1,115 +1,105 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full relative min-h-[500px]">
     
-    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="p-5 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h2 class="text-xl font-bold text-gray-800">Daftar Semua Paket</h2>
-        <p class="text-sm text-gray-500 mt-1">Monitor status pesanan obat dan pengiriman secara real-time.</p>
+        <h2 class="text-lg sm:text-xl font-black text-gray-900">Daftar Semua Paket</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">Monitor status pesanan obat secara real-time.</p>
       </div>
-      <div v-if="userRole === 'kurir' && pesananMenunggu.length > 0" class="mx-6 mt-6 mb-2 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg shadow-sm flex justify-between items-center animate-pulse">
+      
+      <div v-if="userRole === 'kurir' && pesananMenunggu.length > 0" class="w-full bg-indigo-50 border-l-4 border-indigo-500 p-3.5 sm:p-4 rounded-r-lg shadow-sm flex justify-between items-center animate-pulse">
         <div>
-          <h3 class="text-indigo-800 font-bold text-sm"><i class="fas fa-bell mr-2"></i> Orderan Baru Siap Diambil!</h3>
-          <p class="text-indigo-600 text-xs mt-1">Ada <strong>{{ pesananMenunggu.length }} paket</strong> dari farmasi yang menunggu untuk diantar.</p>
+          <h3 class="text-indigo-800 font-bold text-xs sm:text-sm"><i class="fas fa-bell mr-1.5"></i> Orderan Baru Siap!</h3>
+          <p class="text-indigo-600 text-[11px] sm:text-xs mt-1">Ada <strong>{{ pesananMenunggu.length }} paket</strong> dari farmasi menunggu diantar.</p>
         </div>
       </div>
-      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
         <div class="relative w-full sm:w-72">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400 text-sm"></i>
           </div>
           <input 
             v-model="searchQuery"
             type="text" 
-            placeholder="Cari ID, struk, obat, atau pasien..." 
-            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#3b5998] focus:border-[#3b5998] transition duration-150"
+            placeholder="Cari ID, struk, atau pasien..." 
+            class="block w-full pl-10 pr-3 py-3 sm:py-2 border border-gray-300 rounded-xl sm:rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#3b5998] transition-all shadow-sm"
           >
         </div>
-        <button @click="fetchPackages" :disabled="isLoading" class="text-sm bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 px-4 py-2 rounded-lg font-medium transition-colors flex items-center disabled:opacity-50 w-full sm:w-auto justify-center whitespace-nowrap shadow-sm">
+        <button @click="fetchPackages" :disabled="isLoading" class="w-full sm:w-auto flex justify-center items-center text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-5 py-3 sm:py-2 rounded-xl sm:rounded-lg font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50">
           <svg :class="{'animate-spin': isLoading}" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
           Refresh Data
         </button>
       </div>
     </div>
 
-    <div v-if="notification.show" :class="['px-6 py-3 text-sm font-medium text-white transition-all', notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']">
+    <div v-if="notification.show" :class="['px-5 py-3 text-xs sm:text-sm font-bold text-white transition-all text-center', notification.type === 'success' ? 'bg-emerald-500' : 'bg-red-500']">
       {{ notification.message }}
     </div>
 
-    <div class="overflow-x-auto flex-1">
+    <div class="hidden lg:block overflow-x-auto flex-1">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">ID Resi & Tracking</th>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Pasien</th>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Paket / Obat</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Harga</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status Pengiriman</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status Pembayaran</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Metode</th>
-            <th scope="col" class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aksi</th>
+            <th scope="col" class="px-5 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">ID Resi & Tracking</th>
+            <th scope="col" class="px-5 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Pasien</th>
+            <th scope="col" class="px-5 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Nama Paket</th>
+            <th scope="col" class="px-5 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Total Harga</th>
+            <th scope="col" class="px-5 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Status Pengiriman</th>
+            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
+            <th scope="col" class="px-5 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-wider">Aksi</th>
           </tr>
         </thead>
-        
-        <tbody v-if="isLoading" class="bg-white divide-y divide-gray-200">
+        <tbody v-if="isLoading" class="bg-white divide-y divide-gray-100">
           <tr v-for="i in 5" :key="i" class="animate-pulse">
-            <td colspan="8" class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-full"></div></td>
+            <td colspan="7" class="px-6 py-4"><div class="h-4 bg-gray-100 rounded w-full"></div></td>
           </tr>
         </tbody>
-
         <tbody v-else-if="filteredPackages.length === 0" class="bg-white">
           <tr>
-            <td colspan="8" class="px-6 py-12 text-center text-gray-500 font-medium">Tidak ada data paket yang ditemukan.</td>
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500 font-medium">Tidak ada data paket yang ditemukan.</td>
           </tr>
         </tbody>
-
         <tbody v-else class="bg-white divide-y divide-gray-100">
-          <tr v-for="pkg in paginatedPackages" :key="pkg.id" class="hover:bg-gray-50 transition-colors">
+          <tr v-for="pkg in paginatedPackages" :key="'desk-'+pkg.id" class="hover:bg-blue-50/30 transition-colors">
             <td class="px-5 py-4 whitespace-nowrap">
-              <span class="text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-200 inline-block mb-1">
+              <span class="text-[11px] font-black text-gray-800 bg-gray-100 px-2 py-1 rounded-md border border-gray-200 inline-block mb-1 tracking-wider">
                 #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
               </span>
               <br>
-              <a :href="`/tracking/PKT-${String(pkg.id).padStart(4, '0')}${pkg.no_struk ? '-' + pkg.no_struk : ''}`" target="_blank" class="text-[10px] text-blue-600 hover:text-blue-800 hover:underline flex items-center mt-1">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                Lihat Tracking Publik
+              <a :href="`/tracking/PKT-${String(pkg.id).padStart(4, '0')}${pkg.no_struk ? '-' + pkg.no_struk : ''}`" target="_blank" class="text-[10px] text-blue-600 font-bold hover:text-blue-800 hover:underline flex items-center mt-1">
+                <i class="fas fa-external-link-alt mr-1"></i> Lihat Tracking
               </a>
             </td>
-
             <td class="px-5 py-4 whitespace-nowrap">
-              <div class="text-sm font-semibold text-gray-900">{{ pkg.customer?.nama || 'Dihapus' }}</div>
+              <div class="text-sm font-bold text-gray-900">{{ pkg.customer?.nama || 'Dihapus' }}</div>
               <div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-phone-alt mr-1"></i> {{ pkg.customer?.no_telp || '-' }}</div>
             </td>
             <td class="px-5 py-4 text-sm text-gray-600 whitespace-normal min-w-[150px] max-w-[200px] break-words">
               {{ pkg.deskripsi_pesanan }}
             </td>
-            <td class="px-5 py-4 whitespace-nowrap text-center text-sm font-bold text-[#3b5998]">
+            <td class="px-5 py-4 whitespace-nowrap text-center text-sm font-black text-[#3b5998]">
               {{ pkg.total_harga ? formatRupiah(pkg.total_harga) : '-' }}
             </td>
             <td class="px-5 py-4 whitespace-nowrap text-center">
-              <span :class="getStatusPengirimanClass(pkg.status_pengiriman)" class="px-3 py-1.5 inline-flex text-xs leading-4 font-bold rounded-full border">
+              <span :class="getStatusPengirimanClass(pkg.status_pengiriman)" class="px-2.5 py-1.5 inline-flex text-[11px] leading-4 font-black rounded-md border uppercase tracking-wider">
                 {{ pkg.status_pengiriman }}
               </span>
             </td>
             <td class="px-5 py-4 whitespace-nowrap text-center">
-              <span :class="getStatusPembayaranClass(pkg.status_pembayaran)" class="px-3 py-1.5 inline-flex text-xs leading-4 font-bold rounded-full border">
+              <span :class="getStatusPembayaranClass(pkg.status_pembayaran)" class="px-2.5 py-1.5 inline-flex text-[11px] leading-4 font-black rounded-md border uppercase tracking-wider">
                 {{ pkg.status_pembayaran }}
               </span>
             </td>
-            <td class="px-5 py-4 whitespace-nowrap text-center text-sm text-gray-700 font-medium">
-              <span class="uppercase tracking-wide border bg-gray-100 px-2 py-1 rounded">{{ pkg.metode_pembayaran || 'Tunai / Cash' }}</span>
-            </td>
             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
-              
-              <button @click="copyTrackingLink(pkg)" class="text-emerald-600 hover:text-emerald-900 mr-2 transition-colors bg-emerald-50 p-1.5 rounded-lg border border-emerald-200" title="Salin Link Tracking">
-                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+              <button @click="copyTrackingLink(pkg)" class="text-emerald-600 hover:text-white hover:bg-emerald-600 mr-2 transition-colors bg-emerald-50 p-2 rounded-lg border border-emerald-200" title="Salin Link">
+                <i class="fas fa-link"></i>
               </button>
-
-              <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-blue-900 mr-2 transition-colors bg-blue-50 p-1.5 rounded-lg border border-blue-200" title="Update Status">
-                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-white hover:bg-[#3b5998] mr-2 transition-colors bg-blue-50 p-2 rounded-lg border border-blue-200" title="Update Status">
+                <i class="fas fa-edit"></i>
               </button>
-
-              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 p-1.5 rounded-lg border border-red-200" title="Hapus Paket">
-                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="text-red-500 hover:text-white hover:bg-red-500 transition-colors bg-red-50 p-2 rounded-lg border border-red-200" title="Hapus">
+                <i class="fas fa-trash-alt"></i>
               </button>
             </td>
           </tr>
@@ -117,55 +107,123 @@
       </table>
     </div>
 
-    <div v-if="filteredPackages.length > 0" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <span class="text-sm text-gray-500 font-medium text-center sm:text-left">
-        Menampilkan {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredPackages.length) }} dari {{ filteredPackages.length }} paket
-      </span>
-      <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
-        <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm flex-1 sm:flex-none">Sebelumnya</button>
-        <span class="px-3 text-sm font-bold text-gray-700 whitespace-nowrap">{{ currentPage }} / {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium transition-colors shadow-sm flex-1 sm:flex-none">Selanjutnya</button>
+    <div class="block lg:hidden flex-1 bg-gray-50/50">
+      
+      <div v-if="isLoading" class="p-6 space-y-4">
+        <div v-for="i in 4" :key="i" class="h-32 bg-white rounded-xl border border-gray-100 animate-pulse"></div>
+      </div>
+
+      <div v-else-if="filteredPackages.length === 0" class="p-10 text-center text-gray-500 font-medium">
+        Tidak ada data paket ditemukan.
+      </div>
+
+      <div v-else class="divide-y divide-gray-100">
+        <div v-for="pkg in paginatedPackages" :key="'mob-'+pkg.id" class="bg-white p-4 hover:bg-blue-50/20 active:bg-gray-50 transition-colors">
+          
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="text-[10px] font-black text-gray-800 bg-gray-100 px-2 py-1 rounded-md border border-gray-200 tracking-wider shadow-sm">
+                #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
+              </span>
+            </div>
+            <span :class="getStatusPengirimanClass(pkg.status_pengiriman)" class="px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md border shadow-sm max-w-[120px] text-center truncate">
+              {{ pkg.status_pengiriman }}
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <p class="font-black text-gray-900 text-sm sm:text-base">{{ pkg.customer?.nama || 'Tidak diketahui' }}</p>
+              <p class="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5"><i class="fas fa-phone-alt text-gray-400 mr-1"></i> {{ pkg.customer?.no_telp || '-' }}</p>
+            </div>
+            <div class="text-right">
+              <span :class="getStatusPembayaranClass(pkg.status_pembayaran)" class="px-2 py-1 inline-flex text-[9px] font-black rounded-md border uppercase tracking-widest shadow-sm">
+                {{ pkg.status_pembayaran }}
+              </span>
+            </div>
+          </div>
+
+          <div class="bg-gray-50/80 p-2.5 rounded-lg border border-gray-100 mb-3">
+            <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">{{ pkg.deskripsi_pesanan }}</p>
+          </div>
+
+          <div class="flex flex-col gap-3 pt-3 border-t border-gray-50">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Tagihan</span>
+              <span class="font-black text-[#3b5998] text-base">{{ pkg.total_harga ? formatRupiah(pkg.total_harga) : '-' }}</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 mt-1">
+              <button @click="copyTrackingLink(pkg)" class="flex justify-center items-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2.5 rounded-xl border border-emerald-200 text-xs font-bold transition-all active:scale-95 shadow-sm">
+                <i class="fas fa-link mr-1.5"></i> Salin Link
+              </button>
+              <button @click="openEditModal(pkg)" class="flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-[#3b5998] py-2.5 rounded-xl border border-blue-200 text-xs font-bold transition-all active:scale-95 shadow-sm">
+                <i class="fas fa-edit mr-1.5"></i> Update Status
+              </button>
+              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="col-span-2 flex justify-center items-center bg-red-50 hover:bg-red-100 text-red-600 py-2.5 rounded-xl border border-red-200 text-xs font-bold transition-all active:scale-95 shadow-sm">
+                <i class="fas fa-trash-alt mr-1.5"></i> Hapus Paket
+              </button>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 
-    <div v-if="isEditModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="closeEditModal"></div>
+    <div v-if="filteredPackages.length > 0" class="px-5 py-4 border-t border-gray-100 bg-white sm:bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <span class="text-[11px] sm:text-sm text-gray-500 font-bold uppercase tracking-wider text-center sm:text-left">
+        Hal {{ currentPage }} dari {{ totalPages }} <span class="hidden sm:inline">• Total {{ filteredPackages.length }} Data</span>
+      </span>
+      <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-5 py-2.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-xl sm:rounded-lg hover:bg-gray-50 disabled:opacity-50 font-bold transition-all shadow-sm active:scale-95 flex-1 sm:flex-none text-gray-700">
+          <i class="fas fa-chevron-left mr-1"></i> Prev
+        </button>
+        <button @click="nextPage" :disabled="currentPage === totalPages" class="px-5 py-2.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-xl sm:rounded-lg hover:bg-gray-50 disabled:opacity-50 font-bold transition-all shadow-sm active:scale-95 flex-1 sm:flex-none text-gray-700">
+          Next <i class="fas fa-chevron-right ml-1"></i>
+        </button>
+      </div>
+    </div>
+
+    <div v-if="isEditModalOpen" class="fixed inset-0 z-[100] flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
+      <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeEditModal"></div>
       
-      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto flex flex-col overflow-hidden max-h-[90vh]">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+      <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg mx-auto flex flex-col overflow-hidden max-h-[92vh] sm:max-h-[90vh] animate-slide-up sm:animate-modal-in">
+        
+        <div class="w-full flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing" @click="closeEditModal">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-white sm:bg-gray-50/50 flex justify-between items-center sticky top-0 z-10">
           <div>
-            <h3 class="text-lg font-bold text-gray-900 mb-1">Update Status Paket</h3>
-            <p class="text-sm text-gray-500">#PKT-{{ String(editForm.id).padStart(4, '0') }} - {{ editForm.customer?.nama }}</p>
+            <h3 class="text-base sm:text-lg font-black text-gray-900 leading-tight">Update Status</h3>
+            <p class="text-xs sm:text-sm font-bold text-[#3b5998] mt-0.5">#PKT-{{ String(editForm.id).padStart(4, '0') }}</p>
           </div>
-          <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <button @click="closeEditModal" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-2 rounded-full transition-colors shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
         
-        <div class="p-6 overflow-y-auto">
-          <form @submit.prevent="updatePackage" class="space-y-4">
+        <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar bg-gray-50/30">
+          <form @submit.prevent="updatePackage" class="space-y-5">
             
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Obat / Pesanan</label>
-              <textarea v-model="editForm.deskripsi_pesanan" :disabled="userRole === 'kurir'" rows="2" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#3b5998] disabled:bg-gray-100 disabled:text-gray-500 outline-none"></textarea>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Deskripsi Pesanan</label>
+              <textarea v-model="editForm.deskripsi_pesanan" :disabled="userRole === 'kurir'" rows="2" required class="w-full border border-gray-300 rounded-xl sm:rounded-lg p-3 sm:p-2.5 focus:ring-2 focus:ring-[#3b5998] disabled:bg-gray-100 disabled:text-gray-500 outline-none text-sm font-medium shadow-sm transition-all"></textarea>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pengiriman</label>
-                <select v-model="editForm.status_pengiriman" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none bg-white">
-                  
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Posisi / Status</label>
+                <select v-model="editForm.status_pengiriman" required class="w-full border border-gray-300 rounded-xl sm:rounded-lg p-3.5 sm:p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] bg-white text-sm font-bold shadow-sm transition-all">
                   <template v-if="userRole === 'farmasi'">
                     <option value="2. Stor Struk ke farmasi">2. Stor Struk ke farmasi</option>
                     <option value="3. Ambil paket obat farmasi">3. Ambil paket obat farmasi</option>
                   </template>
-
                   <template v-else-if="userRole === 'kurir'">
                     <option value="6. Diserahkan ke kurir">6. Diserahkan ke kurir</option>
                     <option value="7. Dalam perjalanan">7. Dalam perjalanan</option>
                     <option value="8. Sampai (Selesai)">8. Sampai (Selesai)</option>
                   </template>
-
                   <template v-else>
                     <option value="1. Verifikasi Jastar">1. Verifikasi Jastar</option>
                     <option value="2. Stor Struk ke farmasi">2. Stor Struk ke farmasi</option>
@@ -175,63 +233,64 @@
                     <option value="6. Diserahkan ke kurir">6. Diserahkan ke kurir</option>
                     <option value="7. Dalam perjalanan">7. Dalam perjalanan</option>
                     <option value="8. Sampai (Selesai)">8. Sampai (Selesai)</option>
-                    <option value="9. Cancel / Pending" class="text-red-600 font-bold">9. Cancel / Pending</option>
+                    <option value="9. Cancel / Pending" class="text-red-600 font-black">9. Batal / Cancel</option>
                   </template>
                 </select>
-                <p v-if="editForm.status_pengiriman === 'Dibatalkan' && ['superadmin', 'admin', 'kurir'].includes(userRole)" class="text-[10px] text-red-500 mt-1">Otomatis mencabut tugas kurir.</p>
+                <p v-if="editForm.status_pengiriman === '9. Cancel / Pending' && ['superadmin', 'admin', 'kurir'].includes(userRole)" class="text-[10px] font-bold text-red-500 mt-1.5 bg-red-50 px-2 py-1 rounded inline-block"><i class="fas fa-exclamation-triangle"></i> Cabut tugas kurir.</p>
               </div>
 
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Status Pembayaran</label>
-                <select v-model="editForm.status_pembayaran" :disabled="userRole === 'farmasi' || userRole === 'kurir'" required class="w-full border border-gray-300 rounded-lg p-2.5 disabled:bg-gray-100 disabled:text-gray-500 outline-none bg-white">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Pembayaran</label>
+                <select v-model="editForm.status_pembayaran" :disabled="userRole === 'farmasi' || userRole === 'kurir'" required class="w-full border border-gray-300 rounded-xl sm:rounded-lg p-3.5 sm:p-2.5 disabled:bg-gray-100 disabled:text-gray-400 outline-none focus:ring-2 focus:ring-[#3b5998] bg-white text-sm font-bold shadow-sm transition-all">
                   <option value="Belum Lunas">Belum Lunas</option>
                   <option value="Lunas">Lunas</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
-                <select v-model="editForm.metode_pembayaran" required class="w-full border rounded-lg p-2.5 outline-none bg-white">
-                  <option value="Tunai / Cash (Sistem)">Tunai / Cash (Sistem)</option>
-                  <option value="Transfer Bank (Sistem)">Transfer Bank (Sistem)</option>
-                  <option value="QRIS / E-Wallet (Sistem)">QRIS / E-Wallet (Sistem)</option>
-                  <option v-if="['superadmin', 'admin'].includes(userRole)" value="Gratis / Amal" class="text-purple-600 font-bold">Gratis / Amal</option>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Metode Bayar</label>
+                <select v-model="editForm.metode_pembayaran" required class="w-full border border-gray-300 rounded-xl sm:rounded-lg p-3.5 sm:p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] bg-white text-sm font-bold shadow-sm transition-all">
+                  <option value="Tunai / Cash (Sistem)">Tunai / Cash</option>
+                  <option value="Transfer Bank (Sistem)">Transfer Bank</option>
+                  <option value="QRIS / E-Wallet (Sistem)">QRIS / E-Wallet</option>
+                  <option v-if="['superadmin', 'admin'].includes(userRole)" value="Gratis / Amal" class="text-purple-600 font-black">Gratis / Sedekah</option>
                 </select>
               </div>
               
-              <div v-if="['superadmin', 'admin'].includes(userRole)" class="sm:col-span-2 pt-2 border-t mt-2">
-                <label class="block text-sm font-bold text-gray-800 mb-1">Ubah Total Tagihan (Rp)</label>
-                <input v-model="editForm.total_harga" type="number" class="w-full border border-blue-300 bg-white text-[#3b5998] font-black text-lg rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#3b5998]">
+              <div v-if="['superadmin', 'admin'].includes(userRole)" class="sm:col-span-2 pt-4 border-t border-gray-200 mt-1">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Revisi Total Tagihan (Rp)</label>
+                <input v-model="editForm.total_harga" type="number" class="w-full border-2 border-blue-200 bg-white text-[#3b5998] font-black text-xl rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#3b5998] shadow-sm transition-all">
               </div>
             </div>
           </form>
         </div>
 
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="closeEditModal" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+        <div class="bg-white sm:bg-gray-50 px-5 sm:px-6 py-4 border-t border-gray-100 flex gap-3 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none sm:rounded-b-2xl">
+          <button @click="closeEditModal" type="button" class="w-1/3 sm:w-auto px-4 py-3.5 sm:py-2.5 bg-gray-100 hover:bg-gray-200 border border-transparent rounded-xl text-gray-700 font-bold transition-all active:scale-95 text-sm">
             Batal
           </button>
-          <button @click="updatePackage" :disabled="isSaving" type="button" :class="['px-5 py-2.5 rounded-lg text-white font-medium transition-colors shadow-sm disabled:opacity-50', editForm.status_pengiriman === 'Dibatalkan' ? 'bg-red-600 hover:bg-red-700' : 'bg-[#3b5998] hover:bg-blue-800']">
-            {{ isSaving ? 'Memproses...' : 'Update Status' }}
+          <button @click="updatePackage" :disabled="isSaving" type="button" :class="['flex-1 px-4 py-3.5 sm:py-2.5 rounded-xl text-white font-black transition-all shadow-md active:scale-95 disabled:opacity-50 text-sm flex justify-center items-center', editForm.status_pengiriman === '9. Cancel / Pending' ? 'bg-red-600 hover:bg-red-700 shadow-red-200' : 'bg-[#3b5998] hover:bg-blue-800 shadow-blue-200']">
+            <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            {{ isSaving ? 'Menyimpan...' : 'Simpan Status' }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="isDeleteModalOpen && ['superadmin', 'admin'].includes(userRole)" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+    <div v-if="isDeleteModalOpen && ['superadmin', 'admin'].includes(userRole)" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="isDeleteModalOpen = false"></div>
-      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col overflow-hidden">
-        <div class="p-6">
-          <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto flex flex-col overflow-hidden animate-modal-in">
+        <div class="p-6 text-center">
+          <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-50 rounded-full mb-4">
+            <i class="fas fa-trash-alt text-2xl text-red-500"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Hapus Permanen Paket</h3>
-          <p class="text-sm text-gray-500 text-center">Anda yakin ingin menghapus <strong>#PKT-{{ packageToDelete?.id ? String(packageToDelete.id).padStart(4, '0') : '' }}</strong>?</p>
+          <h3 class="text-lg font-black text-gray-900 mb-2">Hapus Permanen Paket?</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">Anda yakin ingin menghapus resi <strong class="text-gray-800">#PKT-{{ packageToDelete?.id ? String(packageToDelete.id).padStart(4, '0') : '' }}</strong> secara permanen?</p>
         </div>
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="isDeleteModalOpen = false" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium">Batal</button>
-          <button @click="deletePackage" :disabled="isSaving" type="button" class="px-5 py-2.5 bg-red-600 rounded-lg text-white font-medium hover:bg-red-700 disabled:opacity-50">
-            {{ isSaving ? 'Menghapus...' : 'Ya, Hapus' }}
+        <div class="bg-gray-50 px-6 py-4 flex gap-3 border-t border-gray-100">
+          <button @click="isDeleteModalOpen = false" type="button" class="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 font-bold active:scale-95 transition-all text-sm shadow-sm">Batal</button>
+          <button @click="deletePackage" :disabled="isSaving" type="button" class="flex-1 py-3 bg-red-600 rounded-xl text-white font-black hover:bg-red-700 disabled:opacity-50 active:scale-95 transition-all text-sm shadow-md shadow-red-200">
+            {{ isSaving ? 'Proses...' : 'Hapus' }}
           </button>
         </div>
       </div>
@@ -246,8 +305,6 @@ import axios from 'axios'
 // -- Get Role User --
 const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
 const userRole = ref(JSON.parse(localStorage.getItem('user'))?.role || '')
-
-const API_URL = '/packages' 
 
 const packages = ref([])
 const isLoading = ref(true)
@@ -266,7 +323,7 @@ const filteredPackages = computed(() => {
     const idStr = String(pkg.id).padStart(4, '0')
     const customerName = pkg.customer?.nama?.toLowerCase() || ''
     const desc = pkg.deskripsi_pesanan?.toLowerCase() || ''
-    const noStruk = pkg.no_struk?.toLowerCase() || '' // Membaca kolom no_struk
+    const noStruk = pkg.no_struk?.toLowerCase() || '' 
     return customerName.includes(query) || desc.includes(query) || idStr.includes(query) || noStruk.includes(query)
   })
 })
@@ -280,7 +337,6 @@ const paginatedPackages = computed(() => filteredPackages.value.slice(startIndex
 
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-// ------------------------
 
 const isEditModalOpen = ref(false)
 const editForm = ref({ id: null, customer_id: null, deskripsi_pesanan: '', status_pengiriman: '', status_pembayaran: '', metode_pembayaran: '', customer: null })
@@ -295,21 +351,20 @@ const formatRupiah = (angka) => {
 const fetchPackages = async () => {
   isLoading.value = true
   try {
-    const response = await axios.get(API_URL)
+    const response = await axios.get('/packages')
     packages.value = response.data.data 
   } catch (error) { showNotification('Gagal mengambil data paket dari server', 'error') } 
   finally { isLoading.value = false }
 }
 
-// Fitur Copy Link Baru
 const copyTrackingLink = (pkg) => {
   const resiStr = 'PKT-' + String(pkg.id).padStart(4, '0') + (pkg.no_struk ? '-' + pkg.no_struk : '')
   const trackingLink = `${window.location.origin}/tracking/${resiStr}`
   
   navigator.clipboard.writeText(trackingLink).then(() => {
-    showNotification(`Link pelacakan ${resiStr} berhasil disalin!`, 'success')
+    showNotification(`Link resi ${resiStr} disalin!`, 'success')
   }).catch(err => {
-    alert("Gagal menyalin link. Browser Anda mungkin memblokir akses clipboard.")
+    alert("Gagal menyalin link. Browser Anda memblokir akses.")
   })
 }
 
@@ -337,27 +392,24 @@ const updatePackage = async () => {
       status_pembayaran: editForm.value.status_pembayaran,
       metode_pembayaran: editForm.value.metode_pembayaran
     }
-    // Update data paketnya
-    const response = await axios.put(`http://localhost:8000/api/v1/packages/${editForm.value.id}`, payload)
     
-debugger
-    if (editForm.value.status_pengiriman === '6. Diserahkan ke kurir') {
+    const response = await axios.put(`/packages/${editForm.value.id}`, payload)
+    
+    // Auto Assign Khusus Kurir
+    if (userRole.value === 'kurir' && editForm.value.status_pengiriman === '6. Diserahkan ke kurir') {
       try {
         const currentUserData = JSON.parse(localStorage.getItem('user'));
-        
-        // Cari kendaraan kurir tersebut
-        const vehRes = await axios.get('http://localhost:8000/api/v1/vehicles');
+        const vehRes = await axios.get('/vehicles');
         const myVeh = vehRes.data.data.find(v => v.user_id === currentUserData.id);
         
-        // POST ke Works
-        await axios.post('http://localhost:8000/api/v1/works', {
+        await axios.post('/works', {
           package_ids: [editForm.value.id],
           user_id: currentUserData.id,
           vehicle_id: myVeh ? myVeh.id : null
         });
       } catch (e) { 
-        console.error("Gagal auto-assign Work Order", e.response?.data || e); 
-        alert("Peringatan: Paket berhasil diubah, tapi gagal masuk Penugasan. Cek kembali akses backend.");
+        console.error("Gagal auto-assign Work Order", e); 
+        alert("Peringatan: Paket berhasil diubah, tapi gagal masuk Penugasan.");
       }
     }
 
@@ -366,9 +418,9 @@ debugger
     if (index !== -1) packages.value[index] = updatedPkg
     
     closeEditModal()
-    showNotification('Data Paket berhasil diupdate!', 'success')
+    showNotification('Status berhasil disimpan!', 'success')
   } catch (error) {
-    showNotification('Gagal mengupdate paket', 'error')
+    showNotification('Gagal menyimpan status', 'error')
   } finally { 
     isSaving.value = false 
   }
@@ -383,12 +435,12 @@ const deletePackage = async () => {
   if (!packageToDelete.value) return
   isSaving.value = true
   try {
-    await axios.delete(`${API_URL}/${packageToDelete.value.id}`)
+    await axios.delete(`/packages/${packageToDelete.value.id}`)
     packages.value = packages.value.filter(p => p.id !== packageToDelete.value.id)
     if (paginatedPackages.value.length === 0 && currentPage.value > 1) currentPage.value--
     isDeleteModalOpen.value = false
-    showNotification('Paket berhasil dihapus!', 'success')
-  } catch (error) { showNotification('Gagal menghapus paket', 'error') } 
+    showNotification('Paket dihapus!', 'success')
+  } catch (error) { showNotification('Gagal menghapus', 'error') } 
   finally { isSaving.value = false }
 }
 
@@ -419,3 +471,27 @@ const showNotification = (message, type = 'success') => {
 
 onMounted(() => { fetchPackages() })
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+/* Animasi HP Bottom Sheet */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-modal-in { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Pengamanan padding di HP (Khusus iPhone Swipe Bar) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+}
+</style>
