@@ -11,6 +11,7 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Models\PackageHistory;
 
 class PackageController extends Controller
 {
@@ -71,8 +72,15 @@ class PackageController extends Controller
                 'foto_struk'        => $fotoPath
             ]);
 
+            // TAMBAHAN: Catat Riwayat Pertama Kali Paket Dibuat
+            \App\Models\PackageHistory::create([
+                'package_id'        => $package->id,
+                'status_pengiriman' => '1. Verifikasi Jastar',
+                'keterangan'        => 'Pesanan baru dibuat dan lunas.'
+            ]);
+
             // 5. AUTO-SINKRONISASI BUKU KAS (Karena langsung bayar di depan)
-           // Format baru: #PKT-0005-12345
+            // Format baru: #PKT-0005-12345
             $kodeUnik = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT) . '-' . $package->no_struk;
             $biayaAdmin = 1500;
             $biayaDasar = max(0, $package->total_harga - $biayaAdmin);
@@ -102,21 +110,26 @@ class PackageController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $package = Package::with(['customer', 'work'])->find($id);
-        if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
-        return response()->json(['status' => 'success', 'data' => $package], 200);
-    }
-
     public function update(Request $request, $id)
     {
         $package = Package::find($id);
         if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
 
         try {
+            // CATAT STATUS LAMA SEBELUM DIUPDATE
+            $statusLama = $package->status_pengiriman;
+
             $package->update($request->all());
             $package->load('customer');
+
+            // JIKA STATUS BERUBAH, CATAT KE HISTORY (Tracking berurut)
+            if ($request->has('status_pengiriman') && $statusLama !== $request->status_pengiriman) {
+                \App\Models\PackageHistory::create([
+                    'package_id'        => $package->id,
+                    'status_pengiriman' => $request->status_pengiriman,
+                    'keterangan'        => 'Status diupdate secara manual'
+                ]);
+            }
 
             if ($package->status_pengiriman === '9. Cancel / Pending') {
                 $work = Work::where('package_id', $package->id)->first();
@@ -136,6 +149,17 @@ class PackageController extends Controller
             return response()->json(['status'  => 'error', 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function show($id)
+    {
+        // PERBAIKAN: Panggil relasi histories, serta detail kurir dan kendaraannya
+        $package = Package::with(['customer', 'work.user', 'work.vehicle', 'histories'])->find($id);
+        
+        if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
+        return response()->json(['status' => 'success', 'data' => $package], 200);
+    }
+
+
 
     public function destroy($id)
     {

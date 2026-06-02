@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Work;
 use App\Models\Package;
 use App\Models\Vehicle; 
+use App\Models\PackageHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,14 @@ class WorkController extends Controller
                 
                 // PERBAIKAN: Ubah status lama "Menunggu Driver" menjadi format baru
                 Package::where('id', $packageId)->update(['status_pengiriman' => '6. Diserahkan ke kurir']);
+                
+                // MENCATAT RIWAYAT: Paket diserahkan ke kurir
+                PackageHistory::create([
+                    'package_id'        => $packageId,
+                    'status_pengiriman' => '6. Diserahkan ke kurir',
+                    'keterangan'        => 'Paket telah ditugaskan dan diserahkan ke kurir.'
+                ]);
+
                 $createdWorks[] = $work;
             }
 
@@ -67,6 +76,13 @@ class WorkController extends Controller
                 // PERBAIKAN: Ubah "Terkirim" menjadi "8. Sampai (Selesai)"
                 if ($work->package) {
                     $work->package->update(['status_pengiriman' => '8. Sampai (Selesai)']);
+                    
+                    // MENCATAT RIWAYAT: Paket Selesai Diantar
+                    PackageHistory::create([
+                        'package_id'        => $work->package->id,
+                        'status_pengiriman' => '8. Sampai (Selesai)',
+                        'keterangan'        => 'Paket telah berhasil dikirimkan oleh kurir ke alamat tujuan.'
+                    ]);
                 }
                 
                 $pendingWorks = Work::where('user_id', $work->user_id)
@@ -119,6 +135,13 @@ class WorkController extends Controller
             // PERBAIKAN: Ubah "Pesanan diverifikasi" menjadi format awal jika tugas dibatalkan
             if ($work->package) {
                 $work->package->update(['status_pengiriman' => '1. Verifikasi Jastar']);
+
+                // MENCATAT RIWAYAT: Penugasan kurir dicabut
+                PackageHistory::create([
+                    'package_id'        => $work->package->id,
+                    'status_pengiriman' => '1. Verifikasi Jastar',
+                    'keterangan'        => 'Penugasan kurir dibatalkan, status paket dikembalikan ke Verifikasi Jastar.'
+                ]);
             }
             
             $work->delete();

@@ -351,7 +351,9 @@ const updatePackage = async () => {
       deskripsi_pesanan: editForm.value.deskripsi_pesanan,
       status_pengiriman: editForm.value.status_pengiriman,
       status_pembayaran: editForm.value.status_pembayaran,
-      metode_pembayaran: editForm.value.metode_pembayaran
+      metode_pembayaran: editForm.value.metode_pembayaran,
+      // PERBAIKAN 4: Tambahkan total harga agar ikut ter-update di database
+      total_harga: editForm.value.total_harga 
     }
     
     const response = await axios.put(`/packages/${editForm.value.id}`, payload)

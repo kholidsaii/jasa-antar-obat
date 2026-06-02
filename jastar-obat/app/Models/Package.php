@@ -19,7 +19,11 @@ class Package extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-
+    // Tambahkan ini di dalam class Package
+    public function histories()
+    {
+        return $this->hasMany(PackageHistory::class)->orderBy('created_at', 'desc');
+    }
     // Relasi: Paket ini dikerjakan di penugasan mana?
     public function work()
     {

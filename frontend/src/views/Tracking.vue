@@ -21,11 +21,12 @@
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </div>
           <h2 class="text-lg font-bold text-gray-900">Resi Tidak Ditemukan</h2>
-          <p class="text-sm text-gray-500 mt-1">Pastikan link yang Anda buka benar.</p>
+          <p class="text-sm text-gray-500 mt-1">Pastikan link atau nomor resi yang Anda buka benar.</p>
         </div>
 
         <div v-else class="space-y-6">
-          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center">
+          
+          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center shadow-sm">
             <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Nomor Resi Pelacakan</p>
             <p class="text-2xl font-black text-[#3b5998] tracking-widest">#{{ resi }}</p>
             <div class="mt-3 pt-3 border-t border-blue-200/50 flex justify-between text-left">
@@ -40,38 +41,50 @@
             </div>
           </div>
 
-          <div v-if="paket.work && paket.work.user" class="flex items-center p-4 bg-gray-50 border border-gray-100 rounded-2xl shadow-sm">
-            <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(paket.work.user.name)}&background=random&color=fff`" class="w-12 h-12 rounded-full border-2 border-white shadow-sm mr-3">
+          <div v-if="paket.work && paket.work.user" class="flex items-center p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+            <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(paket.work.user.name)}&background=random&color=fff`" class="w-12 h-12 rounded-full border-2 border-gray-100 shadow-sm mr-3">
             <div class="flex-1">
-              <p class="text-xs font-bold text-gray-500 uppercase">Kurir Pengantar</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Kurir Pengantar</p>
               <p class="text-sm font-bold text-gray-900">{{ paket.work.user.name }}</p>
-              <p class="text-xs text-gray-500 font-medium">{{ paket.work.vehicle?.nama_kendaraan || 'Motor' }} • {{ paket.work.vehicle?.plat_nomor || '-' }}</p>
+              <p class="text-[11px] text-gray-500 font-medium">{{ paket.work.vehicle?.nama_kendaraan || 'Motor' }} • {{ paket.work.vehicle?.plat_nomor || '-' }}</p>
             </div>
-            <a :href="`https://wa.me/62${(paket.work.user.no_telepon || '').replace(/^0+/, '')}`" class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors">
-              <i class="fas fa-phone-alt"></i>
+            <a v-if="paket.work.user.no_telepon" :href="`https://wa.me/62${(paket.work.user.no_telepon || '').replace(/^0+/, '')}`" class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors shadow-sm">
+              <i class="fas fa-phone-alt text-sm"></i>
             </a>
           </div>
 
           <div>
-            <h3 class="text-sm font-bold text-gray-800 mb-4 px-2">Status Perjalanan Obat:</h3>
+            <h3 class="text-sm font-bold text-gray-800 mb-4 px-2">Riwayat Perjalanan Obat:</h3>
             <div class="relative px-4">
-              <div class="absolute top-2 bottom-2 left-6 w-0.5 bg-gray-200"></div>
+              
+              <div class="absolute top-2 bottom-6 left-6 w-0.5 bg-gray-200"></div>
 
-              <div class="relative z-10 flex items-start mb-6">
-                <div :class="['w-5 h-5 rounded-full ring-4 ring-white flex-shrink-0 mt-0.5', paket.status_pengiriman.includes('Selesai') ? 'bg-green-500' : 'bg-blue-500 animate-pulse']"></div>
+              <div v-if="!paket.histories || paket.histories.length === 0" class="relative z-10 flex items-start mb-6">
+                <div class="w-5 h-5 rounded-full ring-4 ring-white flex-shrink-0 mt-0.5 bg-blue-500 animate-pulse"></div>
                 <div class="ml-4">
                   <h4 class="text-sm font-black text-gray-900">{{ paket.status_pengiriman }}</h4>
-                  <p class="text-xs text-gray-500 mt-0.5 font-medium">Update Terakhir: {{ new Date(paket.updated_at).toLocaleString('id-ID') }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5 font-medium">Update: {{ new Date(paket.updated_at).toLocaleString('id-ID') }}</p>
                 </div>
               </div>
 
-              <div class="relative z-10 flex items-start mb-6 opacity-50">
-                <div class="w-5 h-5 rounded-full bg-gray-300 ring-4 ring-white flex-shrink-0 mt-0.5"></div>
-                <div class="ml-4">
-                  <h4 class="text-sm font-bold text-gray-700">Pesanan Diterima</h4>
-                  <p class="text-xs text-gray-500 mt-0.5">Sistem Jastar Obat</p>
+              <div v-else v-for="(history, index) in paket.histories" :key="history.id" class="relative z-10 flex items-start mb-6" :class="{'opacity-60': index !== 0}">
+                
+                <div :class="[
+                  'w-5 h-5 rounded-full ring-4 ring-white flex-shrink-0 mt-0.5 shadow-sm',
+                  index === 0 ? (history.status_pengiriman.includes('Selesai') ? 'bg-green-500' : 'bg-blue-500 animate-pulse') : 'bg-gray-300'
+                ]"></div>
+                
+                <div class="ml-4 flex-1">
+                  <h4 :class="['text-sm tracking-tight', index === 0 ? 'font-black text-gray-900' : 'font-bold text-gray-700']">
+                    {{ history.status_pengiriman }}
+                  </h4>
+                  <p class="text-xs text-gray-500 mt-1 leading-relaxed font-medium">{{ history.keterangan || '-' }}</p>
+                  <p class="text-[10px] text-gray-400 mt-1 font-semibold flex items-center">
+                    <i class="far fa-clock mr-1"></i> {{ new Date(history.created_at).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) }}
+                  </p>
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -96,15 +109,16 @@ const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currenc
 const fetchTrackingData = async () => {
   isLoading.value = true
   try {
-    // Mengekstrak ID asli dari resi (Contoh: "PKT-0005" menjadi 5)
-    const paketId = parseInt(resi.value.replace('PKT-', ''), 10)
+    // Mengekstrak ID asli dari resi (Contoh: "PKT-0005-F123" menjadi 5)
+    // Pecah berdasarkan "-" dan ambil array index 1
+    const resiParts = resi.value.split('-');
+    const paketId = parseInt(resiParts[1], 10);
     
-    // Pastikan Endpoint /packages/{id} ini bisa diakses tanpa Bearer Token (di Laravel)
-    // ATAU Anda membuat endpoint khusus publik di Laravel: Route::get('/tracking/{id}')
+    // Tarik data dari API Publik yang kita atur di PackageController@show
     const response = await axios.get(`http://localhost:8000/api/v1/packages/${paketId}`)
     paket.value = response.data.data
   } catch (error) {
-    console.error(error)
+    console.error("Gagal menarik data tracking:", error)
   } finally {
     isLoading.value = false
   }

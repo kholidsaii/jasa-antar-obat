@@ -168,6 +168,7 @@
               <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-2 px-3">Metode Pembayaran</label>
               <select v-model="formBaru.metode_pembayaran" class="w-full border-none rounded-xl py-3 px-3 text-sm font-bold outline-none focus:ring-0 bg-transparent appearance-none cursor-pointer text-gray-800">
                 <option value="Tunai / Cash (Sistem)">💵 Tunai / Cash (Bayar ke Stand)</option>
+                <option value="Tunai / Cash (Sistem)">💵 Tunai / Cash (Bayar Dirumah)</option>
                 <option value="QRIS / E-Wallet (Sistem)">📱 QRIS / E-Wallet digital</option>
                 <option value="Transfer Bank (Sistem)">🏦 Transfer Bank (Virtual Account)</option>
               </select>
@@ -332,44 +333,7 @@ const initLeafletMap = async () => {
   }
 }
 
-// MENGGAMBAR RUTE OSRM
-const drawRoute = async (destLat, destLon) => {
-  isCalculating.value = true;
-  estimasiSelesai.value = false;
 
-  try {
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${destLon},${destLat}?overview=full&geometries=geojson`;
-    const response = await fetch(osrmUrl);
-    const data = await response.json();
-
-    if (data.code === 'Ok') {
-      const route = data.routes[0];
-      const jarakKm = parseFloat((route.distance / 1000).toFixed(1));
-      
-      if (destMarker) mapInstance.removeLayer(destMarker);
-      if (routeLine) mapInstance.removeLayer(routeLine);
-
-      destMarker = L.marker([destLat, destLon]).addTo(mapInstance).bindPopup('<b>Tujuan Pasien</b>').openPopup();
-
-      const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-      routeLine = L.polyline(coordinates, {color: '#3b5998', weight: 5}).addTo(mapInstance);
-      mapInstance.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
-
-      let baseHarga = 20000;
-      if (jarakKm > 5.0) {
-        const extraKm = Math.ceil(jarakKm) - 5;
-        baseHarga += (extraKm * 5000);
-      }
-      
-      formBaru.value.jarak_km = jarakKm;
-      formBaru.value.total_harga = baseHarga + 1500; 
-      estimasiSelesai.value = true;
-    }
-  } catch (error) {
-    alert("Gagal memuat rute dari server OSRM.");
-  }
-  isCalculating.value = false;
-}
 
 const openModalPaket = async () => { 
   isModalPaketOpen.value = true;
@@ -397,8 +361,45 @@ const cekValidasiPasien = () => {
   modalStep.value = 3;
 }
 
-// PENYIMPANAN DAN GENERATE WA +62
-// PENYIMPANAN, AUTO ASSIGN KURIR, DAN GENERATE WA +62
+// MENGGAMBAR RUTE OSRM & HITUNG TARIF BARU
+const drawRoute = async (destLat, destLon) => {
+  isCalculating.value = true;
+  estimasiSelesai.value = false;
+
+  try {
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${RUMAH_SAKIT_COORD[1]},${RUMAH_SAKIT_COORD[0]};${destLon},${destLat}?overview=full&geometries=geojson`;
+    const response = await fetch(osrmUrl);
+    const data = await response.json();
+
+    if (data.code === 'Ok') {
+      const route = data.routes[0];
+      const jarakKm = parseFloat((route.distance / 1000).toFixed(1));
+      
+      if (destMarker) mapInstance.removeLayer(destMarker);
+      if (routeLine) mapInstance.removeLayer(routeLine);
+
+      destMarker = L.marker([destLat, destLon]).addTo(mapInstance).bindPopup('<b>Tujuan Pasien</b>').openPopup();
+
+      const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+      routeLine = L.polyline(coordinates, {color: '#3b5998', weight: 5}).addTo(mapInstance);
+      mapInstance.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+
+      // PERBAIKAN 1: Tarif Rp 5.000 per KM + Admin Rp 1.500
+      let totalJarak = Math.ceil(jarakKm);
+      if (totalJarak < 1) totalJarak = 1; // Minimal charge 1 KM
+      const baseHarga = totalJarak * 5000;
+      
+      formBaru.value.jarak_km = jarakKm;
+      formBaru.value.total_harga = baseHarga + 1500; 
+      estimasiSelesai.value = true;
+    }
+  } catch (error) {
+    alert("Gagal memuat rute dari server OSRM.");
+  }
+  isCalculating.value = false;
+}
+
+// PENYIMPANAN & KEMBALI KE ALUR KURIR MANUAL
 const submitPaket = async () => {
   isSaving.value = true
   
@@ -407,7 +408,6 @@ const submitPaket = async () => {
   formData.append('no_telp', formBaru.value.no_telp)
   formData.append('no_struk', formBaru.value.no_struk)
   
-  // Menggabungkan Alamat Utama dengan Detail Patokan (Jika ada)
   const alamatFinal = formBaru.value.detail_alamat 
     ? `${formBaru.value.alamat} (Patokan: ${formBaru.value.detail_alamat})` 
     : formBaru.value.alamat;
@@ -419,32 +419,12 @@ const submitPaket = async () => {
   if (formBaru.value.foto_struk) formData.append('foto_struk', formBaru.value.foto_struk)
 
   try {
-    // 1. CARI KURIR TERSEDIA (Ambil kurir dengan tanggungan paket paling sedikit)
-    const { data: usersRes } = await axios.get('/users');
-    const kurirList = usersRes.data.filter(u => u.role === 'kurir');
-    kurirList.sort((a, b) => a.works_count - b.works_count);
-    const kurirTerpilih = kurirList.length > 0 ? kurirList[0] : null;
-
-    // 2. SIMPAN PAKET BARU
+    // PERBAIKAN 2: Hapus Auto-Assign Kurir, cukup post package saja
     const response = await axios.post('/packages', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
     const paketBaru = response.data.data;
-
-    // 3. AUTO ASSIGN KE KURIR (Jika ada kurir tersedia)
-    let namaKurirText = "menunggu kurir";
-    debugger
-    if (kurirTerpilih) {
-      await axios.post('/works', {
-        package_ids: [paketBaru.id],
-        user_id: kurirTerpilih.id,
-        // TAMBAHAN: Tarik ID kendaraan si kurir kalau dia punya plat motor terdaftar
-        vehicle_id: kurirTerpilih.vehicle ? kurirTerpilih.vehicle.id : null 
-      });
-      namaKurirText = `kurir *${kurirTerpilih.name}*`;
-    }
-    // 4. GENERATE WHATSAPP MESSAGE
     const kodeResi = '#PKT-' + String(paketBaru.id).padStart(4, '0') + '-' + formBaru.value.no_struk;
     const trackingLink = `${window.location.origin}/tracking/${kodeResi.replace('#', '')}`;
 
@@ -457,7 +437,7 @@ const submitPaket = async () => {
       phoneWhatsApp = '62' + phoneWhatsApp;
     }
 
-    const waMessage = `Halo kak *${formBaru.value.nama}*,\n\nPesanan Jasa Antar Obat dari *RSPPN Soedirman* telah kami terima dan saat ini dialokasikan ke ${namaKurirText}. Berikut rinciannya:\n\n📦 *No. Resi:* ${kodeResi}\n💵 *Total:* ${formatRupiah(formBaru.value.total_harga)}\n✅ *Status:* Lunas (${formBaru.value.metode_pembayaran})\n\nSilakan pantau pergerakan kurir dan status obat kakak secara real-time melalui link berikut:\n👇👇👇\n${trackingLink}\n\nTerima kasih! 🙏`;
+    const waMessage = `Halo kak *${formBaru.value.nama}*,\n\nPesanan Jasa Antar Obat dari *RSPPN Soedirman* telah kami terima. Berikut rinciannya:\n\n📦 *No. Resi:* ${kodeResi}\n💵 *Total:* ${formatRupiah(formBaru.value.total_harga)}\n✅ *Status:* Lunas (${formBaru.value.metode_pembayaran})\n\nSilakan pantau pergerakan kurir dan status obat kakak secara real-time melalui link berikut:\n👇👇👇\n${trackingLink}\n\nTerima kasih! 🙏`;
 
     closeModalPaket()
     
