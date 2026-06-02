@@ -3,7 +3,7 @@
     
     <div class="p-5 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h2 class="text-lg sm:text-xl font-black text-gray-900">Daftar Semua Paket</h2>
+        <!-- <h2 class="text-lg sm:text-xl font-black text-gray-900">Daftar Semua Paket</h2>   -->
         <p class="text-xs sm:text-sm text-gray-500 mt-1">Monitor status pesanan obat secara real-time.</p>
       </div>
       
@@ -37,74 +37,87 @@
       {{ notification.message }}
     </div>
 
-    <div class="hidden lg:block overflow-x-auto flex-1">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">ID Resi & Tracking</th>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Pasien</th>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Nama Paket</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Total Harga</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Status Pengiriman</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
-            <th scope="col" class="px-5 py-4 text-right text-xs font-black text-gray-500 uppercase tracking-wider">Aksi</th>
-          </tr>
-        </thead>
-        <tbody v-if="isLoading" class="bg-white divide-y divide-gray-100">
-          <tr v-for="i in 5" :key="i" class="animate-pulse">
-            <td colspan="7" class="px-6 py-4"><div class="h-4 bg-gray-100 rounded w-full"></div></td>
-          </tr>
-        </tbody>
-        <tbody v-else-if="filteredPackages.length === 0" class="bg-white">
-          <tr>
-            <td colspan="7" class="px-6 py-12 text-center text-gray-500 font-medium">Tidak ada data paket yang ditemukan.</td>
-          </tr>
-        </tbody>
-        <tbody v-else class="bg-white divide-y divide-gray-100">
-          <tr v-for="pkg in paginatedPackages" :key="'desk-'+pkg.id" class="hover:bg-blue-50/30 transition-colors">
-            <td class="px-5 py-4 whitespace-nowrap">
-              <span class="text-[11px] font-black text-gray-800 bg-gray-100 px-2 py-1 rounded-md border border-gray-200 inline-block mb-1 tracking-wider">
+    <div class="flex-1 bg-gray-50/50 p-4 sm:p-5 border-t border-gray-100">
+      
+      <div v-if="isLoading" class="space-y-4">
+        <div v-for="i in 4" :key="i" class="h-32 bg-white rounded-2xl border border-gray-100 animate-pulse shadow-sm"></div>
+      </div>
+
+      <div v-else-if="filteredPackages.length === 0" class="p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div class="text-gray-300 mb-3"><i class="fas fa-box-open text-5xl"></i></div>
+        <p class="text-gray-500 font-bold text-sm">Tidak ada data pesanan.</p>
+      </div>
+
+      <div v-else class="space-y-4">
+        <div v-for="pkg in paginatedPackages" :key="pkg.id" class="bg-white rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6 border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group">
+
+          <div class="shrink-0 hidden sm:block">
+            <div class="w-14 h-14 rounded-full border-2 border-blue-100 p-1">
+              <div class="w-full h-full bg-blue-50 rounded-full flex items-center justify-center text-[#3b5998] text-xl font-black uppercase">
+                {{ pkg.customer?.nama ? pkg.customer.nama.charAt(0) : '?' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex-1 w-full">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h3 class="text-gray-900 text-base sm:text-lg font-black">{{ pkg.customer?.nama || 'Dihapus' }}</h3>
+              <span class="text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
                 #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
               </span>
-              <br>
-              <a :href="`/tracking/PKT-${String(pkg.id).padStart(4, '0')}${pkg.no_struk ? '-' + pkg.no_struk : ''}`" target="_blank" class="text-[10px] text-blue-600 font-bold hover:text-blue-800 hover:underline flex items-center mt-1">
-                <i class="fas fa-external-link-alt mr-1"></i> Lihat Tracking
-              </a>
-            </td>
-            <td class="px-5 py-4 whitespace-nowrap">
-              <div class="text-sm font-bold text-gray-900">{{ pkg.customer?.nama || 'Dihapus' }}</div>
-              <div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-phone-alt mr-1"></i> {{ pkg.customer?.no_telp || '-' }}</div>
-            </td>
-            <td class="px-5 py-4 text-sm text-gray-600 whitespace-normal min-w-[150px] max-w-[200px] break-words">
-              {{ pkg.deskripsi_pesanan }}
-            </td>
-            <td class="px-5 py-4 whitespace-nowrap text-center text-sm font-black text-[#3b5998]">
-              {{ pkg.total_harga ? formatRupiah(pkg.total_harga) : '-' }}
-            </td>
-            <td class="px-5 py-4 whitespace-nowrap text-center">
-              <span :class="getStatusPengirimanClass(pkg.status_pengiriman)" class="px-2.5 py-1.5 inline-flex text-[11px] leading-4 font-black rounded-md border uppercase tracking-wider">
-                {{ pkg.status_pengiriman }}
-              </span>
-            </td>
-            <td class="px-5 py-4 whitespace-nowrap text-center">
-              <span :class="getStatusPembayaranClass(pkg.status_pembayaran)" class="px-2.5 py-1.5 inline-flex text-[11px] leading-4 font-black rounded-md border uppercase tracking-wider">
-                {{ pkg.status_pembayaran }}
-              </span>
-            </td>
-            <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button @click="copyTrackingLink(pkg)" class="text-emerald-600 hover:text-white hover:bg-emerald-600 mr-2 transition-colors bg-emerald-50 p-2 rounded-lg border border-emerald-200" title="Salin Link">
-                <i class="fas fa-link"></i>
+            </div>
+            
+            <p class="text-gray-500 text-xs sm:text-sm mb-4 flex items-center line-clamp-1 font-medium">
+              <i class="fas fa-map-marker-alt mr-1.5 text-red-400"></i> 
+              {{ pkg.deskripsi_pesanan }} <span class="mx-2 text-gray-300">|</span> <i class="fas fa-phone-alt mr-1.5 text-gray-400"></i> {{ pkg.customer?.no_telp || '-' }}
+            </p>
+
+            <div class="relative w-full sm:w-5/6 mt-2">
+              <div class="flex justify-between items-end mb-1.5">
+                <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Status Pengiriman</span>
+                <span class="text-[10px] font-black uppercase" :class="pkg.status_pengiriman === '9. Cancel / Pending' ? 'text-red-500' : 'text-[#3b5998]'">
+                  {{ pkg.status_pengiriman }}
+                </span>
+              </div>
+              <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+                <div class="h-full transition-all duration-500 rounded-full"
+                     :class="pkg.status_pengiriman === '9. Cancel / Pending' ? 'bg-red-500' : 'bg-gradient-to-r from-blue-400 to-[#3b5998]'"
+                     :style="{ width: getProgressPercentage(pkg.status_pengiriman) + '%' }">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full md:w-auto shrink-0 bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end gap-3 mt-2 md:mt-0 min-w-[190px]">
+            
+            <div class="flex flex-col md:items-end">
+              <div v-if="pkg.status_pembayaran === 'Lunas'" class="bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-wider mb-2 flex items-center shadow-sm">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> LUNAS
+              </div>
+              <div v-else class="bg-red-50 text-red-600 border border-red-200 text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-wider mb-2 shadow-sm">
+                BELUM LUNAS
+              </div>
+
+              <span class="text-[9px] sm:text-[10px] text-gray-400 font-bold tracking-widest mt-1">TOTAL TAGIHAN</span>
+              <span class="text-[#3b5998] text-lg sm:text-xl font-black mt-0.5 tracking-tight">{{ pkg.total_harga ? formatRupiah(pkg.total_harga) : '-' }}</span>
+            </div>
+
+           <div class="flex gap-1.5 md:mt-2">
+              <button @click="copyTrackingLink(pkg)" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Salin Link">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
               </button>
-              <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-white hover:bg-[#3b5998] mr-2 transition-colors bg-blue-50 p-2 rounded-lg border border-blue-200" title="Update Status">
-                <i class="fas fa-edit"></i>
+              <button @click="openEditModal(pkg)" class="w-8 h-8 rounded-lg bg-blue-50 text-[#3b5998] border border-blue-200 hover:bg-[#3b5998] hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Update Status">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
-              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="text-red-500 hover:text-white hover:bg-red-500 transition-colors bg-red-50 p-2 rounded-lg border border-red-200" title="Hapus">
-                <i class="fas fa-trash-alt"></i>
+              <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Hapus">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+            
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <div class="block lg:hidden flex-1 bg-gray-50/50">
@@ -122,7 +135,7 @@
           
           <div class="flex justify-between items-start mb-3">
             <div>
-              <span class="text-[10px] font-black text-gray-800 bg-gray-100 px-2 py-1 rounded-md border border-gray-200 tracking-wider shadow-sm">
+             <span class="text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
                 #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
               </span>
             </div>
@@ -347,7 +360,18 @@ const packageToDelete = ref(null)
 const formatRupiah = (angka) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 }
-
+const getProgressPercentage = (status) => {
+  if (!status) return 0;
+  // Mengambil angka depan dari status (misal "1" dari "1. Verifikasi Jastar")
+  const match = status.match(/^(\d)/);
+  if (match) {
+    const step = parseInt(match[1]);
+    if (step === 9) return 100; // Jika batal, penuhi bar dengan warna merah
+    // Total ada 8 step hingga selesai
+    return (step / 8) * 100;
+  }
+  return 0;
+}
 const fetchPackages = async () => {
   isLoading.value = true
   try {

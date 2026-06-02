@@ -20,7 +20,7 @@
         <div class="w-full sm:w-auto mt-2 sm:mt-0 relative z-10" v-if="userRole !== 'kurir'">
           <button @click="openModalPaket" class="w-full sm:w-auto justify-center bg-[#3b5998] hover:bg-blue-800 text-white px-6 py-3.5 sm:py-2.5 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center">
             <svg class="w-5 h-5 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
-            Buat Pesanan Baru
+            Buat Paket
           </button>
         </div>
       </div>
@@ -240,9 +240,9 @@ const MapPinIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" str
 
 const allTabs = [
   // { id: 'overview', name: 'Overview', icon: EyeIcon, roles: ['superadmin', 'admin'] },
-  { id: 'all-paket', name: 'Semua Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'all-paket', name: 'All Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
   { id: 'customer', name: 'Data Customer', icon: UsersIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
-  { id: 'alamat', name: 'Peta Alamat', icon: MapPinIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'alamat', name: 'Alamat', icon: MapPinIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
 ]
 
 const allowedTabs = computed(() => allTabs.filter(tab => tab.roles.includes(userRole.value)))

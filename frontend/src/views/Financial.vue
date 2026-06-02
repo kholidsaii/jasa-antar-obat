@@ -166,10 +166,10 @@ const ListIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" strok
 const BankIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>` })
 
 const tabs = [
-  { id: 'overview', name: 'Dashboard Keuangan', icon: ChartIcon },
-  { id: 'all-transaksi', name: 'Buku Besar Kas', icon: ListIcon },
-  { id: 'banking', name: 'Saldo & Dompet', icon: BankIcon },
-  { id: 'accounting', name: 'Profit & Loss', icon: ChartIcon },
+  { id: 'overview', name: 'Overview', icon: ChartIcon },
+  { id: 'all-transaksi', name: 'Transaksi', icon: ListIcon },
+  { id: 'banking', name: 'Banking', icon: BankIcon },
+  { id: 'accounting', name: 'Statistik', icon: ChartIcon },
 ]
 
 const activeTab = ref('overview')
