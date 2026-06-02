@@ -24,7 +24,7 @@ class WorkController extends Controller
             'package_ids'   => 'required|array|min:1',
             'package_ids.*' => 'exists:packages,id',
             'user_id'       => 'required|exists:users,id',
-            'vehicle_id'    => 'required|exists:vehicles,id', // Harus milih kendaraan
+            'vehicle_id'    => 'nullable|exists:vehicles,id', // <-- Nullable untuk antisipasi kurir belum punya plat
         ]);
         
         if ($validator->fails()) return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
@@ -39,11 +39,15 @@ class WorkController extends Controller
                     'user_id'    => $request->user_id,
                     'vehicle_id' => $request->vehicle_id,
                 ]);
-                Package::where('id', $packageId)->update(['status_pengiriman' => 'Menunggu Driver']);
+                
+                // PERBAIKAN: Ubah status lama "Menunggu Driver" menjadi format baru
+                Package::where('id', $packageId)->update(['status_pengiriman' => '6. Diserahkan ke kurir']);
                 $createdWorks[] = $work;
             }
 
-            Vehicle::where('id', $request->vehicle_id)->update(['status' => 'Sedang Digunakan']);
+            if ($request->vehicle_id) {
+                Vehicle::where('id', $request->vehicle_id)->update(['status' => 'Sedang Digunakan']);
+            }
 
             DB::commit();
             return response()->json(['status' => 'success', 'message' => 'Berhasil menugaskan paket ke kurir.'], 201);
@@ -60,10 +64,15 @@ class WorkController extends Controller
 
         if ($request->has('action') && $request->action === 'complete') {
             try {
-                if ($work->package) $work->package->update(['status_pengiriman' => 'Terkirim']);
+                // PERBAIKAN: Ubah "Terkirim" menjadi "8. Sampai (Selesai)"
+                if ($work->package) {
+                    $work->package->update(['status_pengiriman' => '8. Sampai (Selesai)']);
+                }
                 
                 $pendingWorks = Work::where('user_id', $work->user_id)
-                    ->whereHas('package', function($q) { $q->where('status_pengiriman', '!=', 'Terkirim'); })->count();
+                    ->whereHas('package', function($q) { 
+                        $q->where('status_pengiriman', '!=', '8. Sampai (Selesai)'); 
+                    })->count();
 
                 if ($pendingWorks === 0 && $work->vehicle_id) {
                     Vehicle::where('id', $work->vehicle_id)->update(['status' => 'Tersedia']);
@@ -107,11 +116,17 @@ class WorkController extends Controller
             $vehicleId = $work->vehicle_id;
             $userId = $work->user_id;
 
-            if ($work->package) $work->package->update(['status_pengiriman' => 'Pesanan diverifikasi']);
+            // PERBAIKAN: Ubah "Pesanan diverifikasi" menjadi format awal jika tugas dibatalkan
+            if ($work->package) {
+                $work->package->update(['status_pengiriman' => '1. Verifikasi Jastar']);
+            }
+            
             $work->delete();
 
             $remainingWorks = Work::where('user_id', $userId)->count();
-            if ($remainingWorks === 0 && $vehicleId) Vehicle::where('id', $vehicleId)->update(['status' => 'Tersedia']);
+            if ($remainingWorks === 0 && $vehicleId) {
+                Vehicle::where('id', $vehicleId)->update(['status' => 'Tersedia']);
+            }
 
             return response()->json(['status' => 'success', 'message' => 'Pekerjaan dibatalkan.'], 200);
         } catch (\Exception $e) {

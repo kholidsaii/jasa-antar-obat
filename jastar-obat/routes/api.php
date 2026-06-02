@@ -11,7 +11,11 @@ use App\Http\Controllers\Api\WorkController;
 use App\Http\Controllers\Api\TransactionController;
 
 Route::prefix('v1')->group(function () {
+    // Rute Publik (Tidak perlu login)
     Route::post('/login', [AuthController::class, 'login']);
+    
+    // Rute Publik untuk Halaman Tracking Pasien (Harus di luar auth:sanctum)
+    Route::get('/packages/{id}', [PackageController::class, 'show']);
 
     Route::middleware('auth:sanctum')->group(function () {
         
@@ -20,17 +24,27 @@ Route::prefix('v1')->group(function () {
 
         // 1. Khusus Kurir & Superadmin
         Route::middleware('role:superadmin,kurir')->group(function () {
+            // Jika ada endpoint spesifik kurir, taruh di sini
         });
 
         // 2. Modul Pengiriman & Pasien (Tambahkan kurir di sini agar API bisa diakses)
         Route::middleware('role:superadmin,admin,farmasi,kurir')->group(function () {
             Route::apiResource('customers', CustomerController::class);
-            Route::apiResource('packages', PackageController::class);
+            // Pengecualian: Route index, store, update, destroy untuk packages (karena show sudah di public)
+            Route::get('/packages', [PackageController::class, 'index']);
+            Route::post('/packages', [PackageController::class, 'store']);
+            Route::put('/packages/{id}', [PackageController::class, 'update']);
+            Route::delete('/packages/{id}', [PackageController::class, 'destroy']);
         });
 
         // 3. Modul Teamwork / HR
+        // Biarkan users (Buku Induk Karyawan) hanya bisa diakses admin
         Route::middleware('role:superadmin,admin')->group(function () {
             Route::apiResource('users', UserController::class);       
+        });
+
+        // BUKA AKSES vehicles dan works untuk kurir agar fitur Auto-Assign berjalan lancar!
+        Route::middleware('role:superadmin,admin,kurir')->group(function () {
             Route::apiResource('vehicles', VehicleController::class); 
             Route::apiResource('works', WorkController::class);       
         });

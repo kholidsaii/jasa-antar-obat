@@ -130,7 +130,7 @@
                         <p class="font-bold text-gray-900 text-base">{{ work.package?.customer?.nama || 'Unknown' }}</p>
                         <p class="text-xs text-gray-500 mt-1"><i class="fas fa-map-marker-alt mr-1 text-red-500"></i> {{ work.package?.customer?.alamat || '-' }}</p>
                       </div>
-                      <span :class="[work.package?.status_pengiriman === 'Diperjalanan' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-orange-100 text-orange-800 border-orange-200']" class="px-3 py-1.5 text-[10px] font-bold uppercase rounded-md border text-center whitespace-nowrap animate-pulse">
+                      <span :class="[work.package?.status_pengiriman === '7. Dalam perjalanan' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-orange-100 text-orange-800 border-orange-200']" class="px-3 py-1.5 text-[10px] font-bold uppercase rounded-md border text-center whitespace-nowrap animate-pulse">
                         {{ work.package?.status_pengiriman }}
                       </span>
                     </div>
@@ -141,7 +141,7 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                      <button v-if="work.package?.status_pengiriman !== 'Diperjalanan'" @click="markOtw(work)" :disabled="isSaving" class="flex-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg border border-yellow-200 text-xs font-bold transition">
+                      <button v-if="work.package?.status_pengiriman !== '7. Dalam perjalanan'" @click="markOtw(work)" :disabled="isSaving" class="flex-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg border border-yellow-200 text-xs font-bold transition">
                         <i class="fas fa-motorcycle mr-1"></i> Diperjalanan
                       </button>
                       <button @click="completeWork(work)" :disabled="isSaving" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg border border-green-200 text-xs font-bold transition">
@@ -181,7 +181,7 @@
                       <p class="text-xs text-gray-500 mt-1"><i class="fas fa-box text-gray-400 mr-1"></i> {{ work.package?.deskripsi_pesanan }}</p>
                       <p class="text-[10px] text-gray-400 mt-1">Selesai: {{ new Date(work.updated_at).toLocaleTimeString('id-ID') }}</p>
                     </div>
-                    <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded border border-green-200 uppercase tracking-widest">Terkirim</span>
+                    <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded border border-green-200 uppercase tracking-widest">Selesai</span>
                   </div>
                 </transition-group>
               </div>
@@ -247,9 +247,10 @@ const groupedWorks = computed(() => {
     const status = work.package?.status_pengiriman
     const workDate = new Date(work.updated_at).toLocaleDateString('en-CA')
 
-    if (status === 'Terkirim') {
+    // PERBAIKAN: Gunakan status baru '8. Sampai (Selesai)' dan '9. Cancel / Pending'
+    if (status === '8. Sampai (Selesai)') {
       if (workDate === today) groups[courierId].history.push(work)
-    } else if (status !== 'Dibatalkan') {
+    } else if (status !== '9. Cancel / Pending') {
       groups[courierId].active.push(work)
     }
   })
@@ -286,10 +287,8 @@ const isDetailModalOpen = ref(false)
 const isExpandedActive = ref(true)
 const isExpandedHistory = ref(true)
 
-// Kunci utama Smooth Reactivity: Menggunakan ID Kurir Terpilih
 const selectedCourierId = ref(null)
 
-// Computed khusus Modal, agar setiap ada perubahan di works.value, list di modal langsung berubah
 const currentDetailGroup = computed(() => {
   if (!selectedCourierId.value) return null
   return groupedWorks.value.find(g => (g.courier?.id || 'unassigned') === selectedCourierId.value)
@@ -303,7 +302,7 @@ const openGroupDetail = (group) => {
 }
 const closeDetailModal = () => {
   isDetailModalOpen.value = false
-  setTimeout(() => selectedCourierId.value = null, 300) // Tunggu animasi tutup baru reset
+  setTimeout(() => selectedCourierId.value = null, 300) 
 }
 
 const allUsers = ref([])
@@ -331,9 +330,10 @@ const fetchWorks = async () => {
 const markOtw = async (work) => {
   isSaving.value = true
   try {
-    await axios.put(`${PACKAGE_API_URL}/${work.package.id}`, { status_pengiriman: 'Diperjalanan' })
+    // PERBAIKAN: Gunakan status baru '7. Dalam perjalanan'
+    await axios.put(`${PACKAGE_API_URL}/${work.package.id}`, { status_pengiriman: '7. Dalam perjalanan' })
     const index = works.value.findIndex(w => w.id === work.id)
-    if(index !== -1) works.value[index].package.status_pengiriman = 'Diperjalanan'
+    if(index !== -1) works.value[index].package.status_pengiriman = '7. Dalam perjalanan'
   } catch (error) {
     showNotification("Gagal mengubah status", "error")
   } finally { isSaving.value = false }
@@ -343,15 +343,15 @@ const completeWork = async (work) => {
   if(!confirm(`Tandai paket untuk ${work.package?.customer?.nama || ''} selesai dikirim?`)) return
   isSaving.value = true
   try {
+    // PERBAIKAN: Gunakan status baru '8. Sampai (Selesai)'
     await axios.put(`${PACKAGE_API_URL}/${work.package.id}`, { 
-      status_pengiriman: 'Terkirim',
+      status_pengiriman: '8. Sampai (Selesai)',
       status_pembayaran: 'Lunas' 
     })
     
-    // Update State (akan langsung ditangkap oleh currentDetailGroup secara realtime dgn animasi)
     const index = works.value.findIndex(w => w.id === work.id)
     if(index !== -1) {
-      works.value[index].package.status_pengiriman = 'Terkirim'
+      works.value[index].package.status_pengiriman = '8. Sampai (Selesai)'
       works.value[index].updated_at = new Date().toISOString() 
     }
   } catch (error) {
@@ -363,7 +363,8 @@ const markBatal = async (work) => {
   if(!confirm("Yakin ingin membatalkan paket ini?")) return
   isSaving.value = true
   try {
-    await axios.put(`${PACKAGE_API_URL}/${work.package.id}`, { status_pengiriman: 'Dibatalkan' })
+    // PERBAIKAN: Gunakan status baru '9. Cancel / Pending'
+    await axios.put(`${PACKAGE_API_URL}/${work.package.id}`, { status_pengiriman: '9. Cancel / Pending' })
     works.value = works.value.filter(w => w.id !== work.id)
   } catch (error) {
     showNotification("Gagal membatalkan paket", "error")

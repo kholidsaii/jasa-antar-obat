@@ -10,13 +10,8 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id', 
-        'deskripsi_pesanan', 
-        'status_pengiriman', 
-        'status_pembayaran',
-        'metode_pembayaran',
-        'jarak_km',
-        'total_harga',
+        'customer_id', 'no_struk', 'deskripsi_pesanan', 'status_pengiriman', 
+        'status_pembayaran', 'metode_pembayaran', 'jarak_km', 'total_harga', 'foto_struk'
     ];
 
     // Relasi: Paket ini milik siapa?

@@ -6,7 +6,12 @@
         <h2 class="text-xl font-bold text-gray-800">Daftar Semua Paket</h2>
         <p class="text-sm text-gray-500 mt-1">Monitor status pesanan obat dan pengiriman secara real-time.</p>
       </div>
-      
+      <div v-if="userRole === 'kurir' && pesananMenunggu.length > 0" class="mx-6 mt-6 mb-2 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg shadow-sm flex justify-between items-center animate-pulse">
+        <div>
+          <h3 class="text-indigo-800 font-bold text-sm"><i class="fas fa-bell mr-2"></i> Orderan Baru Siap Diambil!</h3>
+          <p class="text-indigo-600 text-xs mt-1">Ada <strong>{{ pesananMenunggu.length }} paket</strong> dari farmasi yang menunggu untuk diantar.</p>
+        </div>
+      </div>
       <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
         <div class="relative w-full sm:w-72">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -15,7 +20,7 @@
           <input 
             v-model="searchQuery"
             type="text" 
-            placeholder="Cari ID, obat, atau pasien..." 
+            placeholder="Cari ID, struk, obat, atau pasien..." 
             class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#3b5998] focus:border-[#3b5998] transition duration-150"
           >
         </div>
@@ -34,13 +39,13 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">ID Paket</th>
+            <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">ID Resi & Tracking</th>
             <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Pasien</th>
             <th scope="col" class="px-5 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Paket / Obat</th>
             <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Harga</th>
             <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status Pengiriman</th>
             <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status Pembayaran</th>
-            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Metode Pembayaran</th>
+            <th scope="col" class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Metode</th>
             <th scope="col" class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
@@ -59,9 +64,17 @@
 
         <tbody v-else class="bg-white divide-y divide-gray-100">
           <tr v-for="pkg in paginatedPackages" :key="pkg.id" class="hover:bg-gray-50 transition-colors">
-            <td class="px-5 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
-              #PKT-{{ String(pkg.id).padStart(4, '0') }}
+            <td class="px-5 py-4 whitespace-nowrap">
+              <span class="text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-200 inline-block mb-1">
+                #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
+              </span>
+              <br>
+              <a :href="`/tracking/PKT-${String(pkg.id).padStart(4, '0')}${pkg.no_struk ? '-' + pkg.no_struk : ''}`" target="_blank" class="text-[10px] text-blue-600 hover:text-blue-800 hover:underline flex items-center mt-1">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                Lihat Tracking Publik
+              </a>
             </td>
+
             <td class="px-5 py-4 whitespace-nowrap">
               <div class="text-sm font-semibold text-gray-900">{{ pkg.customer?.nama || 'Dihapus' }}</div>
               <div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-phone-alt mr-1"></i> {{ pkg.customer?.no_telp || '-' }}</div>
@@ -86,9 +99,15 @@
               <span class="uppercase tracking-wide border bg-gray-100 px-2 py-1 rounded">{{ pkg.metode_pembayaran || 'Tunai / Cash' }}</span>
             </td>
             <td class="px-5 py-4 whitespace-nowrap text-right text-sm font-medium">
+              
+              <button @click="copyTrackingLink(pkg)" class="text-emerald-600 hover:text-emerald-900 mr-2 transition-colors bg-emerald-50 p-1.5 rounded-lg border border-emerald-200" title="Salin Link Tracking">
+                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+              </button>
+
               <button @click="openEditModal(pkg)" class="text-[#3b5998] hover:text-blue-900 mr-2 transition-colors bg-blue-50 p-1.5 rounded-lg border border-blue-200" title="Update Status">
                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
+
               <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 p-1.5 rounded-lg border border-red-200" title="Hapus Paket">
                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
               </button>
@@ -137,25 +156,27 @@
                 <select v-model="editForm.status_pengiriman" required class="w-full border border-gray-300 rounded-lg p-2.5 outline-none bg-white">
                   
                   <template v-if="userRole === 'farmasi'">
-                    <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
-                    <option value="Pengemasan">Pengemasan</option>
+                    <option value="2. Stor Struk ke farmasi">2. Stor Struk ke farmasi</option>
+                    <option value="3. Ambil paket obat farmasi">3. Ambil paket obat farmasi</option>
                   </template>
 
                   <template v-else-if="userRole === 'kurir'">
-                    <option value="Diperjalanan">Diperjalanan</option>
-                    <option value="Terkirim">Terkirim</option>
-                    <option value="Dibatalkan" class="text-red-600 font-bold">Dibatalkan</option>
+                    <option value="6. Diserahkan ke kurir">6. Diserahkan ke kurir</option>
+                    <option value="7. Dalam perjalanan">7. Dalam perjalanan</option>
+                    <option value="8. Sampai (Selesai)">8. Sampai (Selesai)</option>
                   </template>
 
                   <template v-else>
-                    <option value="Pesanan diverifikasi">Pesanan diverifikasi</option>
-                    <option value="Pengemasan">Pengemasan</option>
-                    <option value="Menunggu Driver">Menunggu Driver</option>
-                    <option value="Diperjalanan">Diperjalanan</option>
-                    <option value="Terkirim">Terkirim</option>
-                    <option value="Dibatalkan" class="text-red-600 font-bold">Dibatalkan</option>
+                    <option value="1. Verifikasi Jastar">1. Verifikasi Jastar</option>
+                    <option value="2. Stor Struk ke farmasi">2. Stor Struk ke farmasi</option>
+                    <option value="3. Ambil paket obat farmasi">3. Ambil paket obat farmasi</option>
+                    <option value="4. Diserah paket obat jastar">4. Diserah paket obat jastar</option>
+                    <option value="5. Sedang menunggu kurir">5. Sedang menunggu kurir</option>
+                    <option value="6. Diserahkan ke kurir">6. Diserahkan ke kurir</option>
+                    <option value="7. Dalam perjalanan">7. Dalam perjalanan</option>
+                    <option value="8. Sampai (Selesai)">8. Sampai (Selesai)</option>
+                    <option value="9. Cancel / Pending" class="text-red-600 font-bold">9. Cancel / Pending</option>
                   </template>
-
                 </select>
                 <p v-if="editForm.status_pengiriman === 'Dibatalkan' && ['superadmin', 'admin', 'kurir'].includes(userRole)" class="text-[10px] text-red-500 mt-1">Otomatis mencabut tugas kurir.</p>
               </div>
@@ -202,7 +223,7 @@
       <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col overflow-hidden">
         <div class="p-6">
           <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-            <svg class="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
           <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Hapus Permanen Paket</h3>
           <p class="text-sm text-gray-500 text-center">Anda yakin ingin menghapus <strong>#PKT-{{ packageToDelete?.id ? String(packageToDelete.id).padStart(4, '0') : '' }}</strong>?</p>
@@ -224,7 +245,6 @@ import axios from 'axios'
 
 // -- Get Role User --
 const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
-// const userRole = computed(() => currentUser.value.role || 'guest')
 const userRole = ref(JSON.parse(localStorage.getItem('user'))?.role || '')
 
 const API_URL = '/packages' 
@@ -235,7 +255,7 @@ const isSaving = ref(false)
 const searchQuery = ref('')
 const notification = ref({ show: false, message: '', type: 'success' })
 
-// --- State Pagination ---
+// --- State Pagination & Search Filter Update ---
 const currentPage = ref(1)
 const itemsPerPage = 8 
 
@@ -246,7 +266,8 @@ const filteredPackages = computed(() => {
     const idStr = String(pkg.id).padStart(4, '0')
     const customerName = pkg.customer?.nama?.toLowerCase() || ''
     const desc = pkg.deskripsi_pesanan?.toLowerCase() || ''
-    return customerName.includes(query) || desc.includes(query) || idStr.includes(query)
+    const noStruk = pkg.no_struk?.toLowerCase() || '' // Membaca kolom no_struk
+    return customerName.includes(query) || desc.includes(query) || idStr.includes(query) || noStruk.includes(query)
   })
 })
 
@@ -280,6 +301,18 @@ const fetchPackages = async () => {
   finally { isLoading.value = false }
 }
 
+// Fitur Copy Link Baru
+const copyTrackingLink = (pkg) => {
+  const resiStr = 'PKT-' + String(pkg.id).padStart(4, '0') + (pkg.no_struk ? '-' + pkg.no_struk : '')
+  const trackingLink = `${window.location.origin}/tracking/${resiStr}`
+  
+  navigator.clipboard.writeText(trackingLink).then(() => {
+    showNotification(`Link pelacakan ${resiStr} berhasil disalin!`, 'success')
+  }).catch(err => {
+    alert("Gagal menyalin link. Browser Anda mungkin memblokir akses clipboard.")
+  })
+}
+
 const openEditModal = (pkg) => {
   editForm.value = { ...pkg }
   isEditModalOpen.value = true
@@ -288,6 +321,10 @@ const openEditModal = (pkg) => {
 const closeEditModal = () => {
   isEditModalOpen.value = false
 }
+
+const pesananMenunggu = computed(() => {
+  return packages.value.filter(p => ['3. Ambil paket obat farmasi', '4. Diserah paket obat jastar', '5. Sedang menunggu kurir'].includes(p.status_pengiriman));
+});
 
 const updatePackage = async () => {
   if (!editForm.value.deskripsi_pesanan) return
@@ -300,8 +337,30 @@ const updatePackage = async () => {
       status_pembayaran: editForm.value.status_pembayaran,
       metode_pembayaran: editForm.value.metode_pembayaran
     }
-    const response = await axios.put(`${API_URL}/${editForm.value.id}`, payload)
+    // Update data paketnya
+    const response = await axios.put(`http://localhost:8000/api/v1/packages/${editForm.value.id}`, payload)
     
+debugger
+    if (editForm.value.status_pengiriman === '6. Diserahkan ke kurir') {
+      try {
+        const currentUserData = JSON.parse(localStorage.getItem('user'));
+        
+        // Cari kendaraan kurir tersebut
+        const vehRes = await axios.get('http://localhost:8000/api/v1/vehicles');
+        const myVeh = vehRes.data.data.find(v => v.user_id === currentUserData.id);
+        
+        // POST ke Works
+        await axios.post('http://localhost:8000/api/v1/works', {
+          package_ids: [editForm.value.id],
+          user_id: currentUserData.id,
+          vehicle_id: myVeh ? myVeh.id : null
+        });
+      } catch (e) { 
+        console.error("Gagal auto-assign Work Order", e.response?.data || e); 
+        alert("Peringatan: Paket berhasil diubah, tapi gagal masuk Penugasan. Cek kembali akses backend.");
+      }
+    }
+
     const updatedPkg = response.data.data
     const index = packages.value.findIndex(p => p.id === updatedPkg.id)
     if (index !== -1) packages.value[index] = updatedPkg
@@ -310,7 +369,9 @@ const updatePackage = async () => {
     showNotification('Data Paket berhasil diupdate!', 'success')
   } catch (error) {
     showNotification('Gagal mengupdate paket', 'error')
-  } finally { isSaving.value = false }
+  } finally { 
+    isSaving.value = false 
+  }
 }
 
 const confirmDelete = (pkg) => {
@@ -333,12 +394,15 @@ const deletePackage = async () => {
 
 const getStatusPengirimanClass = (status) => {
   switch(status) {
-    case 'Pesanan diverifikasi': return 'bg-gray-100 text-gray-600 border-gray-200'
-    case 'Pengemasan': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
-    case 'Menunggu Driver': return 'bg-orange-50 text-orange-700 border-orange-200'
-    case 'Diperjalanan': return 'bg-blue-50 text-blue-700 border-blue-200'
-    case 'Terkirim': return 'bg-green-50 text-green-700 border-green-200'
-    case 'Dibatalkan': return 'bg-red-50 text-red-700 border-red-200 line-through'
+    case '1. Verifikasi Jastar': return 'bg-gray-100 text-gray-700 border-gray-300'
+    case '2. Stor Struk ke farmasi': return 'bg-purple-50 text-purple-700 border-purple-200'
+    case '3. Ambil paket obat farmasi': return 'bg-indigo-50 text-indigo-700 border-indigo-200'
+    case '4. Diserah paket obat jastar': return 'bg-teal-50 text-teal-700 border-teal-200'
+    case '5. Sedang menunggu kurir': return 'bg-orange-50 text-orange-700 border-orange-200'
+    case '6. Diserahkan ke kurir': return 'bg-blue-50 text-blue-700 border-blue-200'
+    case '7. Dalam perjalanan': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+    case '8. Sampai (Selesai)': return 'bg-green-100 text-green-800 border-green-300'
+    case '9. Cancel / Pending': return 'bg-red-50 text-red-700 border-red-200 line-through'
     default: return 'bg-gray-100 text-gray-800'
   }
 }

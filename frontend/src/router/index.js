@@ -5,13 +5,20 @@ import Pengiriman from '../views/Pengiriman.vue'
 import Teamwork from '../views/Teamwork.vue'
 import Financial from '../views/Financial.vue'
 import Laporan from '../views/Laporan.vue'
+import Tracking from '../views/Tracking.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login,
-    meta: { guest: true }
+    meta: { guest: true } // Hanya untuk tamu (belum login)
+  },
+  { 
+    path: '/tracking/:resi', 
+    component: Tracking, 
+    name: 'Tracking',
+    meta: { requiresAuth: false } // Rute publik, bebas akses tanpa login
   },
   {
     path: '/',
@@ -53,36 +60,40 @@ const router = createRouter({
 // Middleware / Navigation Guard
 router.beforeEach((to, from) => {
   const token = localStorage.getItem('token')
+  const userStr = localStorage.getItem('user')
   let user = null
   
-  if (token) {
+  if (token && userStr) {
     try {
-      user = JSON.parse(localStorage.getItem('user'))
+      user = JSON.parse(userStr)
     } catch (e) {
       user = null
     }
   }
 
-  // Jika route butuh login tapi tidak ada token
-  if (to.matched.some(record => record.meta.requiresAuth) && !token) {
+  // 1. Jika route butuh login TAPI tidak ada token
+  if (to.meta.requiresAuth && !token) {
     return { name: 'Login' }
   } 
-  // Jika user sudah login tapi mau ke halaman login
-  else if (to.matched.some(record => record.meta.guest) && token) {
+  
+  // 2. Jika user sudah login TAPI mencoba akses halaman khusus Guest (seperti Login)
+  if (to.meta.guest && token) {
     return { name: 'Home' }
   }
-  // Cek otorisasi Role
-  else if (to.matched.some(record => record.meta.roles)) {
-    const routeRoles = to.meta.roles
-    if (user && routeRoles.includes(user.role)) {
-      return true // Lanjutkan
+  
+  // 3. Cek Otorisasi Role (Jika route memiliki batasan role tertentu)
+  if (to.meta.roles) {
+    // Pastikan data user ada dan role-nya diizinkan
+    if (user && to.meta.roles.includes(user.role)) {
+      return true // Akses diizinkan
     } else {
-      alert('Anda tidak memiliki akses ke halaman ini.')
-      return { name: 'Home' } // Lempar kembali ke home
+      alert('Akses Ditolak! Anda tidak memiliki izin untuk melihat halaman ini.')
+      return { name: 'Home' } // Kembalikan ke dashboard
     }
   } 
   
-  return true // Lanjutkan secara default
+  // 4. Lanjutkan secara default untuk route publik (Tracking) atau rute yang valid
+  return true 
 })
 
 export default router

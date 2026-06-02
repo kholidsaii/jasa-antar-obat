@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Package;
+use App\Models\Customer;
 use App\Models\Transaction; 
 use App\Models\Work;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class PackageController extends Controller
 {
@@ -20,27 +22,77 @@ class PackageController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi Alur Baru
         $validator = Validator::make($request->all(), [
-            'customer_id'       => 'required|exists:customers,id',
-            'deskripsi_pesanan' => 'required|string',
-            'status_pengiriman' => 'nullable|string',
-            'status_pembayaran' => 'nullable|string',
-            'metode_pembayaran' => 'nullable|string',
-            'jarak_km'          => 'nullable|numeric',
-            'total_harga'       => 'nullable|numeric' // Admin bisa kirim custom harga
+            'nama'              => 'required|string',
+            'no_telp'           => 'required|string',
+            'alamat'            => 'required|string',
+            'no_struk'          => 'required|string',
+            'foto_struk'        => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // Maks 5MB
+            'metode_pembayaran' => 'required|string',
+            'jarak_km'          => 'required|numeric',
+            'total_harga'       => 'required|numeric',
         ]);
 
         if ($validator->fails()) return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
 
         try {
+            // 1. Cek apakah customer sudah ada berdasarkan No Telp, jika belum buat baru otomatis
+            $customer = Customer::firstOrCreate(
+                ['no_telp' => $request->no_telp],
+                [
+                    'nama' => $request->nama, 
+                    'alamat' => $request->alamat, 
+                    'jenis_kelamin' => 'Laki-laki'
+                ]
+            );
+
+            // 2. Jika ada perubahan alamat dari customer lama, update alamatnya
+            if ($customer->alamat !== $request->alamat) {
+                $customer->update(['alamat' => $request->alamat]);
+            }
+
+            // 3. Proses Upload Foto Struk
+            $fotoPath = null;
+            if ($request->hasFile('foto_struk')) {
+                $fotoPath = $request->file('foto_struk')->store('struk_antrian', 'public');
+            }
+
+            // 4. Buat Paket dengan Status Awal Baru
             $package = Package::create([
-                'customer_id'       => $request->customer_id,
-                'deskripsi_pesanan' => $request->deskripsi_pesanan,
-                'status_pengiriman' => $request->status_pengiriman ?? 'Pesanan diverifikasi',
-                'status_pembayaran' => $request->status_pembayaran ?? 'Belum Lunas',
-                'metode_pembayaran' => $request->metode_pembayaran ?? 'Tunai / Cash',
+                'customer_id'       => $customer->id,
+                'no_struk'          => $request->no_struk,
+                'deskripsi_pesanan' => 'Resep Obat (Via Struk Antrian)',
+                'status_pengiriman' => '1. Verifikasi Jastar', // Sesuai flow catatan
+                'status_pembayaran' => 'Lunas', // Karena lewat Payment Gateway / Kasir di awal
+                'metode_pembayaran' => $request->metode_pembayaran,
                 'jarak_km'          => $request->jarak_km,
-                'total_harga'       => $request->total_harga
+                'total_harga'       => $request->total_harga,
+                'foto_struk'        => $fotoPath
+            ]);
+
+            // 5. AUTO-SINKRONISASI BUKU KAS (Karena langsung bayar di depan)
+           // Format baru: #PKT-0005-12345
+            $kodeUnik = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT) . '-' . $package->no_struk;
+            $biayaAdmin = 1500;
+            $biayaDasar = max(0, $package->total_harga - $biayaAdmin);
+            
+            $metode = str_contains(strtolower($package->metode_pembayaran), 'transfer') 
+                      ? 'Rek. Bank Budi (Operasional)' 
+                      : $package->metode_pembayaran;
+
+            Transaction::create([
+                'deskripsi'         => 'Pendapatan Dasar ' . $kodeUnik,
+                'nominal'           => $biayaDasar,
+                'tipe'              => 'Uang Masuk',
+                'metode_pembayaran' => $metode
+            ]);
+
+            Transaction::create([
+                'deskripsi'         => 'Biaya Admin ' . $kodeUnik,
+                'nominal'           => $biayaAdmin,
+                'tipe'              => 'Uang Masuk',
+                'metode_pembayaran' => 'Biaya Admin (Sistem)'
             ]);
 
             $package->load('customer');
@@ -66,58 +118,15 @@ class PackageController extends Controller
             $package->update($request->all());
             $package->load('customer');
 
-            if ($package->status_pengiriman === 'Dibatalkan') {
+            if ($package->status_pengiriman === '9. Cancel / Pending') {
                 $work = Work::where('package_id', $package->id)->first();
                 if ($work) {
                     if ($work->vehicle_id) Vehicle::where('id', $work->vehicle_id)->update(['status' => 'Tersedia']);
                     $work->delete();
                 }
-            }
-
-            // --- SINKRONISASI BUKU KAS GANDA ---
-            $isLunas = $package->status_pembayaran === 'Lunas';
-            $isTerkirim = $package->status_pengiriman === 'Terkirim';
-            $kodeUnik = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
-            $nominalTotal = $package->total_harga ?? 0;
-            $metode = $package->metode_pembayaran ?? 'Tunai / Cash (Sistem)';
-
-            if ($isLunas && $isTerkirim) {
-                Transaction::where('deskripsi', 'LIKE', "%{$kodeUnik}%")->delete();
-
-                if (strtolower($metode) === 'gratis / amal') {
-                    Transaction::create([
-                        'deskripsi'         => 'Sedekah / Gratis Paket ' . $kodeUnik,
-                        'nominal'           => $nominalTotal,
-                        'tipe'              => 'Uang Masuk',
-                        'metode_pembayaran' => 'Gratis / Amal'
-                    ]);
-                } else {
-                    $biayaAdmin = 1500;
-                    $biayaDasar = max(0, $nominalTotal - $biayaAdmin);
-
-                    // AUTO-ROUTING TRANSFER: Jika Transfer, uang langsung masuk ke Rek Budi (Real).
-                    // Jika Cash/QRIS, uang tertahan di tangan kurir (Sistem).
-                    $metodeDasar = str_contains(strtolower($metode), 'transfer') 
-                                   ? 'Rek. Bank Budi (Operasional)' 
-                                   : $metode;
-
-                    // Transaksi 1: Biaya Dasar (Pendapatan Operasional)
-                    Transaction::create([
-                        'deskripsi'         => 'Pendapatan Dasar ' . $kodeUnik,
-                        'nominal'           => $biayaDasar,
-                        'tipe'              => 'Uang Masuk',
-                        'metode_pembayaran' => $metodeDasar
-                    ]);
-
-                    // Transaksi 2: Biaya Admin (Sistem - menunggu dimutasi ke Rek Syamil)
-                    Transaction::create([
-                        'deskripsi'         => 'Biaya Admin ' . $kodeUnik,
-                        'nominal'           => $biayaAdmin,
-                        'tipe'              => 'Uang Masuk',
-                        'metode_pembayaran' => 'Biaya Admin (Sistem)'
-                    ]);
-                }
-            } else {
+                
+                // Cabut dari buku kas jika dicancel
+                $kodeUnik = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
                 Transaction::where('deskripsi', 'LIKE', "%{$kodeUnik}%")->delete();
             }
 
