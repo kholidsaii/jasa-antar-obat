@@ -142,15 +142,6 @@
               <label class="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Tujuan (Titik Peta)</label>
               <p class="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-3 leading-relaxed"><i class="fas fa-map-marker-alt text-red-500 mr-1.5"></i> {{ formBaru.alamat }}</p>
             </div>
-
-            <!-- <div>
-              <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 flex justify-between items-center">
-                <span>Detail / Patokan Alamat</span>
-                <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded normal-case tracking-normal">Bantu Kurir Mencari</span>
-              </label>
-              <textarea v-model="formBaru.detail_alamat" rows="2" placeholder="Contoh: RT 02/05, pagar warna hitam, masuk gang sebelah indomaret..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all"></textarea>
-            </div> -->
-
             <div class="border-2 border-dashed border-blue-200 rounded-xl p-5 text-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group relative overflow-hidden">
               <label class="cursor-pointer block w-full h-full relative z-10">
                 <div class="mx-auto w-12 h-12 bg-white text-blue-600 rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
@@ -407,6 +398,7 @@ const cekValidasiPasien = () => {
 }
 
 // PENYIMPANAN DAN GENERATE WA +62
+// PENYIMPANAN, AUTO ASSIGN KURIR, DAN GENERATE WA +62
 const submitPaket = async () => {
   isSaving.value = true
   
@@ -427,11 +419,32 @@ const submitPaket = async () => {
   if (formBaru.value.foto_struk) formData.append('foto_struk', formBaru.value.foto_struk)
 
   try {
+    // 1. CARI KURIR TERSEDIA (Ambil kurir dengan tanggungan paket paling sedikit)
+    const { data: usersRes } = await axios.get('/users');
+    const kurirList = usersRes.data.filter(u => u.role === 'kurir');
+    kurirList.sort((a, b) => a.works_count - b.works_count);
+    const kurirTerpilih = kurirList.length > 0 ? kurirList[0] : null;
+
+    // 2. SIMPAN PAKET BARU
     const response = await axios.post('/packages', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    });
     
     const paketBaru = response.data.data;
+
+    // 3. AUTO ASSIGN KE KURIR (Jika ada kurir tersedia)
+    let namaKurirText = "menunggu kurir";
+    debugger
+    if (kurirTerpilih) {
+      await axios.post('/works', {
+        package_ids: [paketBaru.id],
+        user_id: kurirTerpilih.id,
+        // TAMBAHAN: Tarik ID kendaraan si kurir kalau dia punya plat motor terdaftar
+        vehicle_id: kurirTerpilih.vehicle ? kurirTerpilih.vehicle.id : null 
+      });
+      namaKurirText = `kurir *${kurirTerpilih.name}*`;
+    }
+    // 4. GENERATE WHATSAPP MESSAGE
     const kodeResi = '#PKT-' + String(paketBaru.id).padStart(4, '0') + '-' + formBaru.value.no_struk;
     const trackingLink = `${window.location.origin}/tracking/${kodeResi.replace('#', '')}`;
 
@@ -444,7 +457,7 @@ const submitPaket = async () => {
       phoneWhatsApp = '62' + phoneWhatsApp;
     }
 
-    const waMessage = `Halo kak *${formBaru.value.nama}*,\n\nPesanan Jasa Antar Obat dari *RSPPN Soedirman* telah kami terima. Berikut rinciannya:\n\n📦 *No. Resi:* ${kodeResi}\n💵 *Total:* ${formatRupiah(formBaru.value.total_harga)}\n✅ *Status:* Lunas (${formBaru.value.metode_pembayaran})\n\nSilakan pantau pergerakan kurir dan status obat kakak secara real-time melalui link berikut:\n👇👇👇\n${trackingLink}\n\nTerima kasih! 🙏`;
+    const waMessage = `Halo kak *${formBaru.value.nama}*,\n\nPesanan Jasa Antar Obat dari *RSPPN Soedirman* telah kami terima dan saat ini dialokasikan ke ${namaKurirText}. Berikut rinciannya:\n\n📦 *No. Resi:* ${kodeResi}\n💵 *Total:* ${formatRupiah(formBaru.value.total_harga)}\n✅ *Status:* Lunas (${formBaru.value.metode_pembayaran})\n\nSilakan pantau pergerakan kurir dan status obat kakak secara real-time melalui link berikut:\n👇👇👇\n${trackingLink}\n\nTerima kasih! 🙏`;
 
     closeModalPaket()
     
