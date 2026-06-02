@@ -110,7 +110,7 @@ class PackageController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
         $package = Package::find($id);
         if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
@@ -122,7 +122,7 @@ class PackageController extends Controller
             $package->update($request->all());
             $package->load('customer');
 
-            // JIKA STATUS BERUBAH, CATAT KE HISTORY (Tracking berurut)
+            // 1. JIKA STATUS BERUBAH, CATAT KE HISTORY (Tracking berurut)
             if ($request->has('status_pengiriman') && $statusLama !== $request->status_pengiriman) {
                 \App\Models\PackageHistory::create([
                     'package_id'        => $package->id,
@@ -131,6 +131,31 @@ class PackageController extends Controller
                 ]);
             }
 
+            // 2. AUTO-SINKRONISASI BUKU KAS (Jika harga / metode pembayaran direvisi)
+            if ($request->has('total_harga') || $request->has('metode_pembayaran')) {
+                // Gunakan LIKE pattern agar tetap cocok meski no_struk berubah
+                $kodeUnikBase = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
+                
+                $biayaAdmin = 1500;
+                $biayaDasar = max(0, $package->total_harga - $biayaAdmin);
+                
+                $metode = str_contains(strtolower($package->metode_pembayaran), 'transfer') 
+                          ? 'Rek. Bank Budi (Operasional)' 
+                          : $package->metode_pembayaran;
+
+                // Update Transaksi Pendapatan Dasar
+                Transaction::where('deskripsi', 'LIKE', "Pendapatan Dasar {$kodeUnikBase}%")->update([
+                    'nominal' => $biayaDasar,
+                    'metode_pembayaran' => $metode
+                ]);
+
+                // Update Transaksi Biaya Admin
+                Transaction::where('deskripsi', 'LIKE', "Biaya Admin {$kodeUnikBase}%")->update([
+                    'nominal' => $biayaAdmin
+                ]);
+            }
+
+            // 3. JIKA DIBATALKAN (CANCEL)
             if ($package->status_pengiriman === '9. Cancel / Pending') {
                 $work = Work::where('package_id', $package->id)->first();
                 if ($work) {
@@ -138,9 +163,9 @@ class PackageController extends Controller
                     $work->delete();
                 }
                 
-                // Cabut dari buku kas jika dicancel
-                $kodeUnik = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
-                Transaction::where('deskripsi', 'LIKE', "%{$kodeUnik}%")->delete();
+                // Cabut total dari buku kas jika dicancel
+                $kodeUnikDelete = '#PKT-' . str_pad($package->id, 4, '0', STR_PAD_LEFT);
+                Transaction::where('deskripsi', 'LIKE', "%{$kodeUnikDelete}%")->delete();
             }
 
             return response()->json(['status' => 'success', 'data' => $package], 200);
