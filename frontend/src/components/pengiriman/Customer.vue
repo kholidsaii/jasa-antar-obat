@@ -18,56 +18,77 @@
       {{ notification.message }}
     </div>
 
-    <div class="overflow-x-auto flex-1">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Nama Pasien</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Kontak & Info</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Alamat Rute & Patokan</th>
-            <th v-if="userRole !== 'kurir'" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Aksi</th>
-          </tr>
-        </thead>
-        <tbody v-if="isLoading" class="bg-white divide-y divide-gray-200">
-          <tr v-for="i in 5" :key="i" class="animate-pulse">
-            <td :colspan="userRole !== 'kurir' ? 4 : 3" class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-full"></div></td>
-          </tr>
-        </tbody>
-        <tbody v-else-if="filteredCustomers.length === 0" class="bg-white">
-          <tr><td :colspan="userRole !== 'kurir' ? 4 : 3" class="px-6 py-12 text-center text-gray-500 font-medium">Tidak ada data pasien.</td></tr>
-        </tbody>
-        <tbody v-else class="bg-white divide-y divide-gray-100">
-          <tr v-for="customer in paginatedCustomers" :key="customer.id" class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-bold text-gray-900">{{ customer.nama }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-600 font-mono"><i class="fas fa-phone-alt mr-1"></i> {{ customer.no_telp }}</div>
-              <div class="text-xs text-gray-500 mt-1">{{ customer.jenis_kelamin }} • {{ customer.umur }} Tahun</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="text-sm font-bold text-gray-800 line-clamp-2 max-w-xs">{{ customer.alamat }}</div>
-              <div class="text-xs text-gray-500 mt-0.5 max-w-xs truncate">Patokan: {{ customer.detail_alamat || '-' }}</div>
-              
-              <span v-if="customer.lat && customer.lng" class="text-[11px] font-bold text-green-600 mt-1.5 block bg-green-50 px-2 py-0.5 rounded w-fit">
-                <i class="fas fa-check-circle mr-1"></i> Koordinat Tersimpan
+    <div class="flex-1 bg-gray-50/50 p-4 sm:p-5 border-t border-gray-100">
+      
+      <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+        <div v-for="i in 8" :key="i" class="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse shadow-sm"></div>
+      </div>
+
+      <div v-else-if="filteredCustomers.length === 0" class="p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div class="text-gray-300 mb-3">
+          <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        </div>
+        <p class="text-gray-500 font-bold text-sm">Tidak ada data pasien yang ditemukan.</p>
+      </div>
+
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+        <div v-for="customer in paginatedCustomers" :key="customer.id" class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col h-full group relative">
+          
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full border-2 border-blue-50 bg-blue-100 text-[#3b5998] flex items-center justify-center font-black text-lg uppercase shrink-0">
+              {{ customer.nama.charAt(0) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-black text-gray-900 text-sm sm:text-base truncate">{{ customer.nama }}</h3>
+              <p class="text-xs text-gray-500 font-medium flex items-center mt-0.5">
+                <svg class="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                {{ customer.no_telp }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex-1 flex flex-col gap-3">
+            <div class="flex flex-wrap gap-2">
+              <span class="px-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                {{ customer.jenis_kelamin }}
               </span>
-              <span v-else class="text-[11px] font-bold text-red-500 mt-1.5 block bg-red-50 px-2 py-0.5 rounded w-fit">
-                <i class="fas fa-exclamation-triangle mr-1"></i> Gagal Dilacak
+              <span class="px-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                {{ customer.umur ? customer.umur + ' Tahun' : 'Umur -' }}
               </span>
-            </td>
+            </div>
+
+            <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-100 group-hover:bg-blue-50/30 transition-colors flex-1">
+              <p class="text-xs text-gray-800 font-semibold line-clamp-2 leading-relaxed mb-1" :title="customer.alamat">
+                {{ customer.alamat }}
+              </p>
+              <p class="text-[11px] text-gray-500 line-clamp-2">
+                <span class="font-bold text-gray-600">Patokan:</span> {{ customer.detail_alamat || '-' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-4 mt-4 border-t border-gray-50 flex items-center justify-between gap-2">
+            <div>
+              <span v-if="customer.lat && customer.lng" class="inline-flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-md shadow-sm">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Ada Titik Maps
+              </span>
+              <span v-else class="inline-flex items-center text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 px-2 py-1 rounded-md shadow-sm">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Koordinat Gagal
+              </span>
+            </div>
             
-            <td v-if="userRole !== 'kurir'" class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <button @click="openEditModal(customer)" class="text-[#3b5998] hover:text-blue-900 bg-blue-50 p-1.5 rounded-lg border border-blue-200 mr-2 transition-colors" title="Edit">
-                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            <div v-if="userRole !== 'kurir'" class="flex gap-1.5">
+              <button @click="openEditModal(customer)" class="w-8 h-8 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-[#3b5998] rounded-lg border border-blue-200 transition-colors shadow-sm active:scale-95" title="Edit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
-              <button @click="confirmDelete(customer)" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-lg border border-red-200 transition-colors" title="Hapus">
-                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              <button @click="confirmDelete(customer)" class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600 rounded-lg border border-red-200 transition-colors shadow-sm active:scale-95" title="Hapus">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <div v-if="filteredCustomers.length > 0" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center gap-4">
