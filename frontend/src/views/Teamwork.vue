@@ -1,67 +1,65 @@
 <template>
-  <div class="max-w-7xl mx-auto pb-12 animate-fade-in">
+  <div class="max-w-7xl mx-auto pb-10 sm:pb-12 bg-gray-50/50 min-h-screen">
     
-    <div class="bg-white rounded-t-3xl overflow-hidden shadow-sm border border-gray-100 relative group">
+    <!-- HEADER SECTION -->
+    <div class="bg-white rounded-b-2xl sm:rounded-t-3xl sm:rounded-b-none overflow-hidden shadow-sm border-b sm:border border-gray-100 relative group">
       
-      <div 
-        class="h-48 w-full bg-cover bg-center relative transition-transform duration-1000 group-hover:scale-105" 
-        style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop');"
-      >
-        <div class="absolute inset-0 bg-gradient-to-r from-indigo-900/90 via-purple-900/70 to-transparent backdrop-blur-[1px]"></div>
+      <!-- Banner Background -->
+      <div class="h-32 sm:h-48 w-full bg-cover bg-center relative transition-transform duration-1000 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop');">
+        <div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-indigo-900/90 via-purple-900/70 to-transparent backdrop-blur-[1px]"></div>
       </div>
       
-      <div class="px-6 sm:px-8 pb-6 flex flex-col lg:flex-row lg:items-end lg:justify-between relative">
+      <div class="px-4 sm:px-8 pb-5 sm:pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between relative">
         
-        <div class="flex flex-col sm:flex-row sm:items-end -mt-12 sm:-mt-16 mb-6 lg:mb-0 relative z-10 w-full lg:w-auto">
-          <div class="bg-white p-1.5 rounded-2xl shadow-xl border border-gray-100 inline-block shrink-0 w-max transition-transform duration-500 hover:-translate-y-2">
-            <img 
-              src="https://api.dicebear.com/7.x/bottts/svg?seed=Teamwork&backgroundColor=e2e8f0" 
-              alt="Maskot Teamwork" 
-              class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover bg-gray-50"
-            />
+        <!-- Profile & Title -->
+        <div class="flex items-end -mt-10 sm:-mt-16 mb-4 sm:mb-0 relative z-10 w-full sm:w-auto">
+          <div class="bg-white p-1 sm:p-1.5 rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 inline-block shrink-0 transition-transform duration-500 hover:-translate-y-2">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Teamwork&backgroundColor=e2e8f0" alt="Maskot Teamwork" class="w-20 h-20 sm:w-28 sm:h-28 rounded-lg sm:rounded-xl object-cover bg-gray-50"/>
           </div>
           
-          <div class="mt-4 sm:mt-0 sm:ml-5 pb-1 sm:pb-2">
-            <span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black tracking-widest uppercase border border-indigo-100 mb-2 inline-block">
+          <div class="ml-4 sm:ml-5 pb-1 sm:pb-2">
+            <span class="bg-indigo-50 text-indigo-600 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-black tracking-widest uppercase border border-indigo-100 mb-1.5 sm:mb-2 inline-block">
               Divisi Operasional
             </span>
-            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 leading-tight tracking-tight">MANAJEMEN TEAMWORK</h1>
-            <p class="text-gray-500 text-xs sm:text-sm font-medium mt-1 max-w-lg">
-              Pusat koordinasi SDM, alokasi armada kendaraan, dan eksekusi penugasan kurir di lapangan.
+            <h1 class="text-xl sm:text-3xl font-black text-gray-900 leading-tight tracking-tight">TEAMWORK</h1>
+            <p class="text-gray-500 text-xs sm:text-sm font-medium mt-0.5 sm:mt-1 hidden sm:block max-w-lg">
+              Pusat koordinasi SDM, alokasi armada, dan eksekusi penugasan kurir.
             </p>
           </div>
         </div>
         
-        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pb-2 w-full lg:w-auto relative z-10 shrink-0" v-if="['superadmin', 'admin'].includes(userRole)">
-          <button @click="openModalWork" class="flex-1 sm:flex-none justify-center bg-indigo-600 hover:bg-indigo-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-md hover:shadow-xl flex items-center transform hover:-translate-y-0.5">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        <!-- Action Buttons (Full width on Mobile) -->
+        <div class="flex flex-col sm:flex-row space-y-2.5 sm:space-y-0 sm:space-x-3 w-full sm:w-auto relative z-10 shrink-0" v-if="['superadmin', 'admin'].includes(userRole)">
+          <button @click="openModalWork" class="w-full sm:w-auto justify-center bg-indigo-600 hover:bg-indigo-800 text-white px-5 py-3.5 sm:py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-md hover:shadow-xl flex items-center active:scale-95">
+            <svg class="w-5 h-5 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             Buat Penugasan Baru
           </button>
-          <button @click="openModalKaryawan" class="flex-1 sm:flex-none justify-center bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-sm hover:shadow-md flex items-center transform hover:-translate-y-0.5">
-            <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+          <button @click="openModalKaryawan" class="w-full sm:w-auto justify-center bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-5 py-3.5 sm:py-2.5 rounded-xl font-bold text-sm transition-all duration-300 shadow-sm hover:shadow-md flex items-center active:scale-95">
+            <svg class="w-5 h-5 sm:w-4 sm:h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
             Registrasi Karyawan
           </button>
         </div>
       </div>
       
-      <div class="px-6 sm:px-10 border-t border-gray-100 bg-gray-50/50">
-        <nav class="flex space-x-8 overflow-x-auto custom-scrollbar" aria-label="Tabs">
+      <!-- Navigation Tabs (Swipeable on Mobile) -->
+      <div class="border-t border-gray-100 bg-white">
+        <nav class="flex overflow-x-auto hide-scrollbar scroll-smooth px-2 sm:px-10" aria-label="Tabs">
           <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
             :class="[
               activeTab === tab.id ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300', 
-              'group inline-flex items-center py-4 border-b-[3px] font-bold text-sm transition-all whitespace-nowrap outline-none'
+              'group inline-flex items-center px-4 py-3.5 sm:py-4 border-b-[3px] font-bold text-[13px] sm:text-sm transition-all whitespace-nowrap outline-none flex-shrink-0'
             ]">
-            <component :is="tab.icon" :class="[activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500', '-ml-0.5 mr-2.5 h-5 w-5 transition-colors']" />
+            <component :is="tab.icon" :class="[activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500', '-ml-0.5 mr-2 sm:mr-2.5 h-5 w-5 transition-colors']" />
             {{ tab.name }}
           </button>
         </nav>
       </div>
     </div>
 
-    <div class="mt-6 min-h-[500px] relative w-full">
+    <!-- MAIN CONTENT AREA -->
+    <div class="mt-4 sm:mt-6 px-0 sm:px-0 relative w-full">
       <Transition name="fade-slide" mode="out-in">
         <div :key="activeTab" class="w-full">
-          <!-- <Overview v-if="activeTab === 'overview'" /> -->
           <Pekerjaan v-if="activeTab === 'pekerjaan'" />
           <Karyawan v-else-if="activeTab === 'karyawan'" />
           <Kendaraan v-else-if="activeTab === 'kendaraan'" />
@@ -69,103 +67,112 @@
       </Transition>
     </div>
 
-    <div v-if="isModalWorkOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
-      <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="closeModalWork"></div>
+    <!-- ========================================== -->
+    <!-- MODAL PENUGASAN KURIR (Mobile Bottom Sheet)-->
+    <!-- ========================================== -->
+    <div v-if="isModalWorkOpen" class="fixed inset-0 z-[100] flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
+      <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeModalWork"></div>
       
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-auto flex flex-col overflow-hidden max-h-[90vh] animate-modal-in">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+      <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl mx-auto flex flex-col overflow-hidden max-h-[92vh] sm:max-h-[90vh] animate-slide-up sm:animate-modal-in">
+        
+        <!-- Mobile Handlebar -->
+        <div class="w-full flex justify-center pt-3 pb-2 sm:hidden cursor-grab" @click="closeModalWork">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-white sm:bg-gray-50 flex justify-between items-center sticky top-0 z-20">
           <div>
-            <h3 class="text-xl font-black text-gray-900">Formasi Penugasan Kurir</h3>
-            <p class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Tahap 3: Alokasi Armada</p>
+            <h3 class="text-base sm:text-xl font-black text-gray-900">Formasi Penugasan</h3>
+            <p class="text-[10px] sm:text-xs font-semibold text-gray-500 mt-0.5 sm:mt-1 uppercase tracking-wider">Tahap 3: Alokasi Armada</p>
           </div>
-          <button @click="closeModalWork" class="text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-100">
+          <button @click="closeModalWork" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-2 rounded-full transition-colors focus:outline-none shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
         
-        <div class="p-6 overflow-y-auto space-y-6 bg-slate-50/30">
+        <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar space-y-5 sm:space-y-6 bg-white sm:bg-slate-50/30 flex-1">
           
           <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-start shadow-sm">
-            <svg class="w-6 h-6 text-indigo-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <p class="text-xs text-indigo-900 font-medium leading-relaxed">
-              Daftar paket di bawah ini adalah paket yang <strong class="bg-indigo-200 px-1 rounded">telah selesai dikemas</strong> oleh pihak Farmasi. Silakan pilih satu atau beberapa paket untuk diserahkan kepada Kurir.
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-[11px] sm:text-xs text-indigo-900 font-medium leading-relaxed">
+              Daftar paket di bawah adalah paket yang <strong class="bg-indigo-200 px-1 rounded">telah selesai dikemas</strong> oleh Farmasi. Pilih satu atau beberapa paket untuk diserahkan ke Kurir.
             </p>
           </div>
 
           <div>
             <div class="flex justify-between items-end mb-2.5">
-              <label class="block text-sm font-black text-gray-800 uppercase tracking-wider">1. Pilih Paket Obat</label>
-              <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full shadow-inner">{{ formWork.package_ids.length }} Terpilih</span>
+              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider">1. Pilih Paket Obat</label>
+              <span class="text-[10px] sm:text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full shadow-inner">{{ formWork.package_ids.length }} Terpilih</span>
             </div>
             
-            <div v-if="apiPackages.length === 0" class="flex flex-col items-center justify-center p-8 bg-white border border-dashed border-gray-300 rounded-xl">
-              <div class="bg-gray-100 p-3 rounded-full mb-3">
+            <div v-if="apiPackages.length === 0" class="flex flex-col items-center justify-center p-8 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
+              <div class="bg-white p-3 rounded-full mb-3 shadow-sm">
                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
               </div>
               <p class="text-sm font-bold text-gray-600">Semua paket sudah ter-dispatch!</p>
-              <p class="text-xs text-gray-400 mt-1 text-center">Belum ada paket berstatus 'Pengemasan' dari Farmasi saat ini.</p>
+              <p class="text-[11px] sm:text-xs text-gray-400 mt-1 text-center">Belum ada paket dari Farmasi saat ini.</p>
             </div>
             
-            <div v-else class="max-h-56 overflow-y-auto space-y-2 border border-gray-200 rounded-xl p-3 bg-white shadow-inner custom-scrollbar relative">
+            <div v-else class="max-h-60 overflow-y-auto space-y-2 border border-gray-200 rounded-xl p-3 bg-gray-50 shadow-inner custom-scrollbar relative">
               <label 
                 v-for="pkt in apiPackages" 
                 :key="pkt.id" 
                 :class="[
-                  formWork.package_ids.includes(pkt.id) ? 'border-indigo-500 bg-indigo-50/50 shadow-md ring-1 ring-indigo-500' : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50',
-                  'flex items-start space-x-4 cursor-pointer p-4 rounded-xl border transition-all duration-200 group'
+                  formWork.package_ids.includes(pkt.id) ? 'border-indigo-500 bg-indigo-50 shadow-md ring-1 ring-indigo-500' : 'border-gray-200 bg-white hover:border-indigo-300',
+                  'flex items-start space-x-3 sm:space-x-4 cursor-pointer p-3 sm:p-4 rounded-xl border transition-all duration-200'
                 ]"
               >
                 <div class="flex items-center h-full pt-1">
                   <input type="checkbox" v-model="formWork.package_ids" :value="pkt.id" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-colors cursor-pointer">
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                   <div class="flex justify-between items-start mb-1">
-                    <p class="text-sm font-black text-gray-900 group-hover:text-indigo-700 transition-colors">
-                      {{ pkt.customer?.nama || 'Unknown Customer' }}
+                    <p class="text-[13px] sm:text-sm font-black text-gray-900 truncate pr-2">
+                      {{ pkt.customer?.nama || 'Unknown' }}
                     </p>
-                    <span class="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                    <span class="text-[9px] sm:text-[10px] font-bold bg-white text-gray-600 px-2 py-0.5 rounded border border-gray-200 shrink-0">
                       #PKT-{{ String(pkt.id).padStart(4, '0') }}
                     </span>
                   </div>
-                  <p class="text-xs text-gray-600 leading-snug line-clamp-2"><i class="fas fa-prescription-bottle-alt text-gray-400 mr-1"></i> {{ pkt.deskripsi_pesanan }}</p>
-                  <p class="text-[10px] text-gray-400 mt-1.5 font-medium"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ pkt.customer?.alamat || '-' }}</p>
+                  <p class="text-[11px] sm:text-xs text-gray-600 leading-snug line-clamp-2"><i class="fas fa-prescription-bottle-alt text-gray-400 mr-1"></i> {{ pkt.deskripsi_pesanan }}</p>
+                  <p class="text-[10px] text-gray-400 mt-1.5 font-medium truncate"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ pkt.customer?.alamat || '-' }}</p>
                 </div>
               </label>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <div>
-              <label class="block text-sm font-black text-gray-800 uppercase tracking-wider mb-2">2. Pilih Kurir</label>
+              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-1.5 sm:mb-2">2. Pilih Kurir</label>
               <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                   <i class="fas fa-user-circle text-gray-400"></i>
                 </div>
-                <select v-model="formWork.user_id" @change="autoSelectVehicle" required class="w-full border border-gray-300 rounded-xl py-3 pl-9 pr-4 bg-white text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm appearance-none">
+                <select v-model="formWork.user_id" @change="autoSelectVehicle" required class="w-full border border-gray-300 rounded-xl py-3.5 sm:py-3 pl-10 pr-4 bg-white text-[13px] sm:text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm appearance-none">
                   <option disabled value="" class="text-gray-400">-- Pilih Kurir Aktif --</option>
                   <option v-for="usr in apiUsers.filter(u => u.role === 'kurir')" :key="usr.id" :value="usr.id" class="text-gray-900 font-medium">
                     {{ usr.name }}
                   </option>
                 </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
                   <i class="fas fa-chevron-down text-xs"></i>
                 </div>
               </div>
             </div>
             
-            <div v-if="formWork.user_id">
-              <label class="block text-sm font-black text-gray-800 uppercase tracking-wider mb-2">3. Armada</label>
+            <div v-if="formWork.user_id" class="animate-fade-in">
+              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-1.5 sm:mb-2">3. Armada</label>
               <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                   <i class="fas fa-motorcycle text-gray-400"></i>
                 </div>
-                <select v-model="formWork.vehicle_id" required class="w-full border border-gray-300 rounded-xl py-3 pl-9 pr-4 bg-white text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm appearance-none">
+                <select v-model="formWork.vehicle_id" required class="w-full border border-gray-300 rounded-xl py-3.5 sm:py-3 pl-10 pr-4 bg-white text-[13px] sm:text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm appearance-none">
                   <option disabled value="">-- Set Manual Kendaraan --</option>
                   <option v-for="veh in apiVehicles" :key="veh.id" :value="veh.id" :disabled="veh.status !== 'Tersedia' && veh.user_id !== formWork.user_id">
                     {{ veh.nama_kendaraan }} - {{ veh.plat_nomor }}
                   </option>
                 </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
                   <i class="fas fa-chevron-down text-xs"></i>
                 </div>
               </div>
@@ -174,78 +181,88 @@
           </div>
         </div>
         
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="closeModalWork" class="px-6 py-2.5 bg-white border border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-100 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200">
+        <!-- Sticky Footer -->
+        <div class="bg-white sm:bg-gray-50 px-5 sm:px-6 py-4 border-t border-gray-100 flex gap-3 sticky bottom-0 z-20 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none sm:rounded-b-2xl">
+          <button @click="closeModalWork" class="w-1/3 sm:w-auto px-4 py-3.5 sm:py-2.5 bg-gray-100 hover:bg-gray-200 border border-transparent rounded-xl text-gray-700 font-bold transition-all active:scale-95 text-sm">
             Batal
           </button>
-          <button @click="saveWork" :disabled="isSavingWork || formWork.package_ids.length === 0 || !formWork.vehicle_id" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-800 disabled:opacity-50 transition-all shadow-md flex items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <button @click="saveWork" :disabled="isSavingWork || formWork.package_ids.length === 0 || !formWork.vehicle_id" class="flex-1 px-4 py-3.5 sm:py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-800 disabled:opacity-50 transition-all shadow-md active:scale-95 flex justify-center items-center text-sm">
             <svg v-if="isSavingWork" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            {{ isSavingWork ? 'Menyimpan...' : 'Rilis Penugasan' }}
+            {{ isSavingWork ? 'Memproses...' : 'Rilis Penugasan' }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="isModalKaryawanOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+    <!-- ========================================== -->
+    <!-- MODAL REGISTRASI KARYAWAN (Mobile Bottom Sheet) -->
+    <!-- ========================================== -->
+    <div v-if="isModalKaryawanOpen" class="fixed inset-0 z-[100] flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
       <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="closeModalKaryawan"></div>
       
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-auto flex flex-col overflow-hidden max-h-[95vh] animate-modal-in">
-        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+      <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-xl mx-auto flex flex-col overflow-hidden max-h-[92vh] sm:max-h-[95vh] animate-slide-up sm:animate-modal-in">
+        
+        <!-- Mobile Handlebar -->
+        <div class="w-full flex justify-center pt-3 pb-2 sm:hidden cursor-grab" @click="closeModalKaryawan">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 flex justify-between items-center bg-white sm:bg-gray-50 sticky top-0 z-20">
           <div>
-            <h3 class="text-xl font-black text-gray-900">Registrasi Karyawan Baru</h3>
-            <p class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider">Buku Induk Karyawan & Sistem Akses</p>
+            <h3 class="text-base sm:text-xl font-black text-gray-900">Registrasi Karyawan</h3>
+            <p class="text-[10px] sm:text-xs font-semibold text-gray-500 mt-0.5 sm:mt-1 uppercase tracking-wider">Buku Induk Karyawan</p>
           </div>
-          <button @click="closeModalKaryawan" class="text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 p-2 rounded-lg transition-colors focus:outline-none border border-transparent hover:border-red-100">
+          <button @click="closeModalKaryawan" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-2 rounded-full transition-colors focus:outline-none shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
         
-        <div class="p-6 overflow-y-auto bg-white custom-scrollbar space-y-6">
-          <form @submit.prevent="saveKaryawan" id="formKaryawanBaru" class="space-y-5">
+        <div class="p-5 sm:p-6 overflow-y-auto bg-white custom-scrollbar space-y-5 sm:space-y-6 flex-1">
+          <form @submit.prevent="saveKaryawan" id="formKaryawanBaru" class="space-y-4 sm:space-y-5">
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               <div>
-                <label class="block text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide">Nama Lengkap</label>
-                <input v-model="formKaryawan.name" type="text" required placeholder="Sesuai KTP" class="w-full border border-gray-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm font-medium text-gray-900">
+                <label class="block text-[11px] sm:text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide">Nama Lengkap</label>
+                <input v-model="formKaryawan.name" type="text" required placeholder="Sesuai KTP" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium text-gray-900 shadow-sm transition-all">
               </div>
               <div>
-                <label class="block text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide">Nomor Telepon</label>
-                <input v-model="formKaryawan.no_telepon" type="text" placeholder="0812-xxxx-xxxx" class="w-full border border-gray-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm font-medium text-gray-900">
+                <label class="block text-[11px] sm:text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide">Nomor Telepon</label>
+                <input v-model="formKaryawan.no_telepon" type="number" placeholder="0812..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium text-gray-900 shadow-sm transition-all">
               </div>
             </div>
             
             <div>
-              <label class="block text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide">Alamat Email Akses</label>
-              <input v-model="formKaryawan.email" type="email" required placeholder="nama@jastar.com" class="w-full border border-gray-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm font-medium text-gray-900 lowercase">
-              <p class="text-[10px] text-gray-400 mt-1 font-bold">Email ini akan digunakan untuk login ke dalam sistem aplikasi.</p>
+              <label class="block text-[11px] sm:text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide">Alamat Email Akses</label>
+              <input v-model="formKaryawan.email" type="email" required placeholder="nama@jastar.com" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium text-gray-900 lowercase shadow-sm transition-all">
+              <p class="text-[10px] text-gray-400 mt-1 font-bold">Email untuk login aplikasi.</p>
             </div>
             
             <div class="bg-slate-50 p-4 rounded-xl border border-gray-100">
-              <label class="block text-sm font-black text-gray-700 mb-2.5 uppercase tracking-wide">Role / Jabatan Sistem</label>
-              <div class="grid grid-cols-2 gap-3">
-                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'kurir' ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' : 'bg-white border-gray-200 hover:border-indigo-300'">
+              <label class="block text-[11px] sm:text-sm font-black text-gray-700 mb-2.5 uppercase tracking-wide">Role / Jabatan Sistem</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'kurir' ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' : 'bg-white border-gray-200'">
                   <input type="radio" v-model="formKaryawan.role" value="kurir" class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                  <span class="ml-2 text-sm font-bold text-gray-800">Kurir / Driver</span>
+                  <span class="ml-2.5 text-sm font-bold text-gray-800">Kurir / Driver</span>
                 </label>
-                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'farmasi' ? 'bg-green-50 border-green-500 ring-1 ring-green-500' : 'bg-white border-gray-200 hover:border-green-300'">
+                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'farmasi' ? 'bg-green-50 border-green-500 ring-1 ring-green-500' : 'bg-white border-gray-200'">
                   <input type="radio" v-model="formKaryawan.role" value="farmasi" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
-                  <span class="ml-2 text-sm font-bold text-gray-800">Farmasi / Apotek</span>
+                  <span class="ml-2.5 text-sm font-bold text-gray-800">Farmasi / Apotek</span>
                 </label>
-                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'admin' ? 'bg-purple-50 border-purple-500 ring-1 ring-purple-500' : 'bg-white border-gray-200 hover:border-purple-300'">
+                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'admin' ? 'bg-purple-50 border-purple-500 ring-1 ring-purple-500' : 'bg-white border-gray-200'">
                   <input type="radio" v-model="formKaryawan.role" value="admin" class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500">
-                  <span class="ml-2 text-sm font-bold text-gray-800">Admin Dispatch</span>
+                  <span class="ml-2.5 text-sm font-bold text-gray-800">Admin Dispatch</span>
                 </label>
-                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'superadmin' ? 'bg-red-50 border-red-500 ring-1 ring-red-500' : 'bg-white border-gray-200 hover:border-red-300'">
+                <label class="flex items-center p-3 border rounded-xl cursor-pointer transition-all" :class="formKaryawan.role === 'superadmin' ? 'bg-red-50 border-red-500 ring-1 ring-red-500' : 'bg-white border-gray-200'">
                   <input type="radio" v-model="formKaryawan.role" value="superadmin" class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                  <span class="ml-2 text-sm font-bold text-gray-800">Super Admin</span>
+                  <span class="ml-2.5 text-sm font-bold text-gray-800">Super Admin</span>
                 </label>
               </div>
             </div>
             
             <div>
-              <label class="block text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide flex items-center justify-between">
+              <label class="block text-[11px] sm:text-sm font-black text-gray-700 mb-1.5 uppercase tracking-wide flex items-center justify-between">
                 <span>Foto Profil Id Card</span>
-                <span class="text-[10px] text-gray-400 font-medium normal-case bg-gray-100 px-2 py-0.5 rounded">Opsional</span>
+                <span class="text-[9px] sm:text-[10px] text-gray-400 font-medium normal-case bg-gray-100 px-2 py-0.5 rounded">Opsional</span>
               </label>
               <div 
                 @dragover.prevent="isDraggingAdd = true" 
@@ -253,37 +270,35 @@
                 @drop.prevent="handleDropAdd" 
                 @click="$refs.fileInputAdd.click()"
                 :class="[
-                  'border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[140px]', 
-                  isDraggingAdd ? 'border-indigo-500 bg-indigo-50 scale-[1.02]' : 'border-gray-300 bg-gray-50 hover:bg-indigo-50/50 hover:border-indigo-300'
+                  'border-2 border-dashed rounded-2xl p-5 sm:p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[120px]', 
+                  isDraggingAdd ? 'border-indigo-500 bg-indigo-50 scale-[1.02]' : 'border-gray-300 bg-gray-50 hover:bg-indigo-50/50'
                 ]"
               >
                 <input type="file" accept="image/*" class="hidden" ref="fileInputAdd" @change="handleFileSelectAdd">
                 
-                <div v-if="previewAddFoto" class="relative group">
-                  <img :src="previewAddFoto" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg mx-auto transition-transform group-hover:scale-105">
-                  <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                  </div>
-                  <span class="text-xs text-indigo-600 font-bold mt-3 block">Klik untuk mengganti foto</span>
+                <div v-if="previewAddFoto" class="relative">
+                  <img :src="previewAddFoto" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-md mx-auto">
+                  <span class="text-[10px] sm:text-xs text-indigo-600 font-bold mt-2.5 block">Ketuk untuk ganti foto</span>
                 </div>
                 
-                <div v-else class="space-y-2">
-                  <div class="w-12 h-12 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <div v-else class="space-y-1.5">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                   </div>
-                  <p class="text-sm text-gray-600"><span class="font-extrabold text-indigo-600 hover:underline">Klik untuk cari</span> atau drag and drop file ke sini</p>
-                  <p class="text-xs font-semibold text-gray-400">Rekomendasi rasio 1:1 (Format PNG, JPG max 2MB)</p>
+                  <p class="text-xs sm:text-sm text-gray-600 font-bold text-indigo-600">Ketuk untuk upload</p>
+                  <p class="text-[10px] font-semibold text-gray-400 hidden sm:block">Format PNG/JPG max 2MB</p>
                 </div>
               </div>
             </div>
           </form>
         </div>
         
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="closeModalKaryawan" type="button" class="px-6 py-2.5 bg-white border border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-100 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200">
+        <!-- Sticky Footer -->
+        <div class="bg-white sm:bg-gray-50 px-5 sm:px-6 py-4 border-t border-gray-100 flex gap-3 sticky bottom-0 z-20 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none sm:rounded-b-2xl">
+          <button @click="closeModalKaryawan" type="button" class="w-1/3 sm:w-auto px-4 py-3.5 sm:py-2.5 bg-gray-100 hover:bg-gray-200 border border-transparent rounded-xl text-gray-700 font-bold transition-all active:scale-95 text-sm">
             Batal
           </button>
-          <button @click="saveKaryawan" form="formKaryawanBaru" type="submit" :disabled="isSavingKaryawan" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-800 disabled:opacity-50 transition-all shadow-md flex items-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <button @click="saveKaryawan" form="formKaryawanBaru" type="submit" :disabled="isSavingKaryawan" class="flex-1 px-4 py-3.5 sm:py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-800 disabled:opacity-50 transition-all shadow-md active:scale-95 flex justify-center items-center text-sm">
             <svg v-if="isSavingKaryawan" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             {{ isSavingKaryawan ? 'Mendaftarkan...' : 'Simpan Karyawan' }}
           </button>
@@ -294,27 +309,21 @@
 </template>
 
 <script setup>
-import { ref, markRaw, onMounted, computed } from 'vue'
+import { ref, markRaw, computed } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
 
-// import Overview from '../components/teamwork/Overview.vue'
 import Pekerjaan from '../components/teamwork/Pekerjaan.vue'
 import Karyawan from '../components/teamwork/Karyawan.vue'
 import Kendaraan from '../components/teamwork/Kendaraan.vue'
 
-const router = useRouter()
-
 const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
 const userRole = computed(() => currentUser.value.role || 'guest')
 
-const ChartIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>` })
 const BriefcaseIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.896 1.95-2 1.95H5.75c-1.104 0-2-.856-2-1.95v-4.25M12 18.75v-7.5M12 11.25a3 3 0 100-6 3 3 0 000 6z" /></svg>` })
 const UsersIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>` })
 const TruckIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /></svg>` })
 
 const tabs = [
-  // { id: 'overview', name: 'Overview', icon: ChartIcon },
   { id: 'pekerjaan', name: 'Penugasan', icon: BriefcaseIcon },
   { id: 'karyawan', name: 'Karyawan', icon: UsersIcon },
   { id: 'kendaraan', name: 'Armada', icon: TruckIcon },
@@ -397,7 +406,6 @@ const openModalWork = async () => {
       axios.get('/vehicles')
     ])
     
-    // Perbaikan Filter: Membaca status baru dari farmasi
     apiPackages.value = resPkg.data.data?.filter(p => [
       '3. Ambil paket obat farmasi', 
       '4. Diserah paket obat jastar', 
@@ -446,25 +454,36 @@ const saveWork = async () => {
 </script>
 
 <style scoped>
+/* Transisi Vue standar untuk pergerakan Tab/Component */
 .fade-slide-enter-active,
 .fade-slide-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
 .fade-slide-enter-from { opacity: 0; transform: translateY(10px); }
 .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Animasi HP Bottom Sheet */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-.animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
+/* Animasi Desktop Modal Center */
 @keyframes modalIn {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
-.animate-modal-in { animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-modal-in { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+/* Sembunyikan scrollbar untuk area tab agar mulus di swipe di HP */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Pengamanan padding di HP (Khusus iPhone Swipe Bar) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+}
 </style>

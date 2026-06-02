@@ -93,7 +93,13 @@
                 <span class="leading-relaxed text-gray-700 font-medium">{{ result.display_name }}</span>
               </li>
             </ul>
-
+            <div>
+              <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 flex justify-between items-center">
+                <span>Detail / Patokan Alamat</span>
+                <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded normal-case tracking-normal">Bantu Kurir Mencari</span>
+              </label>
+              <textarea v-model="formBaru.detail_alamat" rows="2" placeholder="Contoh: RT 02/05, pagar warna hitam, masuk gang sebelah indomaret..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all"></textarea>
+            </div>
             <div class="border border-gray-200 rounded-xl overflow-hidden shadow-inner relative z-0">
               <div id="leaflet-map" class="w-full h-48 sm:h-56 bg-gray-100"></div>
               
@@ -133,9 +139,17 @@
             </div>
             
             <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-              <label class="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Tujuan (Otomatis Maps)</label>
+              <label class="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Tujuan (Titik Peta)</label>
               <p class="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-3 leading-relaxed"><i class="fas fa-map-marker-alt text-red-500 mr-1.5"></i> {{ formBaru.alamat }}</p>
             </div>
+
+            <!-- <div>
+              <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 flex justify-between items-center">
+                <span>Detail / Patokan Alamat</span>
+                <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded normal-case tracking-normal">Bantu Kurir Mencari</span>
+              </label>
+              <textarea v-model="formBaru.detail_alamat" rows="2" placeholder="Contoh: RT 02/05, pagar warna hitam, masuk gang sebelah indomaret..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all"></textarea>
+            </div> -->
 
             <div class="border-2 border-dashed border-blue-200 rounded-xl p-5 text-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group relative overflow-hidden">
               <label class="cursor-pointer block w-full h-full relative z-10">
@@ -264,11 +278,12 @@ let routeLine = null;
 
 const formBaru = ref({
   alamat: '',
+  detail_alamat: '', // Tambahan untuk detail patokan alamat
   jarak_km: 0,
   total_harga: 0,
   nama: '',
   no_telp: '',
-  no_struk: '', // Field baru no_struk
+  no_struk: '', 
   foto_struk: null,
   metode_pembayaran: 'QRIS / E-Wallet (Sistem)'
 })
@@ -318,7 +333,6 @@ const initLeafletMap = async () => {
     mapInstance = null;
   }
 
-  // Gunakan ID HTML leaflet-map
   const mapElement = document.getElementById('leaflet-map');
   if(mapElement) {
       mapInstance = L.map('leaflet-map', { zoomControl: false }).setView([RUMAH_SAKIT_COORD[0], RUMAH_SAKIT_COORD[1]], 14);
@@ -378,7 +392,7 @@ const closeModalPaket = () => {
   estimasiSelesai.value = false
   searchQueryAddress.value = ''
   addressResults.value = []
-  formBaru.value = { alamat: '', jarak_km: 0, total_harga: 0, nama: '', no_telp: '', no_struk: '', foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)' }
+  formBaru.value = { alamat: '', detail_alamat: '', jarak_km: 0, total_harga: 0, nama: '', no_telp: '', no_struk: '', foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)' }
 }
 
 const handleFileUpload = (e) => {
@@ -400,7 +414,13 @@ const submitPaket = async () => {
   formData.append('nama', formBaru.value.nama)
   formData.append('no_telp', formBaru.value.no_telp)
   formData.append('no_struk', formBaru.value.no_struk)
-  formData.append('alamat', formBaru.value.alamat)
+  
+  // Menggabungkan Alamat Utama dengan Detail Patokan (Jika ada)
+  const alamatFinal = formBaru.value.detail_alamat 
+    ? `${formBaru.value.alamat} (Patokan: ${formBaru.value.detail_alamat})` 
+    : formBaru.value.alamat;
+  
+  formData.append('alamat', alamatFinal)
   formData.append('jarak_km', formBaru.value.jarak_km)
   formData.append('total_harga', formBaru.value.total_harga)
   formData.append('metode_pembayaran', formBaru.value.metode_pembayaran)
@@ -447,13 +467,8 @@ onMounted(() => { loadLeafletStyle() });
 
 <style scoped>
 /* Sembunyikan scrollbar untuk area tab agar mulus di swipe di HP */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -474,4 +489,4 @@ onMounted(() => { loadLeafletStyle() });
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
 }
-</style>  
+</style>
