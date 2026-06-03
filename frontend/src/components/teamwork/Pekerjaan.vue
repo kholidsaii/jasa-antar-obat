@@ -30,105 +30,58 @@
       {{ notification.message }}
     </div>
     
-    <div class="hidden lg:block overflow-x-auto flex-1">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-4 text-left text-xs font-black text-gray-500 uppercase tracking-wider">Kurir & Armada</th>
-            <th class="px-6 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Sedang Diantar</th>
-            <th class="px-6 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Selesai Hari Ini</th>
-            <th class="px-6 py-4 text-center text-xs font-black text-gray-500 uppercase tracking-wider">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-100">
-          <tr v-if="isLoading">
-            <td colspan="4" class="px-6 py-10 text-center text-gray-400">
-              <svg class="animate-spin h-8 w-8 text-[#3b5998] mx-auto mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-              Memuat penugasan...
-            </td>
-          </tr>
-          
-          <tr v-for="group in paginatedGroupedWorks" :key="'desk-'+(group.courier?.id || 'unassigned')" class="hover:bg-blue-50/20 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <img :src="group.courier?.foto ? 'http://localhost:8000/storage/' + group.courier.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(group.courier?.name || 'Tanpa Kurir')}&background=random&color=fff`" class="w-10 h-10 rounded-full mr-3 border border-gray-200 shadow-sm">
-                <div>
-                  <div class="text-sm font-black text-[#3b5998]">{{ group.courier?.name || 'Belum Ada Kurir' }}</div>
-                  <div class="text-xs text-gray-500 font-medium mt-0.5"><i class="fas fa-motorcycle text-gray-400 mr-1"></i> {{ group.vehicle?.nama_kendaraan || '-' }} ({{ group.vehicle?.plat_nomor || '-' }})</div>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-center">
-              <span v-if="group.active.length > 0" class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-lg font-black text-[11px] uppercase tracking-wider border border-yellow-200 animate-pulse">
-                {{ group.active.length }} Paket Aktif
-              </span>
-              <span v-else class="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded">Standby / Kosong</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-center">
-              <span v-if="group.history.length > 0" class="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg font-black text-[11px] uppercase tracking-wider border border-green-200">
-                {{ group.history.length }} Selesai
-              </span>
-              <span v-else class="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded">Belum ada</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-center">
-              <button @click="openGroupDetail(group)" class="bg-white border border-gray-300 hover:bg-blue-50 text-[#3b5998] px-4 py-2 rounded-lg text-xs font-black shadow-sm transition-all active:scale-95 flex items-center mx-auto uppercase tracking-wide">
-                <i class="fas fa-eye mr-2"></i> Lihat Detail
-              </button>
-            </td>
-          </tr>
-
-          <tr v-if="!isLoading && filteredGroupedWorks.length === 0">
-            <td colspan="4" class="px-6 py-12 text-center text-gray-500 font-medium">
-              {{ searchQuery ? `Tidak ada penugasan kurir yang cocok.` : 'Belum ada tugas kurir hari ini.' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="block lg:hidden flex-1 bg-gray-50/50">
-      <div v-if="isLoading" class="p-5 space-y-4">
-        <div v-for="i in 3" :key="i" class="h-28 bg-white rounded-xl border border-gray-100 animate-pulse"></div>
-      </div>
+    <div class="flex-1 bg-gray-50/50 p-4 sm:p-5 border-t border-gray-100">
       
-      <div v-else-if="filteredGroupedWorks.length === 0" class="p-10 text-center text-gray-500 font-medium">
-        Tidak ada penugasan kurir.
+      <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+        <div v-for="i in 8" :key="i" class="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse shadow-sm"></div>
       </div>
 
-      <div v-else class="divide-y divide-gray-100">
-        <div v-for="group in paginatedGroupedWorks" :key="'mob-'+(group.courier?.id || 'unassigned')" class="bg-white p-4 hover:bg-blue-50/20 active:bg-gray-50 transition-colors">
+      <div v-else-if="filteredGroupedWorks.length === 0" class="p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div class="text-gray-300 mb-3"><i class="fas fa-motorcycle text-5xl"></i></div>
+        <p class="text-gray-500 font-bold text-sm">
+          {{ searchQuery ? 'Tidak ada penugasan kurir yang cocok.' : 'Belum ada tugas kurir hari ini.' }}
+        </p>
+      </div>
+
+      <div v-else class="space-y-4">
+        <div v-for="group in paginatedGroupedWorks" :key="'card-'+(group.courier?.id || 'unassigned')" class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6 group relative">
           
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center">
-              <img :src="group.courier?.foto ? 'http://localhost:8000/storage/' + group.courier.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(group.courier?.name || 'Tanpa Kurir')}&background=random&color=fff`" class="w-12 h-12 rounded-full mr-3 border border-gray-200 shadow-sm">
-              <div>
-                <div class="text-sm font-black text-[#3b5998]">{{ group.courier?.name || 'Belum Ada Kurir' }}</div>
-                <div class="text-[11px] text-gray-500 font-medium mt-0.5"><i class="fas fa-motorcycle text-gray-400 mr-1"></i> {{ group.vehicle?.nama_kendaraan || '-' }}</div>
-              </div>
+          <div class="flex items-center gap-3 w-full md:w-1/3 lg:w-1/4 shrink-0">
+            <div class="shrink-0">
+              <img :src="group.courier?.foto ? 'http://localhost:8000/storage/' + group.courier.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(group.courier?.name || 'Tanpa Kurir')}&background=random&color=fff`" class="w-14 h-14 rounded-full border-2 border-blue-100 shadow-sm object-cover p-0.5">
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-black text-gray-900 text-base truncate">{{ group.courier?.name || 'Belum Ada Kurir' }}</h3>
+              <p class="text-xs text-gray-500 font-medium flex items-center mt-0.5 truncate">
+                <i class="fas fa-motorcycle text-gray-400 mr-1.5"></i> {{ group.vehicle?.nama_kendaraan || '-' }} <span class="hidden sm:inline ml-1">({{ group.vehicle?.plat_nomor || '-' }})</span>
+              </p>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <div class="bg-yellow-50/50 border border-yellow-100 p-2.5 rounded-xl text-center">
-              <p class="text-[10px] text-yellow-800 font-bold uppercase tracking-wider mb-0.5">Aktif</p>
-              <p class="text-lg font-black text-yellow-600">{{ group.active.length }}</p>
+          <div class="flex-1 w-full flex gap-3">
+            <div class="flex-1 bg-yellow-50 border border-yellow-100 py-3 sm:py-2.5 px-4 rounded-xl flex justify-between items-center group-hover:bg-yellow-100/50 transition-colors shadow-sm">
+              <p class="text-[10px] sm:text-xs text-yellow-800 font-bold uppercase tracking-wider">Aktif</p>
+              <p class="text-xl sm:text-2xl font-black text-yellow-600" :class="{'animate-pulse': group.active.length > 0}">{{ group.active.length }}</p>
             </div>
-            <div class="bg-green-50/50 border border-green-100 p-2.5 rounded-xl text-center">
-              <p class="text-[10px] text-green-800 font-bold uppercase tracking-wider mb-0.5">Selesai</p>
-              <p class="text-lg font-black text-green-600">{{ group.history.length }}</p>
+            <div class="flex-1 bg-green-50 border border-green-100 py-3 sm:py-2.5 px-4 rounded-xl flex justify-between items-center group-hover:bg-green-100/50 transition-colors shadow-sm">
+              <p class="text-[10px] sm:text-xs text-green-800 font-bold uppercase tracking-wider">Selesai</p>
+              <p class="text-xl sm:text-2xl font-black text-green-600">{{ group.history.length }}</p>
             </div>
           </div>
 
-          <button @click="openGroupDetail(group)" class="w-full bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex justify-center items-center uppercase tracking-wider">
-            Buka Detail Tugas
-          </button>
+          <div class="w-full md:w-auto shrink-0 md:min-w-[200px] mt-2 md:mt-0 pt-4 md:pt-0 border-t border-gray-100 md:border-t-0">
+            <button @click="openGroupDetail(group)" class="w-full flex justify-center items-center bg-blue-50 hover:bg-[#3b5998] text-[#3b5998] hover:text-white py-3 sm:py-3.5 rounded-xl border border-blue-200 text-xs font-bold transition-all active:scale-95 shadow-sm uppercase tracking-wider">
+              <i class="fas fa-eye mr-2"></i> Buka Detail
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
 
     <div v-if="filteredGroupedWorks.length > 0" class="px-5 py-4 border-t border-gray-100 bg-white sm:bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
       <span class="text-[11px] sm:text-sm text-gray-500 font-bold uppercase tracking-wider text-center sm:text-left">
-        Hal {{ currentPage }} dari {{ totalPages }} <span class="hidden sm:inline">• Total {{ filteredGroupedWorks.length }} Kurir</span>
+        Hal {{ currentPage }} dari {{ totalPages }} <span class="hidden sm:inline">• Total {{ filteredGroupedWorks.length }} Kurir Beroperasi</span>
       </span>
       <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
         <button @click="prevPage" :disabled="currentPage === 1" class="px-5 py-2.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-300 rounded-xl sm:rounded-lg hover:bg-gray-50 disabled:opacity-50 font-bold transition-all shadow-sm active:scale-95 flex-1 sm:flex-none text-gray-700">
@@ -301,7 +254,6 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 
-// Gunakan URL relatif agar fleksibel saat deploy
 const API_URL = '/works'
 const PACKAGE_API_URL = '/packages'
 
@@ -324,7 +276,6 @@ const groupedWorks = computed(() => {
     const status = work.package?.status_pengiriman
     const workDate = new Date(work.updated_at).toLocaleDateString('en-CA')
 
-    // MENGGUNAKAN STATUS BARU
     if (status === '8. Sampai (Selesai)') {
       if (workDate === today) groups[courierId].history.push(work)
     } else if (status !== '9. Cancel / Pending') {
@@ -403,7 +354,7 @@ const fetchWorks = async () => {
   }
 }
 
-// --- API ACTIONS SESUAI 9 STATUS BARU ---
+// --- API ACTIONS ---
 const markOtw = async (work) => {
   isSaving.value = true
   try {
@@ -480,7 +431,7 @@ onMounted(() => fetchWorks())
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-/* Animasi untuk TransitionGroup Lists (Slide Out & Drop In) */
+/* Animasi untuk TransitionGroup Lists */
 .list-move,
 .list-enter-active,
 .list-leave-active {
