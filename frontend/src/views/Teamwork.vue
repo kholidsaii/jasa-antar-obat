@@ -92,6 +92,15 @@
         
         <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar space-y-5 sm:space-y-6 bg-white sm:bg-slate-50/30 flex-1">
           
+          <!-- TAMBAHAN: STEP 1 (Informasi Penugasan & Deskripsi) -->
+          <div>
+            <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-2">1. Informasi Penugasan</label>
+            <div class="space-y-3">
+              <input v-model="formWork.nama_pekerjaan" type="text" required placeholder="Nama / Judul Tugas (Misal: Pengantaran Shift Pagi)" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm transition-all bg-white">
+              <textarea v-model="formWork.deskripsi" rows="2" placeholder="Deskripsi atau Catatan Khusus untuk Kurir (Opsional)" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm transition-all bg-white custom-scrollbar"></textarea>
+            </div>
+          </div>
+
           <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-start shadow-sm">
             <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <p class="text-[11px] sm:text-xs text-indigo-900 font-medium leading-relaxed">
@@ -99,9 +108,10 @@
             </p>
           </div>
 
+          <!-- STEP 2 (Pilih Paket Obat) -->
           <div>
             <div class="flex justify-between items-end mb-2.5">
-              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider">1. Pilih Paket Obat</label>
+              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider">2. Pilih Paket Obat</label>
               <span class="text-[10px] sm:text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full shadow-inner">{{ formWork.package_ids.length }} Terpilih</span>
             </div>
             
@@ -142,8 +152,9 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            <!-- STEP 3 (Pilih Kurir) -->
             <div>
-              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-1.5 sm:mb-2">2. Pilih Kurir</label>
+              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-1.5 sm:mb-2">3. Pilih Kurir</label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                   <i class="fas fa-user-circle text-gray-400"></i>
@@ -160,8 +171,9 @@
               </div>
             </div>
             
+            <!-- STEP 4 (Armada) -->
             <div v-if="formWork.user_id" class="animate-fade-in">
-              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-1.5 sm:mb-2">3. Armada</label>
+              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-1.5 sm:mb-2">4. Armada</label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                   <i class="fas fa-motorcycle text-gray-400"></i>
@@ -186,7 +198,7 @@
           <button @click="closeModalWork" class="w-1/3 sm:w-auto px-4 py-3.5 sm:py-2.5 bg-gray-100 hover:bg-gray-200 border border-transparent rounded-xl text-gray-700 font-bold transition-all active:scale-95 text-sm">
             Batal
           </button>
-          <button @click="saveWork" :disabled="isSavingWork || formWork.package_ids.length === 0 || !formWork.vehicle_id" class="flex-1 px-4 py-3.5 sm:py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-800 disabled:opacity-50 transition-all shadow-md active:scale-95 flex justify-center items-center text-sm">
+          <button @click="saveWork" :disabled="isSavingWork || !formWork.nama_pekerjaan || formWork.package_ids.length === 0 || !formWork.vehicle_id" class="flex-1 px-4 py-3.5 sm:py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-800 disabled:opacity-50 transition-all shadow-md active:scale-95 flex justify-center items-center text-sm">
             <svg v-if="isSavingWork" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             {{ isSavingWork ? 'Memproses...' : 'Rilis Penugasan' }}
           </button>
@@ -340,7 +352,8 @@ const apiPackages = ref([])
 const apiUsers = ref([])
 const apiVehicles = ref([])
 
-const formWork = ref({ package_ids: [], user_id: '', vehicle_id: '' })
+// TAMBAHAN: State nama_pekerjaan dan deskripsi
+const formWork = ref({ nama_pekerjaan: '', deskripsi: '', package_ids: [], user_id: '', vehicle_id: '' })
 const formKaryawan = ref({ name: '', email: '', role: 'kurir', no_telepon: '', foto: null })
 
 const isDraggingAdd = ref(false)
@@ -430,12 +443,13 @@ const autoSelectVehicle = () => {
 
 const closeModalWork = () => {
   isModalWorkOpen.value = false
-  formWork.value = { package_ids: [], user_id: '', vehicle_id: '' }
+  // Reset semua field
+  formWork.value = { nama_pekerjaan: '', deskripsi: '', package_ids: [], user_id: '', vehicle_id: '' }
 }
 
 const saveWork = async () => {
-  if (formWork.value.package_ids.length === 0 || !formWork.value.user_id || !formWork.value.vehicle_id) {
-    return alert('Validasi Gagal: Harap centang minimal 1 paket, pilih kurir, dan pastikan armada kendaraan terisi.')
+  if (!formWork.value.nama_pekerjaan || formWork.value.package_ids.length === 0 || !formWork.value.user_id || !formWork.value.vehicle_id) {
+    return alert('Validasi Gagal: Harap isi Judul Penugasan, centang minimal 1 paket, pilih kurir, dan pastikan armada terisi.')
   }
   isSavingWork.value = true
   try {

@@ -10,8 +10,10 @@ class Work extends Model
     use HasFactory;
 
     protected $fillable = [
-        'package_id',
-        'user_id',
+        'nama_pekerjaan', 
+        'deskripsi', 
+        'package_id', 
+        'user_id', 
         'vehicle_id',
         'harga_ongkos'
     ];

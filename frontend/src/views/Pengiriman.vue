@@ -71,6 +71,33 @@
         <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30 pb-20 sm:pb-6">
           
           <div v-show="modalStep === 1" class="space-y-4">
+            <!-- FITUR BARU: CARI PASIEN LAMA (Auto-Fill) -->
+            <div class="relative z-40 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+              <label class="block text-[11px] sm:text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5 flex items-center">
+                <i class="fas fa-bolt mr-1.5 text-yellow-500"></i> Isi Otomatis (Cari Pasien Lama)
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <i class="fas fa-users text-blue-400"></i>
+                </div>
+                <input 
+                  v-model="searchPasien" 
+                  type="text" 
+                  placeholder="Ketik Nama atau No WA pasien..." 
+                  class="w-full border border-blue-200 rounded-xl py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm font-medium shadow-sm bg-white"
+                >
+              </div>
+              
+              <!-- Dropdown Hasil Pencarian -->
+              <ul v-if="filteredCustomers.length > 0" class="absolute left-0 right-0 mt-1 mx-3 border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-white shadow-2xl z-[100] custom-scrollbar divide-y divide-gray-50">
+                <li v-for="cust in filteredCustomers" :key="cust.id" @click="selectCustomer(cust)" class="p-3 hover:bg-blue-50 cursor-pointer flex flex-col transition-colors active:bg-blue-100">
+                  <span class="font-black text-gray-900 text-sm">{{ cust.nama }}</span>
+                  <span class="text-[11px] text-gray-500 mt-0.5"><i class="fas fa-phone-alt text-gray-400 mr-1"></i> {{ cust.no_telp }}</span>
+                  <span class="text-[11px] text-gray-500 mt-0.5 truncate"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ cust.alamat }}</span>
+                </li>
+              </ul>
+            </div>
+            <!-- AKHIR FITUR BARU -->
             <div class="relative z-20">
               <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                 <i class="fas fa-search text-gray-400"></i>
@@ -241,8 +268,8 @@ const MapPinIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" str
 
 const allTabs = [
   // { id: 'overview', name: 'Overview', icon: EyeIcon, roles: ['superadmin', 'admin'] },
-  { id: 'all-paket', name: 'All Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
-  { id: 'customer', name: 'Data Customer', icon: UsersIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'all-paket', name: 'Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
+  { id: 'customer', name: 'Pasien', icon: UsersIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
   { id: 'alamat', name: 'Alamat', icon: MapPinIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
 ]
 
@@ -335,10 +362,47 @@ const initLeafletMap = async () => {
 
 
 
+// --- FITUR AUTO-FILL PASIEN LAMA ---
+const searchPasien = ref('')
+const dbCustomers = ref([])
+
+const filteredCustomers = computed(() => {
+  if (!searchPasien.value || searchPasien.value.length < 2) return []
+  const query = searchPasien.value.toLowerCase()
+  return dbCustomers.value.filter(c => 
+    (c.nama && c.nama.toLowerCase().includes(query)) || 
+    (c.no_telp && c.no_telp.includes(query))
+  ).slice(0, 5) // Maksimal 5 hasil biar tidak menutupi layar
+})
+
+const selectCustomer = (cust) => {
+  // Isi otomatis form
+  formBaru.value.nama = cust.nama
+  formBaru.value.no_telp = cust.no_telp
+  formBaru.value.alamat = cust.alamat
+  searchQueryAddress.value = cust.alamat
+  
+  // Tutup dropdown pencarian
+  searchPasien.value = '' 
+  
+  // Langsung otomatis tembak titik satelit ke Peta
+  searchAddress() 
+}
+
+// --- UPDATE FUNGSI BUKA MODAL ---
 const openModalPaket = async () => { 
   isModalPaketOpen.value = true;
   await nextTick();
   initLeafletMap();
+  
+  // Langsung tarik semua buku tamu / pelanggan dari database dengan cepat
+  try {
+    const response = await axios.get('/customers');
+    debugger
+    dbCustomers.value = response.data.data || [];
+  } catch (error) {
+    console.error("Gagal memuat history pelanggan:", error);
+  }
 }
 
 const closeModalPaket = () => { 

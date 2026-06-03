@@ -21,7 +21,10 @@ class WorkController extends Controller
 
     public function store(Request $request)
     {
+        // PERBAIKAN: Tambahkan validasi nama_pekerjaan dan deskripsi
         $validator = Validator::make($request->all(), [
+            'nama_pekerjaan'=> 'required|string|max:255',
+            'deskripsi'     => 'nullable|string',
             'package_ids'   => 'required|array|min:1',
             'package_ids.*' => 'exists:packages,id',
             'user_id'       => 'required|exists:users,id',
@@ -35,13 +38,16 @@ class WorkController extends Controller
             $createdWorks = [];
             
             foreach ($request->package_ids as $packageId) {
+                // PERBAIKAN: Masukkan nama_pekerjaan dan deskripsi saat create Work
                 $work = Work::create([
-                    'package_id' => $packageId,
-                    'user_id'    => $request->user_id,
-                    'vehicle_id' => $request->vehicle_id,
+                    'nama_pekerjaan' => $request->nama_pekerjaan,
+                    'deskripsi'      => $request->deskripsi,
+                    'package_id'     => $packageId,
+                    'user_id'        => $request->user_id,
+                    'vehicle_id'     => $request->vehicle_id,
                 ]);
                 
-                // PERBAIKAN: Ubah status lama "Menunggu Driver" menjadi format baru
+                // Ubah status lama menjadi format baru
                 Package::where('id', $packageId)->update(['status_pengiriman' => '6. Diserahkan ke kurir']);
                 
                 // MENCATAT RIWAYAT: Paket diserahkan ke kurir
@@ -73,7 +79,7 @@ class WorkController extends Controller
 
         if ($request->has('action') && $request->action === 'complete') {
             try {
-                // PERBAIKAN: Ubah "Terkirim" menjadi "8. Sampai (Selesai)"
+                // Ubah menjadi "8. Sampai (Selesai)"
                 if ($work->package) {
                     $work->package->update(['status_pengiriman' => '8. Sampai (Selesai)']);
                     
@@ -132,7 +138,7 @@ class WorkController extends Controller
             $vehicleId = $work->vehicle_id;
             $userId = $work->user_id;
 
-            // PERBAIKAN: Ubah "Pesanan diverifikasi" menjadi format awal jika tugas dibatalkan
+            // Ubah "Pesanan diverifikasi" menjadi format awal jika tugas dibatalkan
             if ($work->package) {
                 $work->package->update(['status_pengiriman' => '1. Verifikasi Jastar']);
 

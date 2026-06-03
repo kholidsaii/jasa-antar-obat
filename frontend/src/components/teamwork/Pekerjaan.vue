@@ -32,8 +32,8 @@
     
     <div class="flex-1 bg-gray-50/50 p-4 sm:p-5 border-t border-gray-100">
       
-      <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-        <div v-for="i in 8" :key="i" class="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse shadow-sm"></div>
+      <div v-if="isLoading" class="space-y-4">
+        <div v-for="i in 4" :key="i" class="h-32 bg-white rounded-2xl border border-gray-100 animate-pulse shadow-sm"></div>
       </div>
 
       <div v-else-if="filteredGroupedWorks.length === 0" class="p-12 text-center bg-white rounded-2xl border border-gray-100 shadow-sm">
@@ -44,35 +44,50 @@
       </div>
 
       <div v-else class="space-y-4">
-        <div v-for="group in paginatedGroupedWorks" :key="'card-'+(group.courier?.id || 'unassigned')" class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6 group relative">
+        <div v-for="group in paginatedGroupedWorks" :key="'card-'+(group.courier?.id || 'unassigned')" class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col gap-4 group relative">
           
-          <div class="flex items-center gap-3 w-full md:w-1/3 lg:w-1/4 shrink-0">
-            <div class="shrink-0">
-              <img :src="group.courier?.foto ? 'http://localhost:8000/storage/' + group.courier.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(group.courier?.name || 'Tanpa Kurir')}&background=random&color=fff`" class="w-14 h-14 rounded-full border-2 border-blue-100 shadow-sm object-cover p-0.5">
+          <div class="flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6">
+            <div class="flex items-center gap-3 w-full md:w-1/3 lg:w-1/4 shrink-0">
+              <div class="shrink-0">
+                <img :src="group.courier?.foto ? 'http://localhost:8000/storage/' + group.courier.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(group.courier?.name || 'Tanpa Kurir')}&background=random&color=fff`" class="w-14 h-14 rounded-full border-2 border-blue-100 shadow-sm object-cover p-0.5">
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-black text-gray-900 text-base truncate">{{ group.courier?.name || 'Belum Ada Kurir' }}</h3>
+                <p class="text-xs text-gray-500 font-medium flex items-center mt-0.5 truncate">
+                  <i class="fas fa-motorcycle text-gray-400 mr-1.5"></i> {{ group.vehicle?.nama_kendaraan || '-' }} <span class="hidden sm:inline ml-1">({{ group.vehicle?.plat_nomor || '-' }})</span>
+                </p>
+              </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <h3 class="font-black text-gray-900 text-base truncate">{{ group.courier?.name || 'Belum Ada Kurir' }}</h3>
-              <p class="text-xs text-gray-500 font-medium flex items-center mt-0.5 truncate">
-                <i class="fas fa-motorcycle text-gray-400 mr-1.5"></i> {{ group.vehicle?.nama_kendaraan || '-' }} <span class="hidden sm:inline ml-1">({{ group.vehicle?.plat_nomor || '-' }})</span>
-              </p>
+
+            <div class="flex-1 w-full flex gap-3">
+              <div class="flex-1 bg-yellow-50 border border-yellow-100 py-3 sm:py-2.5 px-4 rounded-xl flex justify-between items-center shadow-sm">
+                <p class="text-[10px] sm:text-xs text-yellow-800 font-bold uppercase tracking-wider">Aktif</p>
+                <p class="text-xl sm:text-2xl font-black text-yellow-600" :class="{'animate-pulse': group.active.length > 0}">{{ group.active.length }}</p>
+              </div>
+              <div class="flex-1 bg-green-50 border border-green-100 py-3 sm:py-2.5 px-4 rounded-xl flex justify-between items-center shadow-sm">
+                <p class="text-[10px] sm:text-xs text-green-800 font-bold uppercase tracking-wider">Selesai</p>
+                <p class="text-xl sm:text-2xl font-black text-green-600">{{ group.history.length }}</p>
+              </div>
+            </div>
+
+            <div class="w-full md:w-auto shrink-0 md:min-w-[200px] mt-2 md:mt-0 border-t border-gray-100 md:border-t-0 pt-4 md:pt-0">
+              <button @click="openGroupDetail(group)" class="w-full flex justify-center items-center bg-blue-50 hover:bg-[#3b5998] text-[#3b5998] hover:text-white py-3 sm:py-3.5 rounded-xl border border-blue-200 text-xs font-bold transition-all active:scale-95 shadow-sm uppercase tracking-wider">
+                <i class="fas fa-eye mr-2"></i> Buka Detail
+              </button>
             </div>
           </div>
 
-          <div class="flex-1 w-full flex gap-3">
-            <div class="flex-1 bg-yellow-50 border border-yellow-100 py-3 sm:py-2.5 px-4 rounded-xl flex justify-between items-center group-hover:bg-yellow-100/50 transition-colors shadow-sm">
-              <p class="text-[10px] sm:text-xs text-yellow-800 font-bold uppercase tracking-wider">Aktif</p>
-              <p class="text-xl sm:text-2xl font-black text-yellow-600" :class="{'animate-pulse': group.active.length > 0}">{{ group.active.length }}</p>
+          <div v-if="group.active.length > 0" class="pt-3 border-t border-gray-100">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tugas Sedang Berjalan:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div v-for="work in group.active" :key="work.id" class="bg-gray-50 border border-gray-200 p-3 rounded-xl hover:border-blue-300 transition-colors shadow-sm">
+                 <div class="flex items-start justify-between gap-2 mb-1">
+                    <p class="text-xs font-bold text-[#3b5998] line-clamp-1" :title="work.nama_pekerjaan">{{ work.nama_pekerjaan || 'Tugas Pengantaran' }}</p>
+                    <span class="text-[9px] font-bold bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded shadow-sm">#{{ String(work.id).padStart(4, '0') }}</span>
+                 </div>
+                 <p class="text-[11px] text-gray-600 line-clamp-2 leading-relaxed italic">{{ work.deskripsi || 'Tidak ada catatan/deskripsi khusus.' }}</p>
+              </div>
             </div>
-            <div class="flex-1 bg-green-50 border border-green-100 py-3 sm:py-2.5 px-4 rounded-xl flex justify-between items-center group-hover:bg-green-100/50 transition-colors shadow-sm">
-              <p class="text-[10px] sm:text-xs text-green-800 font-bold uppercase tracking-wider">Selesai</p>
-              <p class="text-xl sm:text-2xl font-black text-green-600">{{ group.history.length }}</p>
-            </div>
-          </div>
-
-          <div class="w-full md:w-auto shrink-0 md:min-w-[200px] mt-2 md:mt-0 pt-4 md:pt-0 border-t border-gray-100 md:border-t-0">
-            <button @click="openGroupDetail(group)" class="w-full flex justify-center items-center bg-blue-50 hover:bg-[#3b5998] text-[#3b5998] hover:text-white py-3 sm:py-3.5 rounded-xl border border-blue-200 text-xs font-bold transition-all active:scale-95 shadow-sm uppercase tracking-wider">
-              <i class="fas fa-eye mr-2"></i> Buka Detail
-            </button>
           </div>
 
         </div>
@@ -132,7 +147,10 @@
                     
                     <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-3">
                       <div class="pr-3">
-                        <span class="text-[10px] sm:text-xs font-bold text-gray-500 mb-1 block tracking-widest">#WRK-{{ String(work.id).padStart(4, '0') }}</span>
+                        <div class="flex items-center gap-2 mb-2">
+                          <span class="text-[10px] sm:text-xs font-bold text-gray-500 tracking-widest">#WRK-{{ String(work.id).padStart(4, '0') }}</span>
+                          <span v-if="work.nama_pekerjaan" class="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">{{ work.nama_pekerjaan }}</span>
+                        </div>
                         <p class="font-black text-gray-900 text-sm sm:text-base leading-tight">{{ work.package?.customer?.nama || 'Unknown' }}</p>
                         <p class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed"><i class="fas fa-map-marker-alt mr-1 text-red-500"></i> {{ work.package?.customer?.alamat || '-' }}</p>
                       </div>
@@ -142,7 +160,11 @@
                     </div>
 
                     <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p class="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nama Paket / Obat:</p>
+                      <div v-if="work.deskripsi" class="mb-2 pb-2 border-b border-gray-200 border-dashed">
+                        <p class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Catatan Tugas:</p>
+                        <p class="text-xs font-medium text-gray-700 italic">{{ work.deskripsi }}</p>
+                      </div>
+                      <p class="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nama Paket / Obat:</p>
                       <p class="text-xs sm:text-sm font-semibold text-gray-800 leading-relaxed">{{ work.package?.deskripsi_pesanan }}</p>
                     </div>
 
@@ -181,13 +203,16 @@
                 <div v-if="currentDetailGroup?.history.length === 0" class="text-sm text-gray-500 italic text-center py-4">Belum ada paket yang diselesaikan hari ini.</div>
                 
                 <transition-group name="list" tag="div" class="space-y-3 relative">
-                  <div v-for="work in currentDetailGroup?.history" :key="'hist-'+work.id" class="bg-white border border-emerald-100 p-4 rounded-xl flex justify-between items-center opacity-80 hover:opacity-100 transition-opacity shadow-sm">
+                  <div v-for="work in currentDetailGroup?.history" :key="'hist-'+work.id" class="bg-white border border-emerald-100 p-4 rounded-xl flex justify-between items-start sm:items-center opacity-80 hover:opacity-100 transition-opacity shadow-sm">
                     <div class="pr-3">
-                      <p class="font-black text-gray-800 text-xs sm:text-sm">{{ work.package?.customer?.nama }}</p>
+                      <div class="flex items-center gap-2 mb-1">
+                        <p class="font-black text-gray-800 text-xs sm:text-sm">{{ work.package?.customer?.nama }}</p>
+                        <span v-if="work.nama_pekerjaan" class="text-[8px] font-bold bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded uppercase border border-gray-300">{{ work.nama_pekerjaan }}</span>
+                      </div>
                       <p class="text-[11px] sm:text-xs text-gray-500 mt-1 leading-snug line-clamp-1"><i class="fas fa-box text-gray-400 mr-1"></i> {{ work.package?.deskripsi_pesanan }}</p>
                       <p class="text-[10px] font-bold text-gray-400 mt-1.5">Selesai: {{ new Date(work.updated_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}) }} WIB</p>
                     </div>
-                    <span class="text-[9px] sm:text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-200 uppercase tracking-widest shrink-0">Selesai</span>
+                    <span class="text-[9px] sm:text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-200 uppercase tracking-widest shrink-0 mt-1 sm:mt-0">Selesai</span>
                   </div>
                 </transition-group>
               </div>
