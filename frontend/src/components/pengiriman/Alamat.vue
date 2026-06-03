@@ -45,7 +45,7 @@
             </div>
             <div class="text-right shrink-0">
               <span class="text-[10px] sm:text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-md uppercase tracking-wider inline-block">
-                #PKT-{{ String(selectedRoute.id).padStart(4, '0') }}
+                #PKT-{{ String(selectedRoute.id).padStart(4, '0') }} {{ selectedRoute.no_struk ? '-' + selectedRoute.no_struk : '' }}
               </span>
               <br>
               <span :class="getStatusBadgeClass(selectedRoute.status_pengiriman)" class="px-2 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-wider rounded-md border shadow-sm inline-block mt-1 text-center truncate max-w-[100px]">
@@ -98,7 +98,7 @@
             </div>
 
             <div class="pr-24 sm:pr-28 mb-3">
-              <h4 class="font-bold text-gray-500 text-[10px] sm:text-[11px] uppercase tracking-widest">#PKT-{{ String(pkg.id).padStart(4, '0') }}</h4>
+              <h4 class="font-bold text-gray-500 text-[10px] sm:text-[11px] uppercase tracking-widest">#PKT-{{ String(pkg.id).padStart(4, '0') }} {{ pkg.no_struk ? '-' + pkg.no_struk : '' }}</h4>
               <p class="text-sm sm:text-base font-black text-gray-900 mt-0.5 truncate">{{ pkg.customer?.nama || 'Unknown' }}</p>
             </div>
 
@@ -183,7 +183,18 @@ const paginatedRoutes = computed(() => filteredActiveRoutes.value.slice(startInd
 
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+// --- FUNGSI WARNA & ICON RESI WAKTU PENGANTARAN ---
+const getWaktuResiClass = (waktu) => {
+  if (waktu === 'Segera') return 'bg-red-50 text-red-700 border-red-200'
+  if (waktu === 'Malam') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  return 'bg-blue-50 text-blue-700 border-blue-200' // Besok & Default
+}
 
+const getWaktuIconClass = (waktu) => {
+  if (waktu === 'Segera') return 'fa-shipping-fast'
+  if (waktu === 'Malam') return 'fa-moon'
+  return 'fa-calendar-day'
+}
 // --- API FETCH ---
 const fetchPackages = async () => {
   isLoading.value = true

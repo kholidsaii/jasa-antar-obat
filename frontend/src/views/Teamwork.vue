@@ -109,20 +109,16 @@
           </div>
 
           <!-- STEP 2 (Pilih Paket Obat) -->
+         <!-- STEP 2 (Pilih Paket Obat) - PERBAIKAN STRUKTUR -->
           <div>
-            <div class="flex justify-between items-end mb-2.5">
-              <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider">2. Pilih Paket Obat</label>
-              <span class="text-[10px] sm:text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full shadow-inner">{{ formWork.package_ids.length }} Terpilih</span>
-            </div>
+            <label class="block text-xs sm:text-sm font-black text-gray-800 uppercase tracking-wider mb-2.5">2. Pilih Paket Obat</label>
             
+            <!-- Jika paket kosong -->
             <div v-if="apiPackages.length === 0" class="flex flex-col items-center justify-center p-8 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
-              <div class="bg-white p-3 rounded-full mb-3 shadow-sm">
-                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-              </div>
               <p class="text-sm font-bold text-gray-600">Semua paket sudah ter-dispatch!</p>
-              <p class="text-[11px] sm:text-xs text-gray-400 mt-1 text-center">Belum ada paket dari Farmasi saat ini.</p>
             </div>
             
+            <!-- List Paket -->
             <div v-else class="max-h-60 overflow-y-auto space-y-2 border border-gray-200 rounded-xl p-3 bg-gray-50 shadow-inner custom-scrollbar relative">
               <label 
                 v-for="pkt in apiPackages" 
@@ -133,19 +129,30 @@
                 ]"
               >
                 <div class="flex items-center h-full pt-1">
-                  <input type="checkbox" v-model="formWork.package_ids" :value="pkt.id" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-colors cursor-pointer">
+                  <input type="checkbox" v-model="formWork.package_ids" :value="pkt.id" class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
                 </div>
+                
+                <!-- DATA PAKET (Di dalam v-for sekarang aman) -->
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between items-start mb-1">
                     <p class="text-[13px] sm:text-sm font-black text-gray-900 truncate pr-2">
                       {{ pkt.customer?.nama || 'Unknown' }}
                     </p>
-                    <span class="text-[9px] sm:text-[10px] font-bold bg-white text-gray-600 px-2 py-0.5 rounded border border-gray-200 shrink-0">
-                      #PKT-{{ String(pkt.id).padStart(4, '0') }}
-                    </span>
+                    <div class="flex flex-col items-end gap-1">
+                      <span class="text-[9px] sm:text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 shrink-0">
+                        #PKT-{{ String(pkt.id).padStart(4, '0') }}{{ pkt.no_struk ? '-' + pkt.no_struk : '' }}
+                      </span>
+                  
+                    </div>
                   </div>
-                  <p class="text-[11px] sm:text-xs text-gray-600 leading-snug line-clamp-2"><i class="fas fa-prescription-bottle-alt text-gray-400 mr-1"></i> {{ pkt.deskripsi_pesanan }}</p>
-                  <p class="text-[10px] text-gray-400 mt-1.5 font-medium truncate"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ pkt.customer?.alamat || '-' }}</p>
+                  
+                  <p class="text-[11px] sm:text-xs text-gray-600 leading-snug line-clamp-2 mt-1">
+                    <i class="fas fa-prescription-bottle-alt text-gray-400 mr-1"></i> {{ pkt.deskripsi_pesanan }}
+                  </p>
+                  
+                  <p class="text-[10px] text-gray-400 mt-1.5 font-medium truncate">
+                    <i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ pkt.customer?.alamat || '-' }}
+                  </p>
                 </div>
               </label>
             </div>

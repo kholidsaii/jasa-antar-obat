@@ -77,17 +77,24 @@
             </div>
           </div>
 
-          <div v-if="group.active.length > 0" class="pt-3 border-t border-gray-100">
+         <div v-if="group.active.length > 0" class="pt-3 border-t border-gray-100">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tugas Sedang Berjalan:</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div v-for="work in group.active" :key="work.id" class="bg-gray-50 border border-gray-200 p-3 rounded-xl hover:border-blue-300 transition-colors shadow-sm">
                  <div class="flex items-start justify-between gap-2 mb-1">
                     <p class="text-xs font-bold text-[#3b5998] line-clamp-1" :title="work.nama_pekerjaan">{{ work.nama_pekerjaan || 'Tugas Pengantaran' }}</p>
                     
-                    <span :class="getWaktuResiClass(work.package?.waktu_pengantaran)" class="text-[8px] font-black border px-1.5 py-0.5 rounded shadow-sm shrink-0 flex items-center uppercase">
-                      <i class="fas mr-1" :class="getWaktuIconClass(work.package?.waktu_pengantaran)"></i>
-                      #PKT-{{ String(work.package?.id || 0).padStart(4, '0') }}
-                    </span>
+                    <!-- KELOMPOK RESI & NOMOR STRUK -->
+                    <div class="flex flex-col items-end gap-1 shrink-0">
+                      <!-- Badge Nomor Resi (Warna Waktu Pengantaran) -->
+                      <span :class="getWaktuResiClass(work.package?.waktu_pengantaran)" class="text-[8px] font-black border px-1.5 py-0.5 rounded shadow-sm flex items-center uppercase">
+                        <i class="fas mr-1" :class="getWaktuIconClass(work.package?.waktu_pengantaran)"></i>
+                        #PKT-{{ String(work.package?.id || 0).padStart(4, '0') }} {{ work.package?.no_struk ? '-' + work.package.no_struk : '' }}
+                      </span>
+                      
+                      
+                    </div>
+
                  </div>
                  <p class="text-[11px] text-gray-600 line-clamp-2 leading-relaxed italic">{{ work.deskripsi || 'Tidak ada catatan/deskripsi khusus.' }}</p>
               </div>
