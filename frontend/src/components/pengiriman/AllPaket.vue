@@ -62,7 +62,11 @@
           <div class="flex-1 w-full">
             <div class="flex flex-wrap items-center gap-2 mb-1">
               <h3 class="text-gray-900 text-base sm:text-lg font-black">{{ pkg.customer?.nama || 'Dihapus' }}</h3>
-              <span class="text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+              
+              <span :class="getWaktuResiClass(pkg.waktu_pengantaran)" class="text-[10px] font-bold border px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm flex items-center">
+                 <i v-if="pkg.waktu_pengantaran === 'Segera'" class="fas fa-shipping-fast mr-1"></i>
+                 <i v-else-if="pkg.waktu_pengantaran === 'Malam'" class="fas fa-moon mr-1"></i>
+                 <i v-else class="fas fa-calendar-day mr-1"></i>
                 #PKT-{{ String(pkg.id).padStart(4, '0') }}{{ pkg.no_struk ? '-' + pkg.no_struk : '' }}
               </span>
             </div>
@@ -421,7 +425,13 @@ const getStatusPengirimanClass = (status) => {
     default: return 'bg-gray-100 text-gray-800'
   }
 }
-
+// --- FUNGSI WARNA RESI BERDASARKAN WAKTU PENGANTARAN ---
+const getWaktuResiClass = (waktu) => {
+  // debugger
+  if (waktu === 'Segera') return 'bg-red-50 text-red-700 border-red-200'
+  if (waktu === 'Malam') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  return 'bg-blue-50 text-blue-700 border-blue-200' // Besok & Default
+}
 const getStatusPembayaranClass = (status) => {
   if (status === 'Lunas') return 'bg-green-100 text-green-800 border-green-200'
   return 'bg-red-50 text-red-700 border-red-200'

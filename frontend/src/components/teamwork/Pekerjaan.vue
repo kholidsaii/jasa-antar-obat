@@ -83,7 +83,11 @@
               <div v-for="work in group.active" :key="work.id" class="bg-gray-50 border border-gray-200 p-3 rounded-xl hover:border-blue-300 transition-colors shadow-sm">
                  <div class="flex items-start justify-between gap-2 mb-1">
                     <p class="text-xs font-bold text-[#3b5998] line-clamp-1" :title="work.nama_pekerjaan">{{ work.nama_pekerjaan || 'Tugas Pengantaran' }}</p>
-                    <span class="text-[9px] font-bold bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded shadow-sm">#{{ String(work.id).padStart(4, '0') }}</span>
+                    
+                    <span :class="getWaktuResiClass(work.package?.waktu_pengantaran)" class="text-[8px] font-black border px-1.5 py-0.5 rounded shadow-sm shrink-0 flex items-center uppercase">
+                      <i class="fas mr-1" :class="getWaktuIconClass(work.package?.waktu_pengantaran)"></i>
+                      #PKT-{{ String(work.package?.id || 0).padStart(4, '0') }}
+                    </span>
                  </div>
                  <p class="text-[11px] text-gray-600 line-clamp-2 leading-relaxed italic">{{ work.deskripsi || 'Tidak ada catatan/deskripsi khusus.' }}</p>
               </div>
@@ -147,8 +151,11 @@
                     
                     <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-3">
                       <div class="pr-3">
-                        <div class="flex items-center gap-2 mb-2">
-                          <span class="text-[10px] sm:text-xs font-bold text-gray-500 tracking-widest">#WRK-{{ String(work.id).padStart(4, '0') }}</span>
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                          <span :class="getWaktuResiClass(work.package?.waktu_pengantaran)" class="text-[9px] sm:text-[10px] font-black border px-2 py-0.5 rounded uppercase tracking-wider shadow-sm flex items-center">
+                            <i class="fas mr-1" :class="getWaktuIconClass(work.package?.waktu_pengantaran)"></i>
+                            #PKT-{{ String(work.package?.id || 0).padStart(4, '0') }}{{ work.package?.no_struk ? '-' + work.package?.no_struk : '' }}
+                          </span>
                           <span v-if="work.nama_pekerjaan" class="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">{{ work.nama_pekerjaan }}</span>
                         </div>
                         <p class="font-black text-gray-900 text-sm sm:text-base leading-tight">{{ work.package?.customer?.nama || 'Unknown' }}</p>
@@ -205,8 +212,14 @@
                 <transition-group name="list" tag="div" class="space-y-3 relative">
                   <div v-for="work in currentDetailGroup?.history" :key="'hist-'+work.id" class="bg-white border border-emerald-100 p-4 rounded-xl flex justify-between items-start sm:items-center opacity-80 hover:opacity-100 transition-opacity shadow-sm">
                     <div class="pr-3">
-                      <div class="flex items-center gap-2 mb-1">
+                      <div class="flex flex-wrap items-center gap-2 mb-1.5">
                         <p class="font-black text-gray-800 text-xs sm:text-sm">{{ work.package?.customer?.nama }}</p>
+                        
+                        <span :class="getWaktuResiClass(work.package?.waktu_pengantaran)" class="text-[8px] font-black border px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm flex items-center">
+                          <i class="fas mr-1" :class="getWaktuIconClass(work.package?.waktu_pengantaran)"></i>
+                          #PKT-{{ String(work.package?.id || 0).padStart(4, '0') }}
+                        </span>
+
                         <span v-if="work.nama_pekerjaan" class="text-[8px] font-bold bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded uppercase border border-gray-300">{{ work.nama_pekerjaan }}</span>
                       </div>
                       <p class="text-[11px] sm:text-xs text-gray-500 mt-1 leading-snug line-clamp-1"><i class="fas fa-box text-gray-400 mr-1"></i> {{ work.package?.deskripsi_pesanan }}</p>
@@ -447,7 +460,18 @@ const updateWork = async () => {
     showNotification("Gagal memindahkan tugas", "error")
   } finally { isSaving.value = false }
 }
+// --- FUNGSI WARNA & ICON RESI WAKTU PENGANTARAN ---
+const getWaktuResiClass = (waktu) => {
+  if (waktu === 'Segera') return 'bg-red-50 text-red-700 border-red-200'
+  if (waktu === 'Malam') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  return 'bg-blue-50 text-blue-700 border-blue-200'
+}
 
+const getWaktuIconClass = (waktu) => {
+  if (waktu === 'Segera') return 'fa-shipping-fast'
+  if (waktu === 'Malam') return 'fa-moon'
+  return 'fa-calendar-day'
+}
 onMounted(() => fetchWorks())
 </script>
 

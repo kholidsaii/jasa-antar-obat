@@ -163,6 +163,31 @@
                 <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">No. Struk Antrian</label>
                 <input v-model="formBaru.no_struk" type="text" placeholder="Misal: F-123" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all font-bold text-gray-800">
               </div>
+              <div>
+              <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Waktu Pengantaran</label>
+              <div class="grid grid-cols-3 gap-3">
+                <label :class="formBaru.waktu_pengantaran === 'Segera' ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-200 bg-white hover:bg-gray-50'" class="cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all relative overflow-hidden">
+                  <input type="radio" v-model="formBaru.waktu_pengantaran" value="Segera" class="hidden">
+                  <i class="fas fa-shipping-fast text-2xl mb-1.5" :class="formBaru.waktu_pengantaran === 'Segera' ? 'text-red-500' : 'text-gray-300'"></i>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-center" :class="formBaru.waktu_pengantaran === 'Segera' ? 'text-red-700' : 'text-gray-400'">Segera<br>Diantar</span>
+                  <div v-if="formBaru.waktu_pengantaran === 'Segera'" class="absolute -right-3 -bottom-3 opacity-10 text-red-500"><i class="fas fa-stamp text-5xl"></i></div>
+                </label>
+                
+                <label :class="formBaru.waktu_pengantaran === 'Malam' ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 bg-white hover:bg-gray-50'" class="cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all relative overflow-hidden">
+                  <input type="radio" v-model="formBaru.waktu_pengantaran" value="Malam" class="hidden">
+                  <i class="fas fa-moon text-2xl mb-1.5" :class="formBaru.waktu_pengantaran === 'Malam' ? 'text-emerald-500' : 'text-gray-300'"></i>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-center" :class="formBaru.waktu_pengantaran === 'Malam' ? 'text-emerald-700' : 'text-gray-400'">Diantar<br>Malam</span>
+                  <div v-if="formBaru.waktu_pengantaran === 'Malam'" class="absolute -right-3 -bottom-3 opacity-10 text-emerald-500"><i class="fas fa-stamp text-5xl"></i></div>
+                </label>
+
+                <label :class="formBaru.waktu_pengantaran === 'Besok' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 bg-white hover:bg-gray-50'" class="cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all relative overflow-hidden">
+                  <input type="radio" v-model="formBaru.waktu_pengantaran" value="Besok" class="hidden">
+                  <i class="fas fa-calendar-day text-2xl mb-1.5" :class="formBaru.waktu_pengantaran === 'Besok' ? 'text-blue-500' : 'text-gray-300'"></i>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-center" :class="formBaru.waktu_pengantaran === 'Besok' ? 'text-blue-700' : 'text-gray-400'">Diantar<br>Besok</span>
+                  <div v-if="formBaru.waktu_pengantaran === 'Besok'" class="absolute -right-3 -bottom-3 opacity-10 text-blue-500"><i class="fas fa-stamp text-5xl"></i></div>
+                </label>
+              </div>
+            </div>
             </div>
             
             <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
@@ -297,14 +322,15 @@ let routeLine = null;
 
 const formBaru = ref({
   alamat: '',
-  detail_alamat: '', // Tambahan untuk detail patokan alamat
+  detail_alamat: '', 
   jarak_km: 0,
   total_harga: 0,
   nama: '',
   no_telp: '',
   no_struk: '', 
   foto_struk: null,
-  metode_pembayaran: 'QRIS / E-Wallet (Sistem)'
+  metode_pembayaran: 'QRIS / E-Wallet (Sistem)',
+  waktu_pengantaran: 'Segera' // <--- Tambahkan ini
 })
 
 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
@@ -376,17 +402,35 @@ const filteredCustomers = computed(() => {
 })
 
 const selectCustomer = (cust) => {
-  // Isi otomatis form
-  formBaru.value.nama = cust.nama
-  formBaru.value.no_telp = cust.no_telp
-  formBaru.value.alamat = cust.alamat
-  searchQueryAddress.value = cust.alamat
+  formBaru.value.nama = cust.nama;
+  formBaru.value.no_telp = cust.no_telp;
+
+  // Pisahkan alamat utama dengan teks di dalam kurung (patokan)
+  let alamatAsli = cust.alamat || '';
+  let alamatUtama = alamatAsli;
+  let patokan = '';
+
+  if (alamatAsli.includes('(')) {
+    alamatUtama = alamatAsli.split('(')[0].trim(); // Ambil teks MURNI sebelum tanda '('
+    
+    // Ekstrak teks di dalam kurung untuk dipindah ke Textarea Detail
+    let isiKurung = alamatAsli.match(/\(([^)]+)\)/);
+    if (isiKurung) {
+      patokan = isiKurung[1].replace(/Patokan:/ig, '').trim(); // Buang kata "Patokan:" jika ada
+    }
+  }
+
+  formBaru.value.alamat = alamatUtama;
+  formBaru.value.detail_alamat = patokan; // Patokan tidak hilang, melainkan pindah ke textarea
   
-  // Tutup dropdown pencarian
-  searchPasien.value = '' 
+  // Satelit peta sekarang HANYA mencari alamat utamanya saja yang sudah bersih
+  searchQueryAddress.value = alamatUtama;
+  
+  // Tutup dropdown
+  searchPasien.value = '';
   
   // Langsung otomatis tembak titik satelit ke Peta
-  searchAddress() 
+  searchAddress(); 
 }
 
 // --- UPDATE FUNGSI BUKA MODAL ---
@@ -480,6 +524,7 @@ const submitPaket = async () => {
   formData.append('jarak_km', formBaru.value.jarak_km)
   formData.append('total_harga', formBaru.value.total_harga)
   formData.append('metode_pembayaran', formBaru.value.metode_pembayaran)
+  formData.append('waktu_pengantaran', formBaru.value.waktu_pengantaran) // <--- Tambahkan ini
   if (formBaru.value.foto_struk) formData.append('foto_struk', formBaru.value.foto_struk)
 
   try {

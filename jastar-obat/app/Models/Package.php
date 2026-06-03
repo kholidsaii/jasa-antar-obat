@@ -11,7 +11,7 @@ class Package extends Model
 
     protected $fillable = [
         'customer_id', 'no_struk', 'deskripsi_pesanan', 'status_pengiriman', 
-        'status_pembayaran', 'metode_pembayaran', 'jarak_km', 'total_harga', 'foto_struk'
+        'status_pembayaran', 'metode_pembayaran', 'jarak_km', 'total_harga', 'foto_struk', 'waktu_pengantaran'
     ];
 
     // Relasi: Paket ini milik siapa?

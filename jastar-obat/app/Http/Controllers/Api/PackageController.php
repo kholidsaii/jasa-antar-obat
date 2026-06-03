@@ -33,6 +33,7 @@ class PackageController extends Controller
             'metode_pembayaran' => 'required|string',
             'jarak_km'          => 'required|numeric',
             'total_harga'       => 'required|numeric',
+                'waktu_pengantaran' => 'nullable|string' // <--- Validasi untuk waktu pengantaran
         ]);
 
         if ($validator->fails()) return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
@@ -69,8 +70,10 @@ class PackageController extends Controller
                 'metode_pembayaran' => $request->metode_pembayaran,
                 'jarak_km'          => $request->jarak_km,
                 'total_harga'       => $request->total_harga,
-                'foto_struk'        => $fotoPath
+                'foto_struk'        => $fotoPath,
+                'waktu_pengantaran' => $request->waktu_pengantaran // <
             ]);
+            
 
             // TAMBAHAN: Catat Riwayat Pertama Kali Paket Dibuat
             \App\Models\PackageHistory::create([

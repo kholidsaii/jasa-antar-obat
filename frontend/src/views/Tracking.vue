@@ -26,10 +26,18 @@
 
         <div v-else class="space-y-6">
           
-          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center shadow-sm">
-            <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Nomor Resi Pelacakan</p>
-            <p class="text-2xl font-black text-[#3b5998] tracking-widest">#{{ resi }}</p>
-            <div class="mt-3 pt-3 border-t border-blue-200/50 flex justify-between text-left">
+          <div :class="getCardThemeClass(paket.waktu_pengantaran)" class="rounded-2xl p-4 text-center shadow-sm relative overflow-hidden border transition-colors duration-300">
+            
+            <i class="fas absolute -right-4 -top-2 text-7xl opacity-[0.04]" :class="getWaktuIconClass(paket.waktu_pengantaran).split(' ')[0]"></i>
+
+            <p :class="getTextLabelClass(paket.waktu_pengantaran)" class="text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Nomor Resi Pelacakan</p>
+            <p :class="getTextValueClass(paket.waktu_pengantaran)" class="text-2xl font-black tracking-widest mb-2 relative z-10">#{{ resi }}</p>
+            
+            <span v-if="paket.waktu_pengantaran" :class="getWaktuBadgeClass(paket.waktu_pengantaran)" class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md border shadow-sm inline-block mb-1 relative z-10">
+              <i class="fas" :class="getWaktuIconClass(paket.waktu_pengantaran)"></i> {{ paket.waktu_pengantaran === 'Segera' ? 'SEGERA DIANTAR' : 'DIANTAR ' + paket.waktu_pengantaran }}
+            </span>
+
+            <div class="mt-3 pt-3 border-t border-gray-200/60 flex justify-between text-left relative z-10">
               <div>
                 <p class="text-[10px] text-gray-500 uppercase font-bold">Penerima</p>
                 <p class="text-sm font-bold text-gray-900">{{ paket.customer?.nama }}</p>
@@ -60,7 +68,7 @@
               <div class="absolute top-2 bottom-6 left-6 w-0.5 bg-gray-200"></div>
 
               <div v-if="!paket.histories || paket.histories.length === 0" class="relative z-10 flex items-start mb-6">
-                <div class="w-5 h-5 rounded-full ring-4 ring-white flex-shrink-0 mt-0.5 bg-blue-500 animate-pulse"></div>
+                <div :class="['w-5 h-5 rounded-full ring-4 ring-white flex-shrink-0 mt-0.5 animate-pulse shadow-sm', getActiveDotColor(paket.waktu_pengantaran)]"></div>
                 <div class="ml-4">
                   <h4 class="text-sm font-black text-gray-900">{{ paket.status_pengiriman }}</h4>
                   <p class="text-xs text-gray-500 mt-0.5 font-medium">Update: {{ new Date(paket.updated_at).toLocaleString('id-ID') }}</p>
@@ -71,7 +79,7 @@
                 
                 <div :class="[
                   'w-5 h-5 rounded-full ring-4 ring-white flex-shrink-0 mt-0.5 shadow-sm',
-                  index === 0 ? (history.status_pengiriman.includes('Selesai') ? 'bg-green-500' : 'bg-blue-500 animate-pulse') : 'bg-gray-300'
+                  index === 0 ? (history.status_pengiriman.includes('Selesai') ? 'bg-green-500' : getActiveDotColor(paket.waktu_pengantaran) + ' animate-pulse') : 'bg-gray-300'
                 ]"></div>
                 
                 <div class="ml-4 flex-1">
@@ -106,15 +114,33 @@ const isLoading = ref(true)
 
 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 
+// FUNGSI WARNA TITIK TRACKING
+const getActiveDotColor = (waktu) => {
+  if (waktu === 'Segera') return 'bg-red-500'
+  if (waktu === 'Malam') return 'bg-emerald-500'
+  return 'bg-blue-500' // Besok & Default
+}
+
+// FUNGSI WARNA BADGE WAKTU DI ATAS
+const getWaktuBadgeClass = (waktu) => {
+  if (waktu === 'Segera') return 'bg-red-100 text-red-700 border-red-200'
+  if (waktu === 'Malam') return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+  return 'bg-blue-100 text-blue-700 border-blue-200' // Besok & Default
+}
+
+// FUNGSI ICON BADGE
+const getWaktuIconClass = (waktu) => {
+  if (waktu === 'Segera') return 'fa-shipping-fast mr-1'
+  if (waktu === 'Malam') return 'fa-moon mr-1'
+  return 'fa-calendar-day mr-1' // Besok & Default
+}
+
 const fetchTrackingData = async () => {
   isLoading.value = true
   try {
-    // Mengekstrak ID asli dari resi (Contoh: "PKT-0005-F123" menjadi 5)
-    // Pecah berdasarkan "-" dan ambil array index 1
     const resiParts = resi.value.split('-');
     const paketId = parseInt(resiParts[1], 10);
     
-    // Tarik data dari API Publik yang kita atur di PackageController@show
     const response = await axios.get(`http://localhost:8000/api/v1/packages/${paketId}`)
     paket.value = response.data.data
   } catch (error) {
@@ -123,6 +149,25 @@ const fetchTrackingData = async () => {
     isLoading.value = false
   }
 }
+// --- FUNGSI WARNA BACKGROUND KARTU ---
+const getCardThemeClass = (waktu) => {
+  if (waktu === 'Segera') return 'bg-red-50 border-red-100'
+  if (waktu === 'Malam') return 'bg-emerald-50 border-emerald-100'
+  return 'bg-blue-50 border-blue-100'
+}
 
+// --- FUNGSI WARNA TEKS LABEL (Kecil) ---
+const getTextLabelClass = (waktu) => {
+  if (waktu === 'Segera') return 'text-red-500'
+  if (waktu === 'Malam') return 'text-emerald-500'
+  return 'text-blue-500'
+}
+
+// --- FUNGSI WARNA TEKS RESI (Besar) ---
+const getTextValueClass = (waktu) => {
+  if (waktu === 'Segera') return 'text-red-700'
+  if (waktu === 'Malam') return 'text-emerald-700'
+  return 'text-[#3b5998]'
+}
 onMounted(() => fetchTrackingData())
 </script>
