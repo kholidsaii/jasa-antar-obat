@@ -213,7 +213,8 @@
               
               <div v-if="['superadmin', 'admin'].includes(userRole)" class="sm:col-span-2 pt-4 border-t border-gray-200 mt-1">
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Revisi Total Tagihan (Rp)</label>
-                <input v-model="editForm.total_harga" type="number" class="w-full border-2 border-blue-200 bg-white text-[#3b5998] font-black text-xl rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#3b5998] shadow-sm transition-all">
+                <input v-model="editForm.total_harga" disabled
+                type="number" class="w-full border-2 border-blue-200 bg-white text-[#3b5998] font-black text-xl rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#3b5998] shadow-sm transition-all">
               </div>
             </div>
           </form>

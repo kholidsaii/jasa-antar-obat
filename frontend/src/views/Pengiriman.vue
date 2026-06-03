@@ -210,13 +210,23 @@
           </div>
 
           <div v-if="modalStep === 3" class="space-y-5 animate-fade-in">
+            <!-- Box Total Tagihan (Input yang bisa diedit) -->
             <div class="bg-gray-900 text-white p-6 rounded-2xl text-center shadow-lg border-b-4 border-[#3b5998] relative overflow-hidden">
               <div class="absolute -right-4 -top-4 opacity-10"><i class="fas fa-wallet text-9xl"></i></div>
-              <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-2 relative z-10">Total Tagihan Final</p>
-              <p class="text-3xl sm:text-4xl font-black relative z-10">{{ formatRupiah(formBaru.total_harga) }}</p>
+              <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-2 relative z-10">Total Tagihan Final (Rp)</p>
+              
+              <div class="relative z-10">
+                <input 
+                  v-model="formBaru.total_harga" 
+                  type="number" 
+                  class="w-full bg-transparent text-center text-3xl sm:text-4xl font-black text-white outline-none border-b-2 border-transparent focus:border-blue-500 transition-all placeholder:text-gray-700"
+                  placeholder="Masukkan nominal..."
+                >
+              </div>
             </div>
 
-            <div class="bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+            <!-- Metode Pembayaran -->
+            <div class="bg-white p-1 rounded-xl shadow-sm border border-gray-100 relative">
               <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-2 px-3">Metode Pembayaran</label>
               <select v-model="formBaru.metode_pembayaran" class="w-full border-none rounded-xl py-3 px-3 text-sm font-bold outline-none focus:ring-0 bg-transparent appearance-none cursor-pointer text-gray-800">
                 <option value="Tunai / Cash (Sistem)">💵 Tunai / Cash (Bayar ke Stand)</option>
@@ -224,11 +234,12 @@
                 <option value="QRIS / E-Wallet (Sistem)">📱 QRIS / E-Wallet digital</option>
                 <option value="Transfer Bank (Sistem)">🏦 Transfer Bank (Virtual Account)</option>
               </select>
-              <div class="pointer-events-none absolute right-6 top-[55%] transform -translate-y-1/2">
+              <div class="pointer-events-none absolute right-6 top-[60%] transform -translate-y-1/2">
                 <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
               </div>
             </div>
 
+            <!-- Info -->
             <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-start shadow-sm">
               <i class="fas fa-shield-check text-emerald-600 mt-0.5 mr-3 text-xl"></i>
               <p class="text-xs text-emerald-800 font-medium leading-relaxed">
