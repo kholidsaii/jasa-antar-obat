@@ -21,6 +21,8 @@
           
           <router-link v-if="['superadmin', 'admin'].includes(userRole)" to="/laporan" class="block px-4 py-2.5 rounded-lg font-medium text-gray-600 transition-colors hover:bg-gray-100" active-class="bg-blue-50 text-[#3b5998]">Laporan</router-link>
           
+          <!-- TAMBAHKAN MENU HELP DESK DI SINI -->
+          <router-link v-if="['superadmin', 'admin'].includes(userRole)" to="/helpdesk" class="block px-4 py-2.5 rounded-lg font-medium text-gray-600 transition-colors hover:bg-gray-100" active-class="bg-blue-50 text-[#3b5998]">Help Desk</router-link>
           <div class="pt-4 mt-2 border-t border-gray-100">
             <button @click="handleLogout" class="w-full flex items-center px-4 py-2.5 rounded-lg font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 text-left">
               <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>

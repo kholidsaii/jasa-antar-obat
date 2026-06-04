@@ -7,6 +7,9 @@ import Financial from '../views/Financial.vue'
 import Laporan from '../views/Laporan.vue'
 import Tracking from '../views/Tracking.vue'
 
+// 1. TAMBAHKAN IMPORT HELP DESK DI SINI
+import HelpDesk from '../views/HelpDesk.vue' 
+
 const routes = [
   {
     path: '/login',
@@ -49,6 +52,14 @@ const routes = [
     name: 'Laporan',
     component: Laporan,
     meta: { requiresAuth: true, roles: ['superadmin', 'admin'] }
+  },
+  // 2. TAMBAHKAN ROUTE HELP DESK DI SINI
+  {
+    path: '/helpdesk',
+    name: 'HelpDesk',
+    component: HelpDesk,
+    // UBAH BAGIAN META MENJADI SEPERTI INI:
+    meta: { requiresAuth: false } 
   }
 ]
 

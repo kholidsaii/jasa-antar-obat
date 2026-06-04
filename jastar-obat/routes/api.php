@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\WorkController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\TicketController;
 
 Route::prefix('v1')->group(function () {
     // Rute Publik (Tidak perlu login)
@@ -39,8 +40,14 @@ Route::prefix('v1')->group(function () {
 
         // 3. Modul Teamwork / HR
         // Biarkan users (Buku Induk Karyawan) hanya bisa diakses admin
-        Route::middleware('role:superadmin,admin')->group(function () {
-            Route::apiResource('users', UserController::class);       
+       Route::middleware('role:superadmin,admin')->group(function () {
+            Route::apiResource('users', UserController::class); 
+            
+            // TAMBAHKAN INI:
+            Route::get('/tickets', [TicketController::class, 'index']);
+            Route::post('/tickets', [TicketController::class, 'store']);
+            Route::post('/tickets/{id}/reply', [TicketController::class, 'reply']);
+            Route::put('/tickets/{id}/status', [TicketController::class, 'updateStatus']);
         });
 
         // BUKA AKSES vehicles dan works untuk kurir agar fitur Auto-Assign berjalan lancar!
