@@ -81,7 +81,7 @@ class UserController extends Controller
             'role'       => 'sometimes|required|string|in:superadmin,admin,farmasi,kurir',
             'no_telepon' => 'nullable|string|max:20',
             'password'   => 'nullable|string|min:6',
-            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:10240'
         ]);
 
         if ($validator->fails()) return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
