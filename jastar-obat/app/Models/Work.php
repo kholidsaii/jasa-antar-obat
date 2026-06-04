@@ -24,8 +24,14 @@ class Work extends Model
         return $this->belongsTo(Package::class);
     }
 
-    // Relasi ke Kurir (Karyawan)
+    // Relasi ke Kurir (Digunakan oleh Teamwork.vue)
     public function courier()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // TAMBAHKAN INI: Relasi ke Kurir (Digunakan oleh Tracking.vue & PackageController)
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

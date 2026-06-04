@@ -130,7 +130,7 @@ class PackageController extends Controller
                 \App\Models\PackageHistory::create([
                     'package_id'        => $package->id,
                     'status_pengiriman' => $request->status_pengiriman,
-                    'keterangan'        => 'Status diupdate secara manual'
+                   'keterangan'        => $request->keterangan ?? 'Status diupdate secara manual'
                 ]);
             }
 
@@ -180,11 +180,36 @@ class PackageController extends Controller
 
     public function show($id)
     {
-        // PERBAIKAN: Panggil relasi histories, serta detail kurir dan kendaraannya
-        $package = Package::with(['customer', 'work.user', 'work.vehicle', 'histories'])->find($id);
-        
-        if (!$package) return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
-        return response()->json(['status' => 'success', 'data' => $package], 200);
+        try {
+            // 1. Tarik data paket dan customer saja terlebih dahulu
+            $package = Package::with('customer')->find($id);
+            
+            if (!$package) {
+                return response()->json(['status' => 'error', 'message' => 'Paket tidak ditemukan'], 404);
+            }
+
+            // 2. Tarik data Kurir (Work) secara manual untuk mencegah error relasi Model
+            $work = \App\Models\Work::with(['user', 'vehicle'])->where('package_id', $id)->first();
+            
+            // 3. Tarik data Riwayat (Histories) secara manual
+            $histories = \App\Models\PackageHistory::where('package_id', $id)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+
+            // 4. Tempelkan data tersebut ke dalam variabel $package
+            $package->work = $work;
+            $package->histories = $histories;
+
+            return response()->json(['status' => 'success', 'data' => $package], 200);
+            
+        } catch (\Exception $e) {
+            // Jika masih error, pesan aslinya akan muncul (bukan lagi sekadar "Server Error")
+            return response()->json([
+                'status' => 'error', 
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 
 

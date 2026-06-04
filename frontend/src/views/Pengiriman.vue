@@ -506,7 +506,7 @@ const drawRoute = async (destLat, destLon) => {
       // PERBAIKAN 1: Tarif Rp 5.000 per KM + Admin Rp 1.500
       let totalJarak = Math.ceil(jarakKm);
       if (totalJarak < 1) totalJarak = 1; // Minimal charge 1 KM
-      const baseHarga = totalJarak * 5000;
+      const baseHarga = totalJarak * 3500;
       
       formBaru.value.jarak_km = jarakKm;
       formBaru.value.total_harga = baseHarga + 1500; 
