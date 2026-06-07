@@ -37,7 +37,6 @@
     </div>
 
     <div class="mt-4 sm:mt-6 px-0 sm:px-0">
-      <!-- <Overview v-if="activeTab === 'overview'" /> -->
       <AllPaket v-if="activeTab === 'all-paket'" />
       <Customer v-if="activeTab === 'customer'" ref="customerRef" />
       <Alamat v-if="activeTab === 'alamat'" />
@@ -71,7 +70,7 @@
         <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/30 pb-20 sm:pb-6">
           
           <div v-show="modalStep === 1" class="space-y-4">
-            <!-- FITUR BARU: CARI PASIEN LAMA (Auto-Fill) -->
+            
             <div class="relative z-40 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
               <label class="block text-[11px] sm:text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5 flex items-center">
                 <i class="fas fa-bolt mr-1.5 text-yellow-500"></i> Isi Otomatis (Cari Pasien Lama)
@@ -88,46 +87,97 @@
                 >
               </div>
               
-              <!-- Dropdown Hasil Pencarian -->
               <ul v-if="filteredCustomers.length > 0" class="absolute left-0 right-0 mt-1 mx-3 border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-white shadow-2xl z-[100] custom-scrollbar divide-y divide-gray-50">
                 <li v-for="cust in filteredCustomers" :key="cust.id" @click="selectCustomer(cust)" class="p-3 hover:bg-blue-50 cursor-pointer flex flex-col transition-colors active:bg-blue-100">
                   <span class="font-black text-gray-900 text-sm">{{ cust.nama }}</span>
                   <span class="text-[11px] text-gray-500 mt-0.5"><i class="fas fa-phone-alt text-gray-400 mr-1"></i> {{ cust.no_telp }}</span>
-                  <span class="text-[11px] text-gray-500 mt-0.5 truncate"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ cust.alamat }}</span>
+                  <span class="text-[11px] text-gray-500 mt-0.5 line-clamp-1"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> {{ cust.alamat }}</span>
                 </li>
               </ul>
             </div>
-            <!-- AKHIR FITUR BARU -->
-            <div class="relative z-20">
-              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <i class="fas fa-search text-gray-400"></i>
+
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-2 relative z-30">
+              <label class="block text-sm font-bold text-gray-800 mb-3">Detail Alamat Pengiriman</label>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Kabupaten / Kota</label>
+                  <input v-model="formBaru.kota" type="text" placeholder="Cth: Jakarta Selatan" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Kecamatan</label>
+                  <input v-model="formBaru.kecamatan" type="text" placeholder="Cth: Pesanggrahan" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Kelurahan</label>
+                  <input v-model="formBaru.kelurahan" type="text" placeholder="Cth: Bintaro" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
+                </div>
               </div>
-              <input 
-                v-model="searchQueryAddress" 
-                @keyup.enter="searchAddress"
-                type="text" 
-                placeholder="Ketik jalan tujuan lalu Enter..." 
-                class="w-full border border-gray-300 rounded-xl py-3.5 sm:py-3 pl-10 pr-20 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm font-medium shadow-sm transition-shadow"
-              >
-              <button @click="searchAddress" class="absolute inset-y-1.5 right-1.5 bg-[#3b5998] hover:bg-blue-800 text-white text-xs font-bold px-4 rounded-lg active:scale-95 transition-transform">
-                CARI
-              </button>
+              
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                <div class="col-span-1">
+                  <label class="block text-[11px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">RT</label>
+                  <input v-model="formBaru.rt" type="text" placeholder="001" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
+                </div>
+                <div class="col-span-1">
+                  <label class="block text-[11px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">RW</label>
+                  <input v-model="formBaru.rw" type="text" placeholder="002" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-[11px] font-semibold text-gray-700 mb-1 uppercase tracking-wider">Jalan / Blok / No</label>
+                  <input v-model="formBaru.detail_alamat_jalan" type="text" placeholder="Cth: Jl. Mawar No. 12" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
+                </div>
+                
+                <div class="col-span-2 sm:col-span-4 mt-1 border-t border-gray-200 pt-3">
+                  <label class="block text-[11px] font-bold text-indigo-700 mb-1 uppercase tracking-wider">Patokan Kurir (Opsional)</label>
+                  <input v-model="formBaru.patokan" type="text" placeholder="Cth: Pagar Hitam depan Indomaret" class="w-full border border-indigo-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all bg-indigo-50/30">
+                </div>
+              </div>
+
+              <div class="mt-2 pt-3 border-t border-gray-200">
+                <label class="block text-[11px] sm:text-xs font-bold text-orange-600 uppercase tracking-wider mb-1.5 flex items-center">
+                  <i class="fas fa-map-marked-alt mr-1.5"></i> Link Google Maps (Manual)
+                </label>
+                <input 
+                  v-model="formBaru.link_gmaps" 
+                  type="text" 
+                  placeholder="Paste link Google Maps disini (Contoh: https://maps.app.goo.gl/...)" 
+                  class="w-full border border-orange-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-orange-400 text-sm shadow-sm transition-all bg-white"
+                >
+                <p class="text-[10px] text-gray-500 mt-1">Isi link ini agar kurir bisa langsung klik icon maps menuju lokasi yang akurat.</p>
+              </div>
             </div>
 
-            <ul v-if="addressResults.length > 0" class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-white shadow-lg relative z-30 -mt-2 custom-scrollbar">
-              <li v-for="(result, index) in addressResults" :key="index" @click="selectAddress(result)" class="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-50 text-[13px] sm:text-sm flex items-start transition-colors active:bg-blue-100">
-                <i class="fas fa-map-marker-alt text-red-500 mt-1 mr-3 shrink-0"></i>
-                <span class="leading-relaxed text-gray-700 font-medium">{{ result.display_name }}</span>
-              </li>
-            </ul>
-            <div>
+            <div class="relative z-20 mt-4">
               <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 flex justify-between items-center">
-                <span>Detail / Patokan Alamat</span>
-                <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded normal-case tracking-normal">Bantu Kurir Mencari</span>
+                <span>Cari Titik Koordinat Peta (Otomatis)</span>
+                <span class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded normal-case tracking-normal">Wajib untuk Rute Satelit</span>
               </label>
-              <textarea v-model="formBaru.detail_alamat" rows="2" placeholder="Contoh: RT 02/05, pagar warna hitam, masuk gang sebelah indomaret..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all"></textarea>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input 
+                  v-model="searchQueryAddress" 
+                  @keyup.enter="searchAddress"
+                  type="text" 
+                  placeholder="Ketik nama jalan lalu Enter..." 
+                  class="w-full border border-gray-300 rounded-xl py-3.5 sm:py-3 pl-10 pr-20 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm font-medium shadow-sm transition-shadow bg-white"
+                >
+                <button @click="searchAddress" class="absolute inset-y-1.5 right-1.5 bg-[#3b5998] hover:bg-blue-800 text-white text-xs font-bold px-4 rounded-lg active:scale-95 transition-transform">
+                  CARI
+                </button>
+              </div>
+
+              <ul v-if="addressResults.length > 0" class="border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-white shadow-lg relative z-30 -mt-2 custom-scrollbar">
+                <li v-for="(result, index) in addressResults" :key="index" @click="selectAddress(result)" class="p-3.5 hover:bg-blue-50 cursor-pointer border-b border-gray-50 text-[13px] sm:text-sm flex items-start transition-colors active:bg-blue-100">
+                  <i class="fas fa-map-marker-alt text-red-500 mt-1 mr-3 shrink-0"></i>
+                  <span class="leading-relaxed text-gray-700 font-medium">{{ result.display_name }}</span>
+                </li>
+              </ul>
             </div>
-            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-inner relative z-0">
+
+            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-inner relative z-0 mt-2">
               <div id="leaflet-map" class="w-full h-48 sm:h-56 bg-gray-100"></div>
               
               <div v-if="isCalculating" class="absolute inset-0 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center z-10">
@@ -151,17 +201,17 @@
           <div v-if="modalStep === 2" class="space-y-4 animate-fade-in">
             <div>
               <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Pasien</label>
-              <input v-model="formBaru.nama" type="text" placeholder="Ketik nama pasien..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all">
+              <input v-model="formBaru.nama" type="text" placeholder="Ketik nama pasien..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">No. WA (Aktif)</label>
-                <input v-model="formBaru.no_telp" type="number" placeholder="08..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all">
+                <input v-model="formBaru.no_telp" type="number" placeholder="08..." class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all bg-white">
               </div>
               <div>
                 <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">No. Struk Antrian</label>
-                <input v-model="formBaru.no_struk" type="text" placeholder="Misal: F-123" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all font-bold text-gray-800">
+                <input v-model="formBaru.no_struk" type="text" placeholder="Misal: F-123" class="w-full border border-gray-300 rounded-xl p-3.5 sm:p-3 outline-none focus:ring-2 focus:ring-[#3b5998] text-sm shadow-sm transition-all font-bold text-gray-800 bg-white">
               </div>
               <div>
               <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Waktu Pengantaran</label>
@@ -190,11 +240,7 @@
             </div>
             </div>
             
-            <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-              <label class="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Alamat Tujuan (Titik Peta)</label>
-              <p class="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-3 leading-relaxed"><i class="fas fa-map-marker-alt text-red-500 mr-1.5"></i> {{ formBaru.alamat }}</p>
-            </div>
-            <div class="border-2 border-dashed border-blue-200 rounded-xl p-5 text-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group relative overflow-hidden">
+            <div class="border-2 border-dashed border-blue-200 rounded-xl p-5 text-center bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group relative overflow-hidden mt-4">
               <label class="cursor-pointer block w-full h-full relative z-10">
                 <div class="mx-auto w-12 h-12 bg-white text-blue-600 rounded-full flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
                   <i class="fas fa-camera text-xl"></i>
@@ -210,7 +256,6 @@
           </div>
 
           <div v-if="modalStep === 3" class="space-y-5 animate-fade-in">
-            <!-- Box Total Tagihan (Input yang bisa diedit) -->
             <div class="bg-gray-900 text-white p-6 rounded-2xl text-center shadow-lg border-b-4 border-[#3b5998] relative overflow-hidden">
               <div class="absolute -right-4 -top-4 opacity-10"><i class="fas fa-wallet text-9xl"></i></div>
               <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-2 relative z-10">Total Tagihan Final (Rp)</p>
@@ -225,13 +270,12 @@
               </div>
             </div>
 
-            <!-- Metode Pembayaran -->
             <div class="bg-white p-1 rounded-xl shadow-sm border border-gray-100 relative">
               <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-2 px-3">Metode Pembayaran</label>
               <select v-model="formBaru.metode_pembayaran" class="w-full border-none rounded-xl py-3 px-3 text-sm font-bold outline-none focus:ring-0 bg-transparent appearance-none cursor-pointer text-gray-800">
                 <option value="Tunai / Cash (Sistem)">💵 Tunai / Cash (Bayar ke Stand)</option>
                 <option value="Tunai / Cash (Sistem)">💵 Tunai / Cash (Bayar Dirumah)</option>
-                <option value="QRIS / E-Wallet (Sistem)">📱 QRIS / E-Wallet digital</option>
+                <option value="QRIS / E-Wallet digital">📱 QRIS / E-Wallet digital</option>
                 <option value="Transfer Bank (Sistem)">🏦 Transfer Bank (Virtual Account)</option>
               </select>
               <div class="pointer-events-none absolute right-6 top-[60%] transform -translate-y-1/2">
@@ -239,7 +283,6 @@
               </div>
             </div>
 
-            <!-- Info -->
             <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-start shadow-sm">
               <i class="fas fa-shield-check text-emerald-600 mt-0.5 mr-3 text-xl"></i>
               <p class="text-xs text-emerald-800 font-medium leading-relaxed">
@@ -279,7 +322,6 @@
 import { ref, computed, markRaw, nextTick, onMounted } from 'vue'
 import axios from 'axios'
 
-// Load Leaflet Styles for Map
 const loadLeafletStyle = () => {
   if (!document.getElementById('leaflet-css')) {
     const link = document.createElement('link');
@@ -290,7 +332,6 @@ const loadLeafletStyle = () => {
   }
 }
 
-// import Overview from '../components/pengiriman/Overview.vue'
 import AllPaket from '../components/pengiriman/AllPaket.vue'
 import Customer from '../components/pengiriman/Customer.vue'
 import Alamat from '../components/pengiriman/Alamat.vue'
@@ -303,7 +344,6 @@ const UsersIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stro
 const MapPinIcon = markRaw({ template: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>` })
 
 const allTabs = [
-  // { id: 'overview', name: 'Overview', icon: EyeIcon, roles: ['superadmin', 'admin'] },
   { id: 'all-paket', name: 'Paket', icon: CheckBadgeIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
   { id: 'customer', name: 'Pasien', icon: UsersIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
   { id: 'alamat', name: 'Alamat', icon: MapPinIcon, roles: ['superadmin', 'admin', 'farmasi', 'kurir'] },
@@ -312,10 +352,8 @@ const allTabs = [
 const allowedTabs = computed(() => allTabs.filter(tab => tab.roles.includes(userRole.value)))
 const activeTab = ref(allowedTabs.value.some(t => t.id === 'all-paket') ? 'all-paket' : allowedTabs.value[0]?.id || '')
 
-// KOORDINAT RS PUSAT
 const RUMAH_SAKIT_COORD = [-6.271362, 106.764780] 
 
-// --- STATE WIZARD & MAPS ---
 const isModalPaketOpen = ref(false)
 const modalStep = ref(1)
 const isCalculating = ref(false)
@@ -332,8 +370,15 @@ let destMarker = null;
 let routeLine = null;
 
 const formBaru = ref({
-  alamat: '',
-  detail_alamat: '', 
+  kota: '',
+  kecamatan: '',
+  kelurahan: '',
+  rt: '',
+  rw: '',
+  detail_alamat_jalan: '',
+  patokan: '', // Murni Input Manual Singkat
+  link_gmaps: '', 
+  alamat: '', // String Internal (Tdk digunakan langsung untuk view)
   jarak_km: 0,
   total_harga: 0,
   nama: '',
@@ -341,12 +386,11 @@ const formBaru = ref({
   no_struk: '', 
   foto_struk: null,
   metode_pembayaran: 'QRIS / E-Wallet (Sistem)',
-  waktu_pengantaran: 'Segera' // <--- Tambahkan ini
+  waktu_pengantaran: 'Segera'
 })
 
 const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 
-// PENCARIAN NOMINATIM
 const searchAddress = async () => {
   if (!searchQueryAddress.value) return;
   isCalculating.value = true;
@@ -358,7 +402,7 @@ const searchAddress = async () => {
     addressResults.value = data;
     
     if (data.length === 0) {
-      alert("Alamat tidak ditemukan. Coba ketik nama jalannya saja secara singkat.");
+      alert("Alamat tidak ditemukan di sistem satelit. Coba ketik nama jalannya saja secara singkat.");
     }
   } catch (error) { 
     console.error("Nominatim error", error); 
@@ -374,7 +418,6 @@ const selectAddress = (result) => {
   drawRoute(result.lat, result.lon);
 }
 
-// INISIALISASI PETA
 const initLeafletMap = async () => {
   if (!window.L) {
     const script = document.createElement('script');
@@ -397,9 +440,6 @@ const initLeafletMap = async () => {
   }
 }
 
-
-
-// --- FITUR AUTO-FILL PASIEN LAMA ---
 const searchPasien = ref('')
 const dbCustomers = ref([])
 
@@ -409,51 +449,96 @@ const filteredCustomers = computed(() => {
   return dbCustomers.value.filter(c => 
     (c.nama && c.nama.toLowerCase().includes(query)) || 
     (c.no_telp && c.no_telp.includes(query))
-  ).slice(0, 5) // Maksimal 5 hasil biar tidak menutupi layar
+  ).slice(0, 5) 
 })
 
+// REVISI FUNGSI PARSER (Tanpa Menyimpan String OSM Panjang)
 const selectCustomer = (cust) => {
   formBaru.value.nama = cust.nama;
   formBaru.value.no_telp = cust.no_telp;
 
-  // Pisahkan alamat utama dengan teks di dalam kurung (patokan)
   let alamatAsli = cust.alamat || '';
-  let alamatUtama = alamatAsli;
-  let patokan = '';
+  let patokanManual = '';
 
-  if (alamatAsli.includes('(')) {
-    alamatUtama = alamatAsli.split('(')[0].trim(); // Ambil teks MURNI sebelum tanda '('
-    
-    // Ekstrak teks di dalam kurung untuk dipindah ke Textarea Detail
+  // 1. Ekstrak GMAPS
+  let gmapsMatch = alamatAsli.match(/\[GMAPS:\s*(https?:\/\/[^\]]+)\]/);
+  if (gmapsMatch) {
+      formBaru.value.link_gmaps = gmapsMatch[1];
+      alamatAsli = alamatAsli.replace(gmapsMatch[0], '').trim(); 
+  } else {
+      formBaru.value.link_gmaps = '';
+  }
+
+  // 2. Ekstrak Patokan
+  if (alamatAsli.includes('(Patokan:')) {
+    let parts = alamatAsli.split('(Patokan:');
+    alamatAsli = parts[0].trim();
+    patokanManual = parts[1].replace(')', '').trim();
+  } else if (alamatAsli.includes('(')) {
+    alamatAsli = alamatAsli.split('(')[0].trim();
     let isiKurung = alamatAsli.match(/\(([^)]+)\)/);
     if (isiKurung) {
-      patokan = isiKurung[1].replace(/Patokan:/ig, '').trim(); // Buang kata "Patokan:" jika ada
+      patokanManual = isiKurung[1].replace(/Patokan:/ig, '').trim();
     }
   }
 
-  formBaru.value.alamat = alamatUtama;
-  formBaru.value.detail_alamat = patokan; // Patokan tidak hilang, melainkan pindah ke textarea
+  formBaru.value.patokan = patokanManual;
   
-  // Satelit peta sekarang HANYA mencari alamat utamanya saja yang sudah bersih
-  searchQueryAddress.value = alamatUtama;
+  formBaru.value.detail_alamat_jalan = '';
+  formBaru.value.rt = '';
+  formBaru.value.rw = '';
+  formBaru.value.kelurahan = '';
+  formBaru.value.kecamatan = '';
+  formBaru.value.kota = '';
+
+  // 3. Ekstrak Detail
+  let regexBaku = /(.*?),\s*RT\s*([^/]+)\/RW\s*([^,]+),\s*Kel\.\s*([^,]+),\s*Kec\.\s*([^,]+),\s*(.*)/i;
+  let matchBaku = alamatAsli.match(regexBaku);
+
+  if (matchBaku) {
+    formBaru.value.detail_alamat_jalan = matchBaku[1].trim();
+    formBaru.value.rt = matchBaku[2].trim();
+    formBaru.value.rw = matchBaku[3].trim();
+    formBaru.value.kelurahan = matchBaku[4].trim();
+    formBaru.value.kecamatan = matchBaku[5].trim();
+    formBaru.value.kota = matchBaku[6].trim();
+  } else {
+    let rtMatch = alamatAsli.match(/\bRT\b\.?\s*(\d+)/i) || alamatAsli.match(/RT\s*(\d+)/i);
+    let rwMatch = alamatAsli.match(/\bRW\b\.?\s*(\d+)/i) || alamatAsli.match(/RW\s*(\d+)/i);
+    if (rtMatch) formBaru.value.rt = rtMatch[1];
+    if (rwMatch) formBaru.value.rw = rwMatch[1];
+
+    let parts = alamatAsli.split(',').map(p => p.trim());
+    if (parts.length >= 3) {
+      formBaru.value.detail_alamat_jalan = parts[0];
+      let cleanParts = parts.filter(p => !p.match(/\b(RT|RW)\b/i));
+      if (cleanParts.length >= 4) {
+         formBaru.value.kelurahan = cleanParts[1] || '';
+         formBaru.value.kecamatan = cleanParts[2] || '';
+         formBaru.value.kota = cleanParts[3] || '';
+      }
+    } else {
+      formBaru.value.detail_alamat_jalan = alamatAsli;
+    }
+  }
+
+  // Gunakan nama jalan dan kota untuk keakuratan satelit, ABAIKAN string OSM lama yang panjang!
+  let pencarianSatelit = formBaru.value.detail_alamat_jalan;
+  if(formBaru.value.kota) pencarianSatelit += `, ${formBaru.value.kota}`;
   
-  // Tutup dropdown
+  searchQueryAddress.value = pencarianSatelit;
   searchPasien.value = '';
   
-  // Langsung otomatis tembak titik satelit ke Peta
-  searchAddress(); 
+  setTimeout(() => { searchAddress(); }, 300);
 }
 
-// --- UPDATE FUNGSI BUKA MODAL ---
 const openModalPaket = async () => { 
   isModalPaketOpen.value = true;
   await nextTick();
   initLeafletMap();
   
-  // Langsung tarik semua buku tamu / pelanggan dari database dengan cepat
   try {
     const response = await axios.get('/customers');
-    debugger
     dbCustomers.value = response.data.data || [];
   } catch (error) {
     console.error("Gagal memuat history pelanggan:", error);
@@ -466,7 +551,7 @@ const closeModalPaket = () => {
   estimasiSelesai.value = false
   searchQueryAddress.value = ''
   addressResults.value = []
-  formBaru.value = { alamat: '', detail_alamat: '', jarak_km: 0, total_harga: 0, nama: '', no_telp: '', no_struk: '', foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)' }
+  formBaru.value = { kota: '', kecamatan: '', kelurahan: '', rt: '', rw: '', detail_alamat_jalan: '', patokan: '', link_gmaps: '', alamat: '', jarak_km: 0, total_harga: 0, nama: '', no_telp: '', no_struk: '', foto_struk: null, metode_pembayaran: 'QRIS / E-Wallet (Sistem)', waktu_pengantaran: 'Segera' }
 }
 
 const handleFileUpload = (e) => {
@@ -480,7 +565,6 @@ const cekValidasiPasien = () => {
   modalStep.value = 3;
 }
 
-// MENGGAMBAR RUTE OSRM & HITUNG TARIF BARU
 const drawRoute = async (destLat, destLon) => {
   isCalculating.value = true;
   estimasiSelesai.value = false;
@@ -503,9 +587,8 @@ const drawRoute = async (destLat, destLon) => {
       routeLine = L.polyline(coordinates, {color: '#3b5998', weight: 5}).addTo(mapInstance);
       mapInstance.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
 
-      // PERBAIKAN 1: Tarif Rp 5.000 per KM + Admin Rp 1.500
       let totalJarak = Math.ceil(jarakKm);
-      if (totalJarak < 1) totalJarak = 1; // Minimal charge 1 KM
+      if (totalJarak < 1) totalJarak = 1; 
       const baseHarga = totalJarak * 3500;
       
       formBaru.value.jarak_km = jarakKm;
@@ -518,7 +601,7 @@ const drawRoute = async (destLat, destLon) => {
   isCalculating.value = false;
 }
 
-// PENYIMPANAN & KEMBALI KE ALUR KURIR MANUAL
+// REVISI MENYIMPAN ALAMAT (Bersih, Sesuai Kolom Input Saja)
 const submitPaket = async () => {
   isSaving.value = true
   
@@ -527,19 +610,25 @@ const submitPaket = async () => {
   formData.append('no_telp', formBaru.value.no_telp)
   formData.append('no_struk', formBaru.value.no_struk)
   
-  const alamatFinal = formBaru.value.detail_alamat 
-    ? `${formBaru.value.alamat} (Patokan: ${formBaru.value.detail_alamat})` 
-    : formBaru.value.alamat;
+  // Murni format kita, tanpa OSM text!
+  let alamatFinal = `${formBaru.value.detail_alamat_jalan}, RT ${formBaru.value.rt || '-'}/RW ${formBaru.value.rw || '-'}, Kel. ${formBaru.value.kelurahan}, Kec. ${formBaru.value.kecamatan}, ${formBaru.value.kota}`;
+  
+  if (formBaru.value.patokan) {
+      alamatFinal += ` (Patokan: ${formBaru.value.patokan})`;
+  }
+
+  if (formBaru.value.link_gmaps) {
+      alamatFinal += ` [GMAPS: ${formBaru.value.link_gmaps}]`;
+  }
   
   formData.append('alamat', alamatFinal)
   formData.append('jarak_km', formBaru.value.jarak_km)
   formData.append('total_harga', formBaru.value.total_harga)
   formData.append('metode_pembayaran', formBaru.value.metode_pembayaran)
-  formData.append('waktu_pengantaran', formBaru.value.waktu_pengantaran) // <--- Tambahkan ini
+  formData.append('waktu_pengantaran', formBaru.value.waktu_pengantaran)
   if (formBaru.value.foto_struk) formData.append('foto_struk', formBaru.value.foto_struk)
 
   try {
-    // PERBAIKAN 2: Hapus Auto-Assign Kurir, cukup post package saja
     const response = await axios.post('/packages', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
@@ -579,7 +668,6 @@ onMounted(() => { loadLeafletStyle() });
 </script>
 
 <style scoped>
-/* Sembunyikan scrollbar untuk area tab agar mulus di swipe di HP */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -587,18 +675,15 @@ onMounted(() => { loadLeafletStyle() });
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 
-/* Animasi HP Bottom Sheet */
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0.5; }
   to { transform: translateY(0); opacity: 1; }
 }
 .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-/* Animasi Fade In standard */
 .animate-fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Pengamanan padding di HP (Khusus iPhone Swipe Bar) */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
 }

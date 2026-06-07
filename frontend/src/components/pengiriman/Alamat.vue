@@ -4,7 +4,7 @@
     <div class="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div class="w-full sm:w-auto">
         <h2 class="text-lg sm:text-xl font-bold text-gray-800">Pemetaan & Rute Alamat</h2>
-        <p class="text-xs sm:text-sm text-gray-500 mt-1">Daftar alamat tujuan untuk paket yang sedang diproses atau diperjalanan.</p>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">Daftar alamat tujuan untuk paket yang sedang diproses maupun selesai.</p>
       </div>
       
       <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
@@ -74,12 +74,12 @@
       <div class="w-full lg:w-2/5 flex flex-col h-[55vh] lg:h-[700px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 order-2 lg:order-none z-10">
         <div class="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center shrink-0">
           <h3 class="font-bold text-gray-700 text-sm sm:text-base">Daftar Rute ({{ filteredActiveRoutes.length }})</h3>
-          <span class="text-[10px] sm:text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full uppercase tracking-wider">Aktif Berjalan</span>
+          <span class="text-[10px] sm:text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full uppercase tracking-wider">Semua Riwayat</span>
         </div>
         
         <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 custom-scrollbar bg-gray-50/30">
           <div v-if="paginatedRoutes.length === 0" class="text-center py-10">
-            <p class="text-gray-500 text-sm font-medium">Semua pengiriman sudah selesai atau kosong.</p>
+            <p class="text-gray-500 text-sm font-medium">Belum ada data pengiriman.</p>
           </div>
           
           <div 
@@ -155,9 +155,9 @@ const hospitalIcon = L.icon({
   popupAnchor: [1, -34],
 })
 
-// --- FILTERING (Hanya yang belum selesai/batal) ---
+// --- FILTERING ---
+// Mengizinkan "8. Sampai (Selesai)" untuk tampil sebagai riwayat. Hanya hapus "9. Cancel / Pending".
 const activeRoutes = computed(() => packages.value.filter(pkg => 
-  pkg.status_pengiriman !== '8. Sampai (Selesai)' && 
   pkg.status_pengiriman !== '9. Cancel / Pending'
 ))
 
@@ -183,6 +183,7 @@ const paginatedRoutes = computed(() => filteredActiveRoutes.value.slice(startInd
 
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+
 // --- FUNGSI WARNA & ICON RESI WAKTU PENGANTARAN ---
 const getWaktuResiClass = (waktu) => {
   if (waktu === 'Segera') return 'bg-red-50 text-red-700 border-red-200'
@@ -195,6 +196,7 @@ const getWaktuIconClass = (waktu) => {
   if (waktu === 'Malam') return 'fa-moon'
   return 'fa-calendar-day'
 }
+
 // --- API FETCH ---
 const fetchPackages = async () => {
   isLoading.value = true
@@ -234,7 +236,6 @@ const formatRupiahSingkat = (angka) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 }
 
-// --- KLIK KARTU -> AUTO FALLBACK TRACKING ---
 // --- KLIK KARTU -> SMART FALLBACK TRACKING ---
 const tampilkanRute = async (pkg) => {
   selectedRoute.value = pkg
@@ -242,7 +243,7 @@ const tampilkanRute = async (pkg) => {
   let custLat = pkg.customer?.lat;
   let custLng = pkg.customer?.lng;
 
-  // FITUR BARU: Smart Fallback Pencarian Bertingkat!
+  // FITUR: Smart Fallback Pencarian Bertingkat!
   if (!custLat || !custLng) {
     
     let rawAddress = pkg.customer?.alamat || '';
@@ -388,7 +389,6 @@ onBeforeUnmount(() => {
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Animasi khusus saat tampilan mode desktop (Laptop) agar popup presisi di tengah */
 @media (min-width: 1024px) {
   @keyframes slideUpDesktop {
     from { transform: translate(-50%, 120%); opacity: 0; }

@@ -3,7 +3,6 @@
     
     <div class="p-5 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <!-- <h2 class="text-lg sm:text-xl font-black text-gray-900">Daftar Semua Paket</h2>   -->
         <p class="text-xs sm:text-sm text-gray-500 mt-1">Monitor status pesanan obat secara real-time.</p>
       </div>
       
@@ -60,7 +59,7 @@
           </div>
 
           <div class="flex-1 w-full">
-            <div class="flex flex-wrap items-center gap-2 mb-1">
+            <div class="flex flex-wrap items-center gap-2 mb-1.5">
               <h3 class="text-gray-900 text-base sm:text-lg font-black">{{ pkg.customer?.nama || 'Dihapus' }}</h3>
               
               <span :class="getWaktuResiClass(pkg.waktu_pengantaran)" class="text-[10px] font-bold border px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm flex items-center">
@@ -71,9 +70,15 @@
               </span>
             </div>
             
-            <p class="text-gray-500 text-xs sm:text-sm mb-4 flex items-center line-clamp-1 font-medium">
-              <i class="fas fa-map-marker-alt mr-1.5 text-red-400"></i> 
-              {{ pkg.deskripsi_pesanan }} <span class="mx-2 text-gray-300">|</span> <i class="fas fa-phone-alt mr-1.5 text-gray-400"></i> {{ pkg.customer?.no_telp || '-' }}
+            <p class="text-gray-700 text-xs sm:text-sm mb-1.5 flex items-start font-medium leading-relaxed">
+              <i class="fas fa-map-marker-alt mt-0.5 mr-2 text-red-500 shrink-0"></i> 
+              <span class="line-clamp-2" :title="formatAlamatDisplay(pkg.customer?.alamat)">{{ formatAlamatDisplay(pkg.customer?.alamat) }}</span>
+            </p>
+
+            <p class="text-gray-500 text-[11px] sm:text-xs mb-3 flex items-center font-bold uppercase tracking-wide">
+              <i class="fas fa-phone-alt mr-1.5 text-gray-400"></i> {{ pkg.customer?.no_telp || '-' }}
+              <span class="mx-2 text-gray-300">|</span> 
+              <i class="fas fa-pills mr-1.5 text-emerald-500"></i> {{ pkg.deskripsi_pesanan }}
             </p>
 
             <div class="relative w-full sm:w-5/6 mt-2">
@@ -107,10 +112,16 @@
             </div>
 
            <div class="flex gap-1.5 md:mt-2">
+              
+              <button @click="openGMaps(pkg)" class="group flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-lg bg-blue-50 text-[#4285F4] border border-blue-200 hover:bg-[#4285F4] hover:text-white transition-all shadow-sm hover:shadow-md" title="Buka di Google Maps">
+                <i class="fas fa-map-marker-alt text-[#EA4335] group-hover:text-white transition-colors"></i>
+                <span class="text-[10px] font-bold tracking-wide">MAPS</span>
+              </button>
+
               <button @click="copyTrackingLink(pkg)" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Salin Link">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
               </button>
-              <button @click="openEditModal(pkg)" class="w-8 h-8 rounded-lg bg-blue-50 text-[#3b5998] border border-blue-200 hover:bg-[#3b5998] hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Update Status">
+              <button @click="openEditModal(pkg)" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Update Status">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
               <button v-if="['superadmin', 'admin'].includes(userRole)" @click="confirmDelete(pkg)" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors shadow-sm" title="Hapus">
@@ -257,7 +268,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 
-// -- Get Role User --
 const currentUser = ref(JSON.parse(localStorage.getItem('user') || '{}'))
 const userRole = ref(JSON.parse(localStorage.getItem('user'))?.role || '')
 
@@ -267,7 +277,6 @@ const isSaving = ref(false)
 const searchQuery = ref('')
 const notification = ref({ show: false, message: '', type: 'success' })
 
-// --- State Pagination & Search Filter Update ---
 const currentPage = ref(1)
 const itemsPerPage = 8 
 
@@ -302,18 +311,37 @@ const packageToDelete = ref(null)
 const formatRupiah = (angka) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0)
 }
+
 const getProgressPercentage = (status) => {
   if (!status) return 0;
-  // Mengambil angka depan dari status (misal "1" dari "1. Verifikasi Jastar")
   const match = status.match(/^(\d)/);
   if (match) {
     const step = parseInt(match[1]);
-    if (step === 9) return 100; // Jika batal, penuhi bar dengan warna merah
-    // Total ada 8 step hingga selesai
+    if (step === 9) return 100; 
     return (step / 8) * 100;
   }
   return 0;
 }
+
+const formatAlamatDisplay = (alamat) => {
+  if (!alamat) return 'Alamat tidak tersedia';
+  return alamat.replace(/\[GMAPS:.*?\]/, '').trim();
+}
+
+const openGMaps = (pkg) => {
+  const alamat = pkg.customer?.alamat || '';
+  
+  const match = alamat.match(/\[GMAPS:\s*(https?:\/\/[^\]]+)\]/);
+  
+  if (match && match[1]) {
+    window.open(match[1], '_blank');
+  } else {
+    const cleanAlamat = formatAlamatDisplay(alamat);
+    const query = encodeURIComponent(cleanAlamat);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+  }
+}
+
 const fetchPackages = async () => {
   isLoading.value = true
   try {
@@ -357,13 +385,11 @@ const updatePackage = async () => {
       status_pengiriman: editForm.value.status_pengiriman,
       status_pembayaran: editForm.value.status_pembayaran,
       metode_pembayaran: editForm.value.metode_pembayaran,
-      // PERBAIKAN 4: Tambahkan total harga agar ikut ter-update di database
       total_harga: editForm.value.total_harga 
     }
     
     const response = await axios.put(`/packages/${editForm.value.id}`, payload)
     
-    // Auto Assign Khusus Kurir
     if (userRole.value === 'kurir' && editForm.value.status_pengiriman === '6. Diserahkan ke kurir') {
       try {
         const currentUserData = JSON.parse(localStorage.getItem('user'));
@@ -412,30 +438,10 @@ const deletePackage = async () => {
   finally { isSaving.value = false }
 }
 
-const getStatusPengirimanClass = (status) => {
-  switch(status) {
-    case '1. Verifikasi Jastar': return 'bg-gray-100 text-gray-700 border-gray-300'
-    case '2. Stor Struk ke farmasi': return 'bg-purple-50 text-purple-700 border-purple-200'
-    case '3. Ambil paket obat farmasi': return 'bg-indigo-50 text-indigo-700 border-indigo-200'
-    case '4. Diserah paket obat jastar': return 'bg-teal-50 text-teal-700 border-teal-200'
-    case '5. Sedang menunggu kurir': return 'bg-orange-50 text-orange-700 border-orange-200'
-    case '6. Diserahkan ke kurir': return 'bg-blue-50 text-blue-700 border-blue-200'
-    case '7. Dalam perjalanan': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
-    case '8. Sampai (Selesai)': return 'bg-green-100 text-green-800 border-green-300'
-    case '9. Cancel / Pending': return 'bg-red-50 text-red-700 border-red-200 line-through'
-    default: return 'bg-gray-100 text-gray-800'
-  }
-}
-// --- FUNGSI WARNA RESI BERDASARKAN WAKTU PENGANTARAN ---
 const getWaktuResiClass = (waktu) => {
-  // debugger
   if (waktu === 'Segera') return 'bg-red-50 text-red-700 border-red-200'
   if (waktu === 'Malam') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-  return 'bg-blue-50 text-blue-700 border-blue-200' // Besok & Default
-}
-const getStatusPembayaranClass = (status) => {
-  if (status === 'Lunas') return 'bg-green-100 text-green-800 border-green-200'
-  return 'bg-red-50 text-red-700 border-red-200'
+  return 'bg-blue-50 text-blue-700 border-blue-200'
 }
 
 const showNotification = (message, type = 'success') => {
@@ -451,7 +457,6 @@ onMounted(() => { fetchPackages() })
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 
-/* Animasi HP Bottom Sheet */
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -464,7 +469,6 @@ onMounted(() => { fetchPackages() })
 }
 .animate-modal-in { animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-/* Pengamanan padding di HP (Khusus iPhone Swipe Bar) */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
 }

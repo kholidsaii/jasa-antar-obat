@@ -12,7 +12,7 @@
         </div>
         <input v-model="searchQuery" type="text" placeholder="Cari nama atau telepon..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-[#3b5998] sm:text-sm outline-none transition duration-150">
       </div>
-      </div>
+    </div>
 
     <div v-if="notification.show" :class="['px-6 py-3 text-sm font-medium text-white transition-all', notification.type === 'success' ? 'bg-green-500' : 'bg-red-500']">
       {{ notification.message }}
@@ -48,21 +48,20 @@
           </div>
 
           <div class="flex-1 flex flex-col gap-3">
-            <div class="flex flex-wrap gap-2">
+            <div>
               <span class="px-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
                 {{ customer.jenis_kelamin }}
               </span>
-              <span class="px-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-600 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                {{ customer.umur ? customer.umur + ' Tahun' : 'Umur -' }}
-              </span>
             </div>
 
-            <div class="bg-gray-50 p-2.5 rounded-xl border border-gray-100 group-hover:bg-blue-50/30 transition-colors flex-1">
-              <p class="text-xs text-gray-800 font-semibold line-clamp-2 leading-relaxed mb-1" :title="customer.alamat">
-                {{ customer.alamat }}
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 group-hover:bg-blue-50/30 transition-colors flex-1 flex flex-col justify-center">
+              <p class="text-xs text-gray-800 font-medium leading-relaxed" :title="customer.alamat">
+                <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> {{ formatAlamatDisplay(customer.alamat) }}
               </p>
-              <p class="text-[11px] text-gray-500 line-clamp-2">
-                <span class="font-bold text-gray-600">Patokan:</span> {{ customer.detail_alamat || '-' }}
+              
+              <p v-if="getPatokan(customer.alamat) || customer.detail_alamat" class="text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-200">
+                <span class="font-bold text-indigo-500"><i class="fas fa-info-circle mr-0.5"></i> Patokan:</span> 
+                {{ getPatokan(customer.alamat) || customer.detail_alamat }}
               </p>
             </div>
           </div>
@@ -72,10 +71,7 @@
               <span v-if="customer.lat && customer.lng" class="inline-flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-md shadow-sm">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Ada Titik Maps
               </span>
-              <span v-else class="inline-flex items-center text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 px-2 py-1 rounded-md shadow-sm">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Koordinat Gagal
-              </span>
-            </div>
+              </div>
             
             <div v-if="userRole !== 'kurir'" class="flex gap-1.5">
               <button @click="openEditModal(customer)" class="w-8 h-8 flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-[#3b5998] rounded-lg border border-blue-200 transition-colors shadow-sm active:scale-95" title="Edit">
@@ -117,18 +113,12 @@
             <label class="block text-sm font-semibold mb-1">No. Telephone</label>
             <input v-model="(isEditModalOpen ? editForm : formCustomer).no_telp" type="text" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998]">
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-semibold mb-1">Jenis Kelamin</label>
-              <select v-model="(isEditModalOpen ? editForm : formCustomer).jenis_kelamin" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] bg-white">
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-semibold mb-1">Umur (Tahun)</label>
-              <input v-model="(isEditModalOpen ? editForm : formCustomer).umur" type="number" class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998]">
-            </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Jenis Kelamin</label>
+            <select v-model="(isEditModalOpen ? editForm : formCustomer).jenis_kelamin" required class="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-[#3b5998] bg-white">
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
           </div>
           
           <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
@@ -207,11 +197,12 @@ const paginatedCustomers = computed(() => filteredCustomers.value.slice(startInd
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
+// Menghapus 'umur' dari form default
 const isModalOpen = ref(false)
-const formCustomer = ref({ nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', umur: null, alamat: '', link_peta: '', detail_alamat: '', lat: null, lng: null })
+const formCustomer = ref({ nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', alamat: '', link_peta: '', detail_alamat: '', lat: null, lng: null })
 
 const isEditModalOpen = ref(false)
-const editForm = ref({ id: '', nama: '', no_telp: '', jenis_kelamin: '', umur: null, alamat: '', link_peta: '', detail_alamat: '', lat: null, lng: null })
+const editForm = ref({ id: '', nama: '', no_telp: '', jenis_kelamin: '', alamat: '', link_peta: '', detail_alamat: '', lat: null, lng: null })
 
 const isDeleteModalOpen = ref(false)
 const customerToDelete = ref(null)
@@ -219,6 +210,18 @@ const customerToDelete = ref(null)
 const showNotification = (message, type) => {
   notification.value = { show: true, message, type }
   setTimeout(() => notification.value.show = false, 3000)
+}
+
+// Fungsi Formatting Alamat (Memotong string patokan & gmaps agar bersih)
+const formatAlamatDisplay = (alamat) => {
+  if (!alamat) return '-';
+  return alamat.replace(/\[GMAPS:.*?\]/, '').replace(/\(Patokan:.*?\)/, '').trim();
+}
+
+const getPatokan = (alamat) => {
+  if (!alamat) return '';
+  const match = alamat.match(/\(Patokan:\s*(.*?)\)/);
+  return match ? match[1] : '';
 }
 
 const fetchCustomers = async () => {
@@ -232,7 +235,7 @@ const fetchCustomers = async () => {
 const openModal = () => isModalOpen.value = true
 const closeModal = () => {
   isModalOpen.value = false
-  formCustomer.value = { nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', umur: null, alamat: '', link_peta: '', detail_alamat: '', lat: null, lng: null }
+  formCustomer.value = { nama: '', no_telp: '', jenis_kelamin: 'Laki-laki', alamat: '', link_peta: '', detail_alamat: '', lat: null, lng: null }
 }
 
 const openEditModal = (customer) => {
@@ -243,10 +246,7 @@ const closeEditModal = () => {
   isEditModalOpen.value = false
 }
 
-// Mengekspos fungsi openModal agar bisa dipanggil oleh parent (Pengiriman.vue)
-defineExpose({
-  openModal
-})
+defineExpose({ openModal })
 
 const parseOSM = (input) => {
   if (!input) return null;
@@ -264,7 +264,9 @@ const parseOSM = (input) => {
 
 const getCoordinatesFromAddress = async (alamat) => {
   try {
-    const query = encodeURIComponent(`${alamat}, Jakarta, Indonesia`);
+    // Bersihkan Patokan & GMaps Link sebelum dikirim ke Nominatim
+    let cleanAddress = formatAlamatDisplay(alamat);
+    const query = encodeURIComponent(`${cleanAddress}, Jakarta, Indonesia`);
     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
     const data = await response.json();
     if (data && data.length > 0) return { lat: data[0].lat, lng: data[0].lon }

@@ -22,8 +22,13 @@ class CustomerController extends Controller
             'no_telp'       => 'required|string|max:20',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'umur'          => 'nullable|integer',
-            'alamat'        => 'required|string',
-            'detail_alamat' => 'nullable|string', // Tambahan Kolom 2
+            'kota'          => 'nullable|string',
+            'kecamatan'     => 'nullable|string',
+            'kelurahan'     => 'nullable|string',
+            'rt'            => 'nullable|string',
+            'rw'            => 'nullable|string',
+            'alamat'        => 'required|string', 
+            'detail_alamat' => 'nullable|string',
             'lat'           => 'nullable|string', 
             'lng'           => 'nullable|string', 
         ]);
@@ -36,15 +41,15 @@ class CustomerController extends Controller
             $customer = Customer::create($request->all());
             return response()->json(['status' => 'success', 'message' => 'Customer berhasil ditambahkan', 'data' => $customer], 201);
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Gagal menambahkan data: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => 'Gagal menambah data: ' . $e->getMessage()], 500);
         }
     }
 
     public function show($id)
     {
-        $customer = Customer::with('packages')->find($id);
+        $customer = Customer::find($id);
         if (!$customer) return response()->json(['status' => 'error', 'message' => 'Customer tidak ditemukan'], 404);
-        return response()->json(['status' => 'success', 'message' => 'Detail customer berhasil diambil', 'data' => $customer], 200);
+        return response()->json(['status' => 'success', 'data' => $customer], 200);
     }
 
     public function update(Request $request, $id)
@@ -57,8 +62,13 @@ class CustomerController extends Controller
             'no_telp'       => 'sometimes|required|string|max:20',
             'jenis_kelamin' => 'sometimes|required|in:Laki-laki,Perempuan',
             'umur'          => 'nullable|integer',
+            'kota'          => 'nullable|string',
+            'kecamatan'     => 'nullable|string',
+            'kelurahan'     => 'nullable|string',
+            'rt'            => 'nullable|string',
+            'rw'            => 'nullable|string',
             'alamat'        => 'sometimes|required|string',
-            'detail_alamat' => 'nullable|string', // Tambahan Kolom 2
+            'detail_alamat' => 'nullable|string',
             'lat'           => 'nullable|string', 
             'lng'           => 'nullable|string', 
         ]);
