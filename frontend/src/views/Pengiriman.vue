@@ -376,9 +376,9 @@ const formBaru = ref({
   rt: '',
   rw: '',
   detail_alamat_jalan: '',
-  patokan: '', // Murni Input Manual Singkat
+  patokan: '', 
   link_gmaps: '', 
-  alamat: '', // String Internal (Tdk digunakan langsung untuk view)
+  alamat: '', 
   jarak_km: 0,
   total_harga: 0,
   nama: '',
@@ -452,7 +452,6 @@ const filteredCustomers = computed(() => {
   ).slice(0, 5) 
 })
 
-// REVISI FUNGSI PARSER (Tanpa Menyimpan String OSM Panjang)
 const selectCustomer = (cust) => {
   formBaru.value.nama = cust.nama;
   formBaru.value.no_telp = cust.no_telp;
@@ -460,7 +459,6 @@ const selectCustomer = (cust) => {
   let alamatAsli = cust.alamat || '';
   let patokanManual = '';
 
-  // 1. Ekstrak GMAPS
   let gmapsMatch = alamatAsli.match(/\[GMAPS:\s*(https?:\/\/[^\]]+)\]/);
   if (gmapsMatch) {
       formBaru.value.link_gmaps = gmapsMatch[1];
@@ -469,7 +467,6 @@ const selectCustomer = (cust) => {
       formBaru.value.link_gmaps = '';
   }
 
-  // 2. Ekstrak Patokan
   if (alamatAsli.includes('(Patokan:')) {
     let parts = alamatAsli.split('(Patokan:');
     alamatAsli = parts[0].trim();
@@ -491,7 +488,6 @@ const selectCustomer = (cust) => {
   formBaru.value.kecamatan = '';
   formBaru.value.kota = '';
 
-  // 3. Ekstrak Detail
   let regexBaku = /(.*?),\s*RT\s*([^/]+)\/RW\s*([^,]+),\s*Kel\.\s*([^,]+),\s*Kec\.\s*([^,]+),\s*(.*)/i;
   let matchBaku = alamatAsli.match(regexBaku);
 
@@ -522,7 +518,6 @@ const selectCustomer = (cust) => {
     }
   }
 
-  // Gunakan nama jalan dan kota untuk keakuratan satelit, ABAIKAN string OSM lama yang panjang!
   let pencarianSatelit = formBaru.value.detail_alamat_jalan;
   if(formBaru.value.kota) pencarianSatelit += `, ${formBaru.value.kota}`;
   
@@ -576,6 +571,8 @@ const drawRoute = async (destLat, destLon) => {
 
     if (data.code === 'Ok') {
       const route = data.routes[0];
+      
+      // Mengambil jarak presisi dengan 1 angka di belakang koma, tanpa di-ceil (dibulatkan ke atas)
       const jarakKm = parseFloat((route.distance / 1000).toFixed(1));
       
       if (destMarker) mapInstance.removeLayer(destMarker);
@@ -587,12 +584,12 @@ const drawRoute = async (destLat, destLon) => {
       routeLine = L.polyline(coordinates, {color: '#3b5998', weight: 5}).addTo(mapInstance);
       mapInstance.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
 
-      let totalJarak = Math.ceil(jarakKm);
-      if (totalJarak < 1) totalJarak = 1; 
-      const baseHarga = totalJarak * 3500;
+      // RUMUS HARGA BARU: Jarak * 3500, lalu ditambah Biaya Admin Sistem (1.500)
+      let baseHarga = (jarakKm * 3500) + 1500;
       
       formBaru.value.jarak_km = jarakKm;
-      formBaru.value.total_harga = baseHarga + 1500; 
+      // Math.round() hanya untuk memastikan tidak ada koin/pecahan sen dalam nilai uang, bukan pembulatan jarak
+      formBaru.value.total_harga = Math.round(baseHarga); 
       estimasiSelesai.value = true;
     }
   } catch (error) {
@@ -601,7 +598,6 @@ const drawRoute = async (destLat, destLon) => {
   isCalculating.value = false;
 }
 
-// REVISI MENYIMPAN ALAMAT (Bersih, Sesuai Kolom Input Saja)
 const submitPaket = async () => {
   isSaving.value = true
   
@@ -610,7 +606,6 @@ const submitPaket = async () => {
   formData.append('no_telp', formBaru.value.no_telp)
   formData.append('no_struk', formBaru.value.no_struk)
   
-  // Murni format kita, tanpa OSM text!
   let alamatFinal = `${formBaru.value.detail_alamat_jalan}, RT ${formBaru.value.rt || '-'}/RW ${formBaru.value.rw || '-'}, Kel. ${formBaru.value.kelurahan}, Kec. ${formBaru.value.kecamatan}, ${formBaru.value.kota}`;
   
   if (formBaru.value.patokan) {

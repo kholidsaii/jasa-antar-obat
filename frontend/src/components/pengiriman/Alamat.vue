@@ -29,10 +29,10 @@
 
     <div class="flex flex-col lg:flex-row flex-1">
       
-      <div class="w-full lg:w-3/5 h-[45vh] lg:h-[700px] relative z-0 order-1 lg:order-none bg-gray-50">
+      <div class="w-full lg:w-[65%] h-[45vh] lg:h-[700px] relative z-0 order-1 lg:order-none bg-gray-50">
         <div id="map" class="w-full h-full z-0"></div>
         
-        <div v-if="selectedRoute" class="absolute bottom-4 left-4 right-4 lg:bottom-6 lg:left-1/2 lg:transform lg:-translate-x-1/2 bg-white/95 backdrop-blur-sm p-4 sm:p-5 rounded-2xl shadow-2xl border border-blue-100 lg:w-[420px] z-[400] animate-slide-up">
+        <div v-if="selectedRoute" class="absolute bottom-4 left-4 right-4 lg:bottom-6 lg:left-auto lg:right-6 bg-white/95 backdrop-blur-sm p-4 sm:p-5 rounded-2xl shadow-2xl border border-blue-100 lg:w-[380px] z-[400] animate-slide-up">
           <div class="flex justify-between items-start mb-3 border-b border-gray-100 pb-3">
             <div class="flex-1 pr-2">
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 flex items-center">
@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <div class="w-full lg:w-2/5 flex flex-col h-[55vh] lg:h-[700px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 order-2 lg:order-none z-10">
+      <div class="w-full lg:w-[35%] flex flex-col h-[55vh] lg:h-[700px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 order-2 lg:order-none z-10 overflow-hidden">
         <div class="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center shrink-0">
           <h3 class="font-bold text-gray-700 text-sm sm:text-base">Daftar Rute ({{ filteredActiveRoutes.length }})</h3>
           <span class="text-[10px] sm:text-xs font-bold bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full uppercase tracking-wider">Semua Riwayat</span>
@@ -104,7 +104,7 @@
 
             <div class="bg-gray-50 p-2.5 sm:p-3 rounded-lg border border-gray-100 flex items-start mt-2 group-hover:bg-white transition-colors">
               <i class="fas fa-map-marker-alt text-red-500 mr-2 sm:mr-2.5 mt-0.5 flex-shrink-0 text-sm"></i>
-              <div class="flex-1">
+              <div class="flex-1 min-w-0">
                 <p class="text-[11px] sm:text-xs text-gray-700 leading-relaxed font-medium line-clamp-2" :title="pkg.customer?.alamat">{{ pkg.customer?.alamat || 'Alamat tidak tersedia' }}</p>
               </div>
             </div>
@@ -155,8 +155,6 @@ const hospitalIcon = L.icon({
   popupAnchor: [1, -34],
 })
 
-// --- FILTERING ---
-// Mengizinkan "8. Sampai (Selesai)" untuk tampil sebagai riwayat. Hanya hapus "9. Cancel / Pending".
 const activeRoutes = computed(() => packages.value.filter(pkg => 
   pkg.status_pengiriman !== '9. Cancel / Pending'
 ))
@@ -184,20 +182,6 @@ const paginatedRoutes = computed(() => filteredActiveRoutes.value.slice(startInd
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
-// --- FUNGSI WARNA & ICON RESI WAKTU PENGANTARAN ---
-const getWaktuResiClass = (waktu) => {
-  if (waktu === 'Segera') return 'bg-red-50 text-red-700 border-red-200'
-  if (waktu === 'Malam') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-  return 'bg-blue-50 text-blue-700 border-blue-200' // Besok & Default
-}
-
-const getWaktuIconClass = (waktu) => {
-  if (waktu === 'Segera') return 'fa-shipping-fast'
-  if (waktu === 'Malam') return 'fa-moon'
-  return 'fa-calendar-day'
-}
-
-// --- API FETCH ---
 const fetchPackages = async () => {
   isLoading.value = true
   try {
@@ -210,7 +194,6 @@ const fetchPackages = async () => {
   }
 }
 
-// Murni Fetch OSRM
 const hitungRuteOSRM = async (latAwal, lngAwal, latTujuan, lngTujuan) => {
   try {
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngAwal},${latAwal};${lngTujuan},${latTujuan}?overview=full&geometries=geojson`;
@@ -236,14 +219,12 @@ const formatRupiahSingkat = (angka) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 }
 
-// --- KLIK KARTU -> SMART FALLBACK TRACKING ---
 const tampilkanRute = async (pkg) => {
   selectedRoute.value = pkg
 
   let custLat = pkg.customer?.lat;
   let custLng = pkg.customer?.lng;
 
-  // FITUR: Smart Fallback Pencarian Bertingkat!
   if (!custLat || !custLng) {
     
     let rawAddress = pkg.customer?.alamat || '';
@@ -251,7 +232,6 @@ const tampilkanRute = async (pkg) => {
       rawAddress = rawAddress.split('(Patokan:')[0].trim();
     }
     
-    // 1. Bersihkan RT/RW dan Kodepos yang sering ditolak Nominatim
     let cleanAddress = rawAddress
       .replace(/RT\s*\d+[\/\\]RW\s*\d+/ig, '') 
       .replace(/RW\s*\d+/ig, '') 
@@ -261,7 +241,6 @@ const tampilkanRute = async (pkg) => {
     let found = false;
 
     try {
-      // Percobaan 1: Cari Alamat utuh yang sudah dibersihkan (tanpa RT/RW)
       let q1 = encodeURIComponent(parts.join(', '));
       let res1 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q1}&limit=1`);
       let data1 = await res1.json();
@@ -269,7 +248,6 @@ const tampilkanRute = async (pkg) => {
       if (data1 && data1.length > 0) {
         custLat = data1[0].lat; custLng = data1[0].lon; found = true;
       } 
-      // Percobaan 2: Jika gagal, ambil 2 bagian awal saja (Misal: Nama Jalan + Kelurahan) + Jakarta
       else if (parts.length > 1) {
         let q2 = encodeURIComponent(`${parts[0]}, ${parts[1]}, Jakarta`);
         let res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q2}&limit=1`);
@@ -279,7 +257,6 @@ const tampilkanRute = async (pkg) => {
         }
       }
       
-      // Percobaan 3: Mentok banget, hanya cari Nama Jalannya saja di Jakarta
       if (!found && parts.length > 0) {
         let q3 = encodeURIComponent(`${parts[0]}, Jakarta`);
         let res3 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q3}&limit=1`);
@@ -299,18 +276,15 @@ const tampilkanRute = async (pkg) => {
     }
   }
 
-  // Bersihkan peta dari rute sebelumnya
   if (routingLayer) map.removeLayer(routingLayer)
   markers.forEach(m => map.removeLayer(m))
   markers = []
 
-  // Titik RS
   const rsMarker = L.marker(RUMAH_SAKIT_COORD, { icon: hospitalIcon })
     .bindPopup('<b>RSPPN Panglima Besar Soedirman</b><br>Titik Awal Pengiriman')
     .addTo(map)
   markers.push(rsMarker)
 
-  // Titik Tujuan
   const custCoord = [parseFloat(custLat), parseFloat(custLng)]
   const custMarker = L.marker(custCoord)
     .bindPopup(`
@@ -385,14 +359,12 @@ onBeforeUnmount(() => {
   from { transform: translateY(120%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-.animate-slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
 
+/* Mengunci animasi layar desktop dari bawah agar lebih halus */
 @media (min-width: 1024px) {
   @keyframes slideUpDesktop {
-    from { transform: translate(-50%, 120%); opacity: 0; }
-    to { transform: translate(-50%, 0); opacity: 1; }
+    from { transform: translateY(120%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
   .animate-slide-up {
     animation: slideUpDesktop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
